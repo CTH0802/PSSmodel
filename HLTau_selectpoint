@@ -1,0 +1,11 @@
+#CRTFv0 CASA Region Text Format version 0
+symbol [[04:31:38.42695, +018.13.57.2050], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.43221, +018.13.57.4900], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.42063, +018.13.57.5800], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.40063, +018.13.57.5950], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.37430, +018.13.57.5950], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.35746, +018.13.57.2950], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.34693, +018.13.56.9650], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.33430, +018.13.56.6050], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.32482, +018.13.56.2750], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[04:31:38.31745, +018.13.55.6000], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false

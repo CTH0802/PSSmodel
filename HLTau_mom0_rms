@@ -1,0 +1,2 @@
+#CRTFv0 CASA Region Text Format version 0
+circle [[04:31:38.56208, +018.13.55.2401], 1.0000arcsec] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=normal, usetex=false, label="HLTau_rms", labelcolor=2ee6d6, labelpos=top

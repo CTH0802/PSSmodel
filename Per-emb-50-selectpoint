@@ -1,0 +1,6 @@
+#CRTFv0 CASA Region Text Format version 0
+symbol [[03:29:07.69642, +031.21.56.6696], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[03:29:07.66063, +031.21.55.7528], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[03:29:07.63677, +031.21.54.8360], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[03:29:07.42203, +031.21.49.0296], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
+symbol [[03:29:07.75607, +031.21.57.2808], s] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=bold, usetex=false
