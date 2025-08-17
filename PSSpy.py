@@ -88,19 +88,23 @@ def spheres(max_radius):
         sphere_dict[r] = (x[mask], y[mask], z[mask])
     return sphere_dict
 
-def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=1000):
+def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None, r_0=4, sigma_thresh=3, max_iter=1000):
     """
     依據初始點與像素強度，圈出擴展區域。
     
     data: 3D array, 觀測影像資料
-    init_points: list of (x, y, z), 初始點
+    init_points: list of (z, y, x), 初始點
     sigma_thresh: 門檻，像素強度需高於 mean + sigma_thresh * std
     return: 3D boolean mask of selected region
     """
-    data = data / sigma_value
+    data_rms = data / sigma_value
     region_mask = np.zeros_like(data, dtype=bool)
-    height, width, depth = data.shape
+    
     threshold = sigma_thresh
+    if upperlimit_data is None:
+        maxthreshold = np.max(data_rms)
+    else:
+        maxthreshold = upperlimit_data / sigma_value
 
     to_check = set(init_points)
     visited = set(init_points)
@@ -110,26 +114,59 @@ def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=
 
     for _ in range(max_iter):
         new_points = set()
-        for x, y, z in to_check:
-            if (0 <= y < width) and (0 <= x < height) and (0 <= z < depth):
-                if data[x, y, z] > threshold and not region_mask[x, y, z]:
-                    region_mask[x, y, z] = True
-                    
-                    # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
-                    radius = radius_sn(data[x, y, z], mim_singal=sigma_thresh, r_0=4)
-                    int_radius = int(np.ceil(radius))
-                    
-                    if int_radius not in sphere_dict:
-                        continue  # 如果超過預設最大半徑就跳過
-                    # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
-                    dx_array, dy_array, dz_array = sphere_dict[int_radius]
-                    
-                    for i in range(len(dx_array)):
-                        nx, ny, nz = x + dx_array[i], y + dy_array[i], z + dz_array[i]
-                        if (0 <= ny < width) and (0 <= nx < height) and (0 <= nz < depth):
-                            if (nx, ny, nz) not in visited:
-                                new_points.add((nx, ny, nz))
-                                visited.add((nx, ny, nz))
+        if data.ndim == 3:
+            height, width, depth = data.shape
+            if bound == None:
+                continue
+            else:
+                bound_z, bound_y, bound_x = bound
+            for z, y, x in to_check:
+                if (0 <= y < width) and (0 <= x < height) and (0 <= z < depth) and (bound_z[0] <= z <= bound_z[1]) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
+                    if data_rms[z, y, x] > threshold and data_rms[z, y, x] < maxthreshold and not region_mask[z, y, x]:
+                        region_mask[z, y, x] = True
+
+                        # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
+                        radius = radius_sn(data_rms[z, y, x], mim_singal=sigma_thresh, r_0=4)
+                        int_radius = int(np.ceil(radius))
+                        
+                        if int_radius not in sphere_dict:
+                            continue  # 如果超過預設最大半徑就跳過
+                        # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
+                        dx_array, dy_array, dz_array = sphere_dict[int_radius]
+                        
+                        for i in range(len(dx_array)):
+                            nx, ny, nz = x + dx_array[i], y + dy_array[i], z + dz_array[i]
+                            if (0 <= ny < width) and (0 <= nx < height) and (0 <= nz < depth):
+                                if (nx, ny, nz) not in visited:
+                                    new_points.add((nx, ny, nz))
+                                    visited.add((nx, ny, nz))
+        elif data.ndim == 2:
+            height, width = data.shape
+            if bound == None:
+                continue
+            else:
+                bound_y, bound_x = bound
+            for y, x in to_check:
+                if (0 <= y < width) and (0 <= x < height) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
+                    # print(f"{(y,x)} val={data_rms[y,x]:.2f}, thr={threshold:.2f}, maxthr={maxthreshold:.2f}")
+                    if data_rms[y, x] > threshold and data_rms[y, x] <= maxthreshold and not region_mask[y, x]:
+                        region_mask[y, x] = True
+
+                        # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
+                        radius = radius_sn(data_rms[y, x], mim_singal=sigma_thresh, r_0=4)
+                        int_radius = int(np.ceil(radius))
+                        
+                        if int_radius not in sphere_dict:
+                            continue  # 如果超過預設最大半徑就跳過
+                        # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
+                        dx_array, dy_array, dz_array = sphere_dict[int_radius]
+                        
+                        for i in range(len(dx_array)):
+                            nx, ny = x + dx_array[i], y + dy_array[i]
+                            if (0 <= nx < width) and (0 <= ny < height):
+                                if (ny, nx) not in visited:
+                                    new_points.add((ny, nx))
+                                    visited.add((ny, nx))
         if not new_points:
             break
         to_check = new_points
