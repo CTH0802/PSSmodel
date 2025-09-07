@@ -1,0 +1,3 @@
+# Always use xelatex
+$pdflatex = 'xelatex -interaction=nonstopmode -synctex=1 %O %S';
+$latex = 'xelatex -interaction=nonstopmode -synctex=1 %O %S';
