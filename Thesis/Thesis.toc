@@ -10,16 +10,17 @@
 \contentsline {subsection}{\numberline {1.3.1}Build up a model}{2}{subsection.1.3.1}%
 \contentsline {subsection}{\numberline {1.3.2}Fitting with observations}{2}{subsection.1.3.2}%
 \contentsline {chapter}{\numberline {2}Methods}{3}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Formalism}{3}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Coordinate transformation}{4}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Streamer on the sky in the PPV space}{4}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Fitting procedure}{5}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Global fitting of the full model}{5}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}First fitting: regression to approximative model}{5}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Position angle}{8}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Fitting with partially known parameters}{8}{subsection.2.4.4}%
-\contentsline {chapter}{\numberline {3}Results}{9}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Discussion}{10}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Conclusion}{11}{chapter.5}%
-\contentsline {chapter}{\numberline {A}Observation}{12}{appendix.A}%
-\contentsline {chapter}{Bibliography}{15}{appendix*.11}%
+\contentsline {section}{\numberline {2.1}Observations}{3}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Formalism}{4}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Coordinate transformation}{4}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Streamer on the sky in the PPV space}{5}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Fitting procedure}{6}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Global fitting of the full model}{6}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}First fitting: regression to approximative model}{6}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Position angle}{9}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Fitting with partially known parameters}{9}{subsection.2.5.4}%
+\contentsline {chapter}{\numberline {3}Results}{10}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Discussion}{11}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Conclusion}{12}{chapter.5}%
+\contentsline {chapter}{\numberline {A}Observation}{13}{appendix.A}%
+\contentsline {chapter}{Bibliography}{16}{appendix*.11}%

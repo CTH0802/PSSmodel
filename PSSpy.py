@@ -173,6 +173,87 @@ def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None
 
     return region_mask
 
+def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
+    """
+    根據模型線的像素座標，自動計算一個帶緩衝的邊界框。
+
+    Parameters
+    ----------
+    x_pix, z_pix, v_pix : ndarray
+        模型線的有效像素座標陣列。
+    buffer : int
+        邊界框的緩衝區大小。
+    cube_shape : tuple
+        三維數據立方體的形狀 (nv, nz, nx)。
+
+    Returns
+    -------
+    bound : tuple or None
+        帶緩衝的邊界框，格式為 ([v_min, v_max], [z_min, z_max], [x_min, x_max])。
+        如果沒有有效點，則為 None。
+    """
+    if len(x_pix) == 0:
+        return None
+        
+    nv, nz, nx = cube_shape
+    
+    x_min, x_max = np.min(x_pix), np.max(x_pix)
+    z_min, z_max = np.min(z_pix), np.max(z_pix)
+    v_min, v_max = np.min(v_pix), np.max(v_pix)
+    
+    x_min_bound = max(0, x_min - buffer)
+    x_max_bound = min(nx - 1, x_max + buffer)
+    z_min_bound = max(0, z_min - buffer)
+    z_max_bound = min(nz - 1, z_max + buffer)
+    v_min_bound = max(0, v_min - buffer)
+    v_max_bound = min(nv - 1, v_max + buffer)
+    
+    bound = ([v_min_bound, v_max_bound],
+             [z_min_bound, z_max_bound],
+             [x_min_bound, x_max_bound])
+             
+    return bound
+
+def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist_value, bound=None):
+    """
+    在指定的邊界內，計算每個像素與模型線的最短歐幾里得距離。
+    """
+    nv, nz, nx = cube_shape
+
+    if bound:
+        v_bound, z_bound, x_bound = bound
+        v_min, v_max = v_bound
+        z_min, z_max = z_bound
+        x_min, x_max = x_bound
+    else:
+        v_min, z_min, x_min = 0, 0, 0
+        v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
+
+    sub_distance_cube = np.full((v_max - v_min + 1, z_max - z_min + 1, x_max - x_min + 1), np.inf, dtype=np.float32)
+    v_grid, z_grid, x_grid = np.indices(sub_distance_cube.shape)
+    
+    relative_model_coords = []
+    for v, z, x in model_line_coords:
+        if v_min <= v <= v_max and z_min <= z <= z_max and x_min <= x <= x_max:
+            relative_model_coords.append((v - v_min, z - z_min, x - x_min))
+    
+    if not relative_model_coords:
+        return np.full(cube_shape, -1, dtype=np.int32)
+
+    for v_line, z_line, x_line in relative_model_coords:
+        dist = np.sqrt(
+            (v_grid - v_line)**2 +
+            (z_grid - z_line)**2 +
+            (x_grid - x_line)**2
+        )
+        sub_distance_cube = np.minimum(sub_distance_cube, dist)
+
+    sub_distance_cube[sub_distance_cube > max_dist_value] = -1
+    
+    full_distance_cube = np.full(cube_shape, -1, dtype=np.int32)
+    full_distance_cube[v_min:v_max+1, z_min:z_max+1, x_min:x_max+1] = sub_distance_cube.astype(np.int32)
+
+    return full_distance_cube
 
 def Omega_ref(radius_ref_au, Mass_star):
     Omega_ref = np.sqrt(spc.G * Mass_star * 2e30 / (radius_ref_au * 1.49e11)) / (radius_ref_au * 1.49e11) #Keplerian velocity (radian) 1e-13

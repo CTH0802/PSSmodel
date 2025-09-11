@@ -3,12 +3,13 @@
 \contentsline {chapter}{Abstract}{III}{section*.6}%
 \contentsline {chapter}{Acknowledgements}{IV}{section*.8}%
 \contentsline {chapter}{Contents}{V}{chapter*.9}%
-\contentsline {chapter}{List of Figures}{VI}{chapter*.10}%
-\contentsline {chapter}{List of Tables}{VII}{chapter*.11}%
-\contentsline {chapter}{List of Algorithms}{VIII}{chapter*.13}%
+\contentsline {chapter}{List of Figures}{VII}{chapter*.10}%
+\contentsline {chapter}{List of Tables}{VIII}{chapter*.11}%
+\contentsline {chapter}{List of Algorithms}{IX}{chapter*.13}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {chapter}{\numberline {2}Section Title}{3}{chapter.2}%
 \contentsline {section}{\numberline {2.1}Section Title}{4}{section.2.1}%
 \contentsline {subsection}{\numberline {2.1.1}Subsection Title}{5}{subsection.2.1.1}%
 \contentsline {chapter}{\numberline {3}Methodology}{6}{chapter.3}%
 \contentsline {chapter}{\numberline {4}Related Works}{8}{chapter.4}%
+\contentsline {chapter}{Bibliography}{9}{chapter*.14}%

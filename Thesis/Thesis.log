@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  3 SEP 2025 20:14
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  11 SEP 2025 00:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -617,41 +617,34 @@ File: xeCJK.cfg 2022/08/05 v3.9.1 Configuration file for xeCJK package
 ))
 
 Package fontspec Info: 
-(fontspec)             Script 'CJK' not explicitly supported within font
-(fontspec)             'BiauKai'. Check the typeset output, and if it is okay
-(fontspec)             then ignore this warning. Otherwise a different font
-(fontspec)             should be chosen.
-
-
-Package fontspec Info: 
-(fontspec)             Could not resolve font "BiauKai/B" (it probably doesn't
-(fontspec)             exist).
-
-
-Package fontspec Info: 
-(fontspec)             Could not resolve font "BiauKai/I" (it probably doesn't
-(fontspec)             exist).
-
-
-Package fontspec Info: 
-(fontspec)             Could not resolve font "BiauKai/BI" (it probably
+(fontspec)             Could not resolve font "TW-Kai-98_1/B" (it probably
 (fontspec)             doesn't exist).
 
 
 Package fontspec Info: 
-(fontspec)             Font family 'BiauKai(0)' created for font 'BiauKai'
-(fontspec)             with options
+(fontspec)             Could not resolve font "TW-Kai-98_1/I" (it probably
+(fontspec)             doesn't exist).
+
+
+Package fontspec Info: 
+(fontspec)             Could not resolve font "TW-Kai-98_1/BI" (it probably
+(fontspec)             doesn't exist).
+
+
+Package fontspec Info: 
+(fontspec)             Font family 'TW-Kai-98_1(0)' created for font
+(fontspec)             'TW-Kai-98_1' with options
 (fontspec)             [Script={CJK},UprightFont={*},BoldFont={*},ItalicFont={*}].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS
 (fontspec)             series/shapes:
 (fontspec)              
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
-(fontspec)             <->"BiauKai/OT:script=hani;language=dflt;"
+(fontspec)             <->"TW-Kai-98_1/OT:script=hani;language=dflt;"
 (fontspec)             - 'bold' (b/n) with NFSS spec.:
-(fontspec)             <->"BiauKai/OT:script=hani;language=dflt;"
+(fontspec)             <->"TW-Kai-98_1/OT:script=hani;language=dflt;"
 (fontspec)             - 'italic' (m/it) with NFSS spec.:
-(fontspec)             <->"BiauKai/OT:script=hani;language=dflt;"
+(fontspec)             <->"TW-Kai-98_1/OT:script=hani;language=dflt;"
 
  (/usr/local/texlive/2025/texmf-dist/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2024/11/05 v2.17t AMS math features
@@ -1122,7 +1115,11 @@ File: ./NTNUgrey.png Graphic file (type bmp)
 [3
 
 ]
-Overfull \hbox (19.12483pt too wide) detected at line 65
+
+File: ./NTNUgrey.png Graphic file (type bmp)
+<./NTNUgrey.png>
+[4]
+Overfull \hbox (19.12483pt too wide) detected at line 67
 []
  []
 
@@ -1130,21 +1127,21 @@ Overfull \hbox (19.12483pt too wide) detected at line 65
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[4]
+[5]
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[5]
+[6]
 
 Package amsmath Warning: Cannot use `split' here;
-(amsmath)                trying to recover with `aligned' on input line 145.
+(amsmath)                trying to recover with `aligned' on input line 147.
 
 
 Package amsmath Warning: Cannot use `split' here;
-(amsmath)                trying to recover with `aligned' on input line 151.
+(amsmath)                trying to recover with `aligned' on input line 153.
 
 
-Overfull \hbox (25.01524pt too wide) detected at line 154
+Overfull \hbox (25.01524pt too wide) detected at line 156
 [][][][]
  []
 
@@ -1152,24 +1149,16 @@ Overfull \hbox (25.01524pt too wide) detected at line 154
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[6]
+[7]
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[7])
+[8])
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[8]
+[9]
 Chapter 3.
-
-
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[9
-
-]
-Chapter 4.
 
 
 File: NTNUgrey.png Graphic file (type bmp)
@@ -1177,12 +1166,20 @@ File: NTNUgrey.png Graphic file (type bmp)
 [10
 
 ]
+Chapter 4.
+
+
+File: NTNUgrey.png Graphic file (type bmp)
+<NTNUgrey.png>
+[11
+
+]
 Chapter 5.
 (././Appendix.tex
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[11
+[12
 
 ]
 Appendix A.
@@ -1255,17 +1252,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 65--91
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[12
+[13
 
 ]
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[13]
+[14]
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[14]
+[15]
 ! Undefined control sequence.
 l.10 \newblock \doilink
                        {10.1051/0004-6361/201832891}{{S Coronae Australis: a...
@@ -1339,7 +1336,7 @@ and I'll forget about whatever was undefined.
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[15
+[16
 
 ]
 ! Undefined control sequence.
@@ -1366,21 +1363,21 @@ and I'll forget about whatever was undefined.
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[16] (./Thesis.aux)
+[17] (./Thesis.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 374F512CA71A4482B7D1204953A43AC6;3717.
+(rerunfilecheck)             Checksum: 826301D9A49B5B76083367C8C5DB193D;3832.
  ) 
 Here is how much of TeX's memory you used:
- 28722 strings out of 473832
- 593955 string characters out of 5729482
- 1018321 words of memory out of 5000000
- 51264 multiletter control sequences out of 15000+600000
+ 28724 strings out of 473832
+ 594088 string characters out of 5729482
+ 1013549 words of memory out of 5000000
+ 51266 multiletter control sequences out of 15000+600000
  563779 words of font info for 73 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,1066b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (23 pages, 163184 bytes).
+Output written on Thesis.xdv (24 pages, 173604 bytes).

@@ -1,0 +1,2 @@
+#CRTFv0 CASA Region Text Format version 0
+centerbox [[03:29:07.33852, +031.21.50.4048], [19.1000arcsec, 19.1000arcsec]] coord=J2000, linewidth=2, linestyle=-, symsize=1, symthick=1, color=2ee6d6, font=Helvetica, fontsize=10, fontstyle=normal, usetex=false, label="Per-emb-50 cube rms", labelcolor=2ee6d6, labelpos=top
