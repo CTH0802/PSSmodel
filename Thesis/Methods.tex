@@ -1,7 +1,8 @@
-We build a model that can reproduce the observed streamer, by considering a self collapse density enhancement structure with a rotation velocity and evolve with time in 3D space. 
+We build a model that can reproduce the observed streamer by considering a self-collapse density enhancement structure with a rotation velocity and evolve with time in 3D space. 
 \section{Observations}
-To test our model against sources where streamers have been detected, we use five observational datasets: Per-emb-2, Per-emb-50, S CrA, HL Tau, and SVS 13A. For each source, we extract the position-position-velocity (PPV) data of the streamer from published NOEMA, ALMA observations. The fitting procedure described below is applied to each dataset to constrain the model parameters, including the density enhancement along the polar angle ($\theta$), infall velocity ($v_{\rm inf}$), rotation velocity ($v_{\rm rot}$), accumulated rotation ($\phi$) and inclination (i). The results are compared to the observed streamer morphology and kinematics to assess the validity of the model.
+To test our model against sources where streamers have been detected, we use five observational datasets: Per-emb-2, Per-emb-50, S CrA, HL Tau, and SVS 13A. For each source, we extract the position-position-velocity (PPV) data of the streamer from published NOEMA and ALMA observations. 
 \section{Formalism} \label{Sub-sec: Formalism}
+In the formalism, including the density enhancement along the polar angle ($\theta$), infall velocity ($v_{\rm inf}$), rotation velocity ($v_{\rm rot}$), accumulated rotation ($\phi$), and inclination (i).
 The sonic length.
 \begin{align}
     r_{\rm s} = c_{\rm s} T
@@ -25,7 +26,8 @@ Position
          x = r\sin{\theta} \cos{\phi}\\
          y = r\sin{\theta} \sin{\phi}\\
          z = r\cos{\theta}\\
-    \end{array} \right.
+    \end{array}    
+    \right.
 \end{align}
 Infall velocity
 \begin{align}
@@ -69,6 +71,7 @@ Velocity rotates by inclination
 $\theta$ corresponds to the initial polar angle of the streamer, $\phi$ is the initial azimuth angle, $i$ is the inclination angle (zero inclination corresponds to an edge-on disk), $\omega$ is the ratio of Keplerian rotation velocity, and $t_{\rm s}$ is the collapsing time of the particle within the streamer.
 
 \section{Fitting procedure}
+The fitting procedure described below is applied to each dataset to constrain the model parameters. The results are compared to the observed streamer morphology and kinematics to assess the validity of the model.
 \subsection{Global fitting of the full model}
 \YN{Re-include the infall term. Perform full model fitting around the optimal parameters found in the first step. }
 
@@ -86,48 +89,48 @@ Use X, Z, ${V_y}$ to fit with observation data.
 \end{align}
 Fitting for the initial parameter.
 \begin{align}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         \displaystyle\frac{V_y}{X} = \frac{r\sin\theta\Omega_{\rm ref}(\frac{r}{r_{\rm ref}})^{-\frac{4}{3}}\cos\phi\cos i}{r\sin\theta\cos\phi}=\Omega_{\rm ref}(\frac{r}{r_{\rm ref}})^{-\frac{4}{3}}\cos i \\
         \displaystyle\left(\frac{r}{r_{\rm ref}}\right)^{-\frac{4}{3}}=\frac{V_y}{X\Omega_{\rm ref}\cos i}\\
         \displaystyle\frac{X}{r}=(\Omega_{\rm ref}\cos i)^{-\frac{3}{4}}\frac{X}{r_{\rm ref}}\left(\frac{V_y}{X}\right)^{\frac{3}{4}}
     \end{array}
-    \right.
+    \right\
 \end{align}
 \begin{align}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         \displaystyle X\cdot\left(\frac{V_y}{X}\right)^{\frac{3}{4}}=r_{\rm ref}\sin\theta\cos\phi (\Omega_{\rm ref}\cos i)^{\frac{3}{4}}\\
         \displaystyle Z\cdot\left(\frac{V_y}{X}\right)^{\frac{3}{4}}=(\cos\theta\cos i-\sin\theta\sin\phi\sin i)r_{\rm ref}(\Omega_{\rm ref}\cos i)^{\frac{3}{4}}
         \end{array}
-    \right.
+    \right\
 \end{align}
 \begin{align}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         A = r_{\rm ref}(\Omega_{\rm ref}\cos i)^{\frac{3}{4}}\sin\theta \\
         B =  - r_{\rm ref}(\Omega_{\rm ref}\cos i)^{\frac{3}{4}}\sin\theta\sin i\\
         C = r_{\rm ref}(\Omega_{\rm ref}\cos i)^{\frac{3}{4}} \cos\theta\cos i \\
         k = \frac{t}{\sin i} \\
         \phi = k(R_i + R_0)
     \end{array}
-    \right.
+    \right\
 \end{align}
 
 \begin{align}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         R_i = \frac{V_y}{X}\\
         X_i = A\cos(k(R_i+R_0))\\
         Y_i = B\sin(k(R_i+R_0)) + C
     \end{array}
-    \right.
+    \right\
 \end{align}
 
 \begin{equation}
-    \left. 
+    \left\ 
         SEE^2 = \sum(X_i-A\cos{(k(R_i+R_0))})+\sum(Y_i-B\sin(k(R_i+R_0))-C)
-    \right.
+    \right\
 \end{equation}
 
 \begin{equation}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         \displaystyle\frac{1}{2}\frac{\partial SEE^2}{\partial A} = A\sum\cos^2{(k(R_i+R_0))}-\sum X_i\cos(k(R_i+R_0))\\
         \\
         \displaystyle\frac{1}{2}\frac{\partial SEE^2}{\partial B} = B\sum\sin^2(k(R_i+R_0)) - \sum Y_i\sin(k(R_i+R_0)) + C\sum\sin(k(R_i+R_0))\\
@@ -152,27 +155,27 @@ Fitting for the initial parameter.
                                                             + kBC\sum \cos(k(R_i+R_0))           
         \end{split}
     \end{array}
-    \right.
+    \right\
 \end{equation}
 
 \begin{align}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         \displaystyle A = \frac{\sum X_i\cos(k(R_i+R_0))}{\sum\cos^2{(k(R_i+R_0))}}\\
         \displaystyle B = \frac{N\sum Y_i\sin(k(R_i+R_0)) - \sum Y_i\sum\sin(k(R_i+R_0))}{N\sum \sin^2(k(R_i+R_0)) - \sum\sin(k(R_i+R_0))\sum\sin(k(R_i+R_0))}\\
         \displaystyle C = \frac{\sum Y_i\sum\sin^2(k(R_i+R_0)) - \sum Y_i\sin(k(R_i+R_0))\sum\sin(k(R_i+R_0))}{N\sum\sin^2(k(R_i+R_0)) - \sum\sin(k(R_i+R_0))\sum\sin(k(R_i+R_0))}
     \end{array}
-    \right.
+    \right\
 \end{align}
 
 \begin{align}
-    \left. \begin{array}{l}
+    \left\ \begin{array}{l}
         \displaystyle i = \arcsin{\frac{-B}{A}}\\
         \phi_0 = R_0 \cdot k\\
         \displaystyle \theta = \arctan\frac{A\cos i}{C}\\
         \displaystyle \Omega_{\rm ref} = \left(\frac{A}{r_{\rm ref}\sin\theta}\right)^{\frac{4}{3}}\frac{1}{\cos i}\\
         \displaystyle T = k \frac{\cos^{\frac{1}{4}}i}{\Omega_{\rm ref}^{\frac{3}{4}}}
     \end{array}
-    \right.
+    \right\
 \end{align}
 
 \YN{The external part of the streamer where the infall term cannot be safely neglected should be truncated. The procedure should be repeated until convergence is obtained.}
