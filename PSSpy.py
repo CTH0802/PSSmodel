@@ -88,7 +88,89 @@ def spheres(max_radius):
         sphere_dict[r] = (x[mask], y[mask], z[mask])
     return sphere_dict
 
-def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None, r_0=4, sigma_thresh=3, max_iter=1000):
+# def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None, r_0=4, sigma_thresh=3, max_iter=1000):
+#     """
+#     依據初始點與像素強度，圈出擴展區域。
+    
+#     data: 3D array, 觀測影像資料
+#     init_points: list of (z, y, x) or (y, x), 初始點
+#     sigma_thresh: 門檻，像素強度需高於 mean + sigma_thresh * std
+#     return: 3D or 2D boolean mask of selected region
+#     """
+#     data_rms = data / sigma_value
+#     region_mask = np.zeros_like(data, dtype=bool)
+    
+#     threshold = sigma_thresh
+#     if upperlimit_data is None:
+#         maxthreshold = np.max(data_rms)
+#     else:
+#         maxthreshold = upperlimit_data / sigma_value
+
+#     to_check = set(init_points)
+#     visited = set(init_points)
+#     sphere_dict = spheres(max_radius=r_0)
+
+#     for _ in range(max_iter):
+#         new_points = set()
+#         if data.ndim == 3:
+#             height, width, depth = data.shape
+#             if bound == None:
+#                 continue
+#             else:
+#                 bound_z, bound_y, bound_x = bound
+            
+#             for z, y, x in to_check:
+#                 if (0 <= y < width) and (0 <= x < height) and (0 <= z < depth) and (bound_z[0] <= z <= bound_z[1]) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
+#                     if data_rms[z, y, x] > threshold and data_rms[z, y, x] < maxthreshold and not region_mask[z, y, x]:
+#                         region_mask[z, y, x] = True
+
+#                         radius = radius_sn(data_rms[z, y, x], mim_singal=sigma_thresh, r_0=4)
+#                         int_radius = int(np.ceil(radius))
+                        
+#                         if int_radius not in sphere_dict:
+#                             continue  # 如果超過預設最大半徑就跳過
+#                         # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
+#                         dx_array, dy_array, dz_array = sphere_dict[int_radius]
+                        
+#                         for i in range(len(dx_array)):
+#                             nx, ny, nz = x + dx_array[i], y + dy_array[i], z + dz_array[i]
+#                             if (0 <= ny < width) and (0 <= nx < height) and (0 <= nz < depth):
+#                                 if (nx, ny, nz) not in visited:
+#                                     new_points.add((nx, ny, nz))
+#                                     visited.add((nx, ny, nz))
+#         elif data.ndim == 2:
+#             height, width = data.shape
+#             if bound == None:
+#                 continue
+#             else:
+#                 bound_y, bound_x = bound
+            
+#             for y, x in to_check:
+#                 if (0 <= y < width) and (0 <= x < height) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
+#                     # print(f"{(y,x)} val={data_rms[y,x]:.2f}, thr={threshold:.2f}, maxthr={maxthreshold:.2f}")
+#                     if data_rms[y, x] > threshold and data_rms[y, x] <= maxthreshold and not region_mask[y, x]:
+#                         region_mask[y, x] = True
+
+#                         radius = radius_sn(data_rms[y, x], mim_singal=sigma_thresh, r_0=4)
+#                         int_radius = int(np.ceil(radius))
+                        
+#                         if int_radius not in sphere_dict:
+#                             continue  # 如果超過預設最大半徑就跳過
+#                         # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
+#                         dx_array, dy_array, dz_array = sphere_dict[int_radius]
+                        
+#                         for i in range(len(dx_array)):
+#                             nx, ny = x + dx_array[i], y + dy_array[i]
+#                             if (0 <= nx < width) and (0 <= ny < height):
+#                                 if (ny, nx) not in visited:
+#                                     new_points.add((ny, nx))
+#                                     visited.add((ny, nx))
+#         if not new_points:
+#             break
+#         to_check = new_points
+
+#     return region_mask
+def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=1000):
     """
     依據初始點與像素強度，圈出擴展區域。
     
@@ -97,14 +179,10 @@ def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None
     sigma_thresh: 門檻，像素強度需高於 mean + sigma_thresh * std
     return: 3D boolean mask of selected region
     """
-    data_rms = data / sigma_value
+    data = data / sigma_value
     region_mask = np.zeros_like(data, dtype=bool)
-    
+    depth, height, width = data.shape
     threshold = sigma_thresh
-    if upperlimit_data is None:
-        maxthreshold = np.max(data_rms)
-    else:
-        maxthreshold = upperlimit_data / sigma_value
 
     to_check = set(init_points)
     visited = set(init_points)
@@ -114,65 +192,31 @@ def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None
 
     for _ in range(max_iter):
         new_points = set()
-        if data.ndim == 3:
-            height, width, depth = data.shape
-            if bound == None:
-                continue
-            else:
-                bound_z, bound_y, bound_x = bound
-            for z, y, x in to_check:
-                if (0 <= y < width) and (0 <= x < height) and (0 <= z < depth) and (bound_z[0] <= z <= bound_z[1]) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
-                    if data_rms[z, y, x] > threshold and data_rms[z, y, x] < maxthreshold and not region_mask[z, y, x]:
-                        region_mask[z, y, x] = True
-
-                        # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
-                        radius = radius_sn(data_rms[z, y, x], mim_singal=sigma_thresh, r_0=4)
-                        int_radius = int(np.ceil(radius))
-                        
-                        if int_radius not in sphere_dict:
-                            continue  # 如果超過預設最大半徑就跳過
-                        # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
-                        dx_array, dy_array, dz_array = sphere_dict[int_radius]
-                        
-                        for i in range(len(dx_array)):
-                            nx, ny, nz = x + dx_array[i], y + dy_array[i], z + dz_array[i]
-                            if (0 <= ny < width) and (0 <= nx < height) and (0 <= nz < depth):
-                                if (nx, ny, nz) not in visited:
-                                    new_points.add((nx, ny, nz))
-                                    visited.add((nx, ny, nz))
-        elif data.ndim == 2:
-            height, width = data.shape
-            if bound == None:
-                continue
-            else:
-                bound_y, bound_x = bound
-            for y, x in to_check:
-                if (0 <= y < width) and (0 <= x < height) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
-                    # print(f"{(y,x)} val={data_rms[y,x]:.2f}, thr={threshold:.2f}, maxthr={maxthreshold:.2f}")
-                    if data_rms[y, x] > threshold and data_rms[y, x] <= maxthreshold and not region_mask[y, x]:
-                        region_mask[y, x] = True
-
-                        # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
-                        radius = radius_sn(data_rms[y, x], mim_singal=sigma_thresh, r_0=4)
-                        int_radius = int(np.ceil(radius))
-                        
-                        if int_radius not in sphere_dict:
-                            continue  # 如果超過預設最大半徑就跳過
-                        # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
-                        dx_array, dy_array, dz_array = sphere_dict[int_radius]
-                        
-                        for i in range(len(dx_array)):
-                            nx, ny = x + dx_array[i], y + dy_array[i]
-                            if (0 <= nx < width) and (0 <= ny < height):
-                                if (ny, nx) not in visited:
-                                    new_points.add((ny, nx))
-                                    visited.add((ny, nx))
+        for z, y, x in to_check:
+            if (0 <= z < depth) and (0 <= y < width) and (0 <= x < height):
+                if data[z, y, x] > threshold and not region_mask[z, y, x]:
+                    region_mask[z, y, x] = True
+                    
+                    # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
+                    radius = radius_sn(data[z, y, x], mim_singal=sigma_thresh, r_0=4)
+                    int_radius = int(np.ceil(radius))
+                    
+                    if int_radius not in sphere_dict:
+                        continue  # 如果超過預設最大半徑就跳過
+                    # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
+                    dz_array, dy_array, dx_array = sphere_dict[int_radius]
+                    
+                    for i in range(len(dx_array)):
+                        nz, ny, nx = z + dz_array[i], y + dy_array[i], x + dx_array[i]
+                        if (0 <= nz < depth) and (0 <= ny < width) and (0 <= nx < height):
+                            if (nz, ny, nx) not in visited:
+                                new_points.add((nz, ny, nx))
+                                visited.add((nz, ny, nx))
         if not new_points:
             break
         to_check = new_points
 
     return region_mask
-
 def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
     """
     根據模型線的像素座標，自動計算一個帶緩衝的邊界框。
@@ -208,10 +252,22 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
     v_min_bound = max(0, v_min - buffer)
     v_max_bound = min(nv - 1, v_max + buffer)
     
-    bound = ([v_min_bound, v_max_bound],
-             [z_min_bound, z_max_bound],
-             [x_min_bound, x_max_bound])
-             
+    if v_min_bound >= v_max_bound:        
+        bound = ([v_max_bound, v_min_bound],
+                [z_min_bound, z_max_bound],
+                [x_min_bound, x_max_bound])
+    elif z_min_bound >= z_max_bound:
+        bound = ([v_min_bound, v_max_bound],
+                [z_max_bound, z_min_bound],
+                [x_min_bound, x_max_bound])
+    elif x_min_bound >= x_max_bound:
+        bound = ([v_min_bound, v_max_bound],
+                [z_min_bound, z_max_bound],
+                [x_max_bound, x_min_bound])
+    else:
+        bound = ([v_min_bound, v_max_bound],
+                [z_min_bound, z_max_bound],
+                [x_min_bound, x_max_bound])
     return bound
 
 def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist_value, bound=None):
@@ -229,7 +285,13 @@ def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist
         v_min, z_min, x_min = 0, 0, 0
         v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
 
-    sub_distance_cube = np.full((v_max - v_min + 1, z_max - z_min + 1, x_max - x_min + 1), np.inf, dtype=np.float32)
+    sub_distance_cube = np.full(
+        (int(v_max) - int(v_min) + 1, 
+        int(z_max) - int(z_min) + 1, 
+        int(x_max) - int(x_min) + 1), 
+        np.inf, 
+        dtype=np.float32
+    )
     v_grid, z_grid, x_grid = np.indices(sub_distance_cube.shape)
     
     relative_model_coords = []
@@ -248,10 +310,10 @@ def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist
         )
         sub_distance_cube = np.minimum(sub_distance_cube, dist)
 
-    sub_distance_cube[sub_distance_cube > max_dist_value] = -1
+    sub_distance_cube[sub_distance_cube > max_dist_value] = np.nan
     
     full_distance_cube = np.full(cube_shape, -1, dtype=np.int32)
-    full_distance_cube[v_min:v_max+1, z_min:z_max+1, x_min:x_max+1] = sub_distance_cube.astype(np.int32)
+    full_distance_cube[int(v_min):int(v_max)+1, int(z_min):int(z_max)+1, int(x_min):int(x_max)+1] = sub_distance_cube.astype(np.int32)
 
     return full_distance_cube
 
@@ -570,7 +632,6 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
     """
     
     Theta_zero, Phi_zero = params
-    
     total_error = 0
     num_points = len(streamercom_x)  # 應該是 11
 
@@ -599,62 +660,94 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
     total_error = np.sqrt(total_error / num_points)
     return total_error
 
+
 """MCMC"""
-def model_prediction(params, M_star, radius_in_au, radius_out_au, resolution):
-    # 拆解參數（依你模型而定）
-    Theta0, Phi0, Incl, T, Omega = params
-    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta0, Phi0, Incl, T, Omega, M_star, radius_in_au, radius_out_au, resolution)
-    return x_model, z_model, v_model
-
-def log_likelihood(params, x_data, z_data, v_data, M_star, radius_in_au, radius_out_au, resolution):
-    """    
-    logL 公式註解:
-    假設觀測數據誤差服從獨立同分佈的高斯分佈 (Gaussian Distribution)。
-    則對於每個數據點 i (包含 x, z, v 座標):
-    P(data_i | model_i, sigma) = (1 / (sigma * sqrt(2*pi))) * exp(-(data_i - model_i)^2 / (2 * sigma^2))
-
-    總概似度 (Likelihood) 是所有數據點機率的乘積：
-    L = Product(P(data_i | model_i, sigma))
-
-    取自然對數 (log-likelihood)：
-    logL = Sum(log(P(data_i | model_i, sigma)))
-    logL = Sum(log(1 / (sigma * sqrt(2*pi))) - (data_i - model_i)^2 / (2 * sigma^2))
-    logL = Sum(-(data_i - model_i)^2 / (2 * sigma^2)) - N * log(sigma * sqrt(2*pi))
-
-    其中 N 是數據點的總數。
-    在 MCMC (或最大概似估計) 中，我們通常只關心與模型參數有關的部分，
-    常數項 - N * log(sigma * sqrt(2*pi)) 不會影響後驗機率的峰值位置，因此可以省略。
-
-    最終，logL 可簡化為：
-    logL = -0.5 * ( Sum(residual_x^2 / sigma_pos^2) + Sum(residual_z^2 / sigma_pos^2) + Sum(residual_v^2 / sigma_v^2) )
-
-    程式碼中的 chi2 = Sum(residual_x^2 + residual_z^2) / sigma_pos^2 + Sum(residual_v^2) / sigma_v^2
-    所以 `return -0.5 * chi2` 正是這個簡化後的 logL。
+def log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num):
     """
-    x_model, y_model, z_model, u_model, v_model, w_model = model_prediction(params, M_star, radius_in_au, radius_out_au, resolution)
-    # 定義誤差（假設獨立同分布 Gaussian）
-    sigma_pos = 1.0 # 空間誤差
-    sigma_v   = 0.1   # 速度誤差
-    residual_x = x_data - x_model
-    residual_z = z_data - z_model
-    residual_v = v_data - v_model
-    chi2 = np.sum(residual_x**2 + residual_z**2) / sigma_pos**2 + np.sum(residual_v**2) / sigma_v**2
-    return -0.5 * chi2
+    計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
+    
+    參數：
+    - params: 模型的參數 (Theta, Phi, T, Inclination, Omega)
+    - data_cube: 觀測數據立方體 (V, Z, X)
+    - search_bound: 裁剪後的邊界 [ [v_min, v_max], [z_min, z_max], [x_min, x_max] ]
+    - 坐標轉換參數: AU_per_pixel, im_center, dv, v_lastch_num
+    """
+    
+    # 從 data_cube 獲取形狀
+    cube_shape = data_cube.shape
+    
+    Theta_best, Phi_best, T_best, Inclination_best, Omega_best = params
 
-def log_prior(params, prior_ranges):
-    Theta0, Phi0, Incl, T, Omega = params # 這裡只拆解 MCMC 要採樣的參數
-    # 從傳入的 prior_ranges 字典中獲取每個參數的範圍
-    min_Theta0, max_Theta0 = prior_ranges['Theta0']
-    min_Phi0, max_Phi0 = prior_ranges['Phi0']
-    min_Incl, max_Incl = prior_ranges['Incl']
-    min_T, max_T = prior_ranges['T']
-    min_Omega, max_Omega = prior_ranges['Omega']
-    if not (min_Theta0 < Theta0 < max_Theta0 and min_Phi0 < Phi0 < max_Phi0 and min_Incl < Incl < max_Incl and min_T < T < max_T and min_Omega < Omega < max_Omega):
-        return -np.inf
-    return 0.0  # Uniform prior (log(1) = 0)
+    # 1. 根據新的參數，重新生成模型線的物理座標
+    # 假設 PSS_model 輸出 x, y, z 是 AU 單位，v 是 km/s 單位
+    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta_best, Phi_best, Inclination_best, T_best, Omega_best, 2.58, 2e2, 2.8e3, 100)
+    
+    # 2. 將物理座標轉換為整數像素座標
+    x_pix_int = np.round(x_model / AU_per_pixel + im_center[1]).astype(int)
+    z_pix_int = np.round(z_model / AU_per_pixel + im_center[0]).astype(int) #
+    v_pix_int = np.round(v_lastch_num - (v_model - v_lastch_vel) / dv).astype(int)
+    
+    # 3. 生成新的距離立方體
+    model_line_coords = list(zip(v_pix_int, z_pix_int, x_pix_int))
+    max_dist_value = 15
+    distance_cube = grow_distance_cube_euclidean_bounded(
+        cube_shape, 
+        model_line_coords, 
+        max_dist_value, 
+        bound=search_bound
+    )
+    
+    # 4. 計算誤差：Error = sum(Distance * CubeData) / sum(CubeData)
+    
+    # 篩選掉距離為 < 0 的點 (超出範圍或無效)
+    valid_mask = distance_cube >= 0
+    
+    # 計算分子：sum(Distance * CubeData)
+    # 使用 distance_cube[valid_mask] 和 data_cube[valid_mask] 確保只對有效區域計算
+    numerator = np.nansum(distance_cube[valid_mask] * data_cube[valid_mask])
+    
+    # 計算分母：sum(CubeData)
+    denominator = np.nansum(data_cube[valid_mask])
+    
+    # 確保分母不為零
+    if denominator == 0 or np.isnan(numerator):
+        return -np.inf 
+        
+    # 計算最終誤差 (要最小化的量)
+    normalized_error = numerator / denominator
+    
+    # 5. 轉換為 Log Likelihood
+    return -normalized_error
 
-def log_posterior(params, x_data, z_data, v_data):
-    lp = log_prior(params)
+# ---------------------------------------------------------------------------
+
+def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num):
+    """
+    計算對數後驗值。
+    (移除 cube_shape 參數)
+    """
+    lp = log_prior(params, parameter_prior_ranges)
     if not np.isfinite(lp):
         return -np.inf
-    return lp + log_likelihood(params, x_data, z_data, v_data)
+    
+    # 傳入 log_likelihood 需要的參數
+    ll = log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num)
+    return lp + ll
+
+# ---------------------------------------------------------------------------
+
+def log_prior(params, prior_ranges):
+    """
+    計算對數先驗值。
+    """
+    Theta0, Phi0, Incl, T, Omega = params
+    
+    # 檢查參數是否在先驗範圍內
+    if not (prior_ranges['Theta0'][0] < Theta0 < prior_ranges['Theta0'][1] and
+            prior_ranges['Phi0'][0] < Phi0 < prior_ranges['Phi0'][1] and
+            prior_ranges['Incl'][0] < Incl < prior_ranges['Incl'][1] and
+            prior_ranges['T'][0] < T < prior_ranges['T'][1] and
+            prior_ranges['Omega'][0] < Omega < prior_ranges['Omega'][1]):
+        return -np.inf # 如果超出範圍，對數先驗為負無窮
+    
+    return 0.0 # 均勻先驗，對數值為 0
