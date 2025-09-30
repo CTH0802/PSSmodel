@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  12 SEP 2025 22:45
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  27 SEP 2025 22:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1119,7 +1119,7 @@ File: ./NTNUgrey.png Graphic file (type bmp)
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
 [4]
-Overfull \hbox (19.12483pt too wide) detected at line 69
+Overfull \hbox (19.12483pt too wide) detected at line 68
 []
  []
 
@@ -1127,382 +1127,17 @@ Overfull \hbox (19.12483pt too wide) detected at line 69
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[5]
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.98 \end{align}
-                
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.98 \end{align}
-                
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.98 \end{align}
-                
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.98 \end{align}
-                
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.105 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.105 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.105 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.105 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.115 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.115 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.115 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.115 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-
-
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[6]
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.124 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.124 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.124 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.124 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.127     \left\
-                
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.129     \right\
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.133     \left\ 
-                 \begin{array}{l}
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-
-Package amsmath Warning: Cannot use `split' here;
-(amsmath)                trying to recover with `aligned' on input line 150.
-
-
-Package amsmath Warning: Cannot use `split' here;
-(amsmath)                trying to recover with `aligned' on input line 156.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.158     \right\
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-
-Overfull \hbox (31.53525pt too wide) detected at line 159
-[][][][] 
- []
-
-
-
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[7]
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.168 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.168 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.168 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.168 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-
-
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[8]
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.179 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.179 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.179 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-! Missing delimiter (. inserted).
-<to be read again> 
-                   \ 
-l.179 \end{align}
-                 
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
-
-)
+[5])
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[9]
+[6]
 Chapter 3.
 
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[10
+[7
 
 ]
 Chapter 4.
@@ -1510,7 +1145,7 @@ Chapter 4.
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[11
+[8
 
 ]
 Chapter 5.
@@ -1518,7 +1153,7 @@ Chapter 5.
 
 File: ./NTNUgrey.png Graphic file (type bmp)
 <./NTNUgrey.png>
-[12
+[9
 
 ]
 Appendix A.
@@ -1591,17 +1226,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 65--91
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[13
+[10
 
 ]
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[14]
+[11]
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[15]
+[12]
 ! Undefined control sequence.
 l.10 \newblock \doilink
                        {10.1051/0004-6361/201832891}{{S Coronae Australis: a...
@@ -1675,7 +1310,7 @@ and I'll forget about whatever was undefined.
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[16
+[13
 
 ]
 ! Undefined control sequence.
@@ -1702,21 +1337,21 @@ and I'll forget about whatever was undefined.
 
 File: NTNUgrey.png Graphic file (type bmp)
 <NTNUgrey.png>
-[17] (./Thesis.aux)
+[14] (./Thesis.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 826301D9A49B5B76083367C8C5DB193D;3832.
+(rerunfilecheck)             Checksum: 2E8A6965A5246DBC9E5B4D5618ACD30C;3501.
  ) 
 Here is how much of TeX's memory you used:
- 28724 strings out of 473832
- 594088 string characters out of 5729482
- 1013550 words of memory out of 5000000
- 51266 multiletter control sequences out of 15000+600000
- 563779 words of font info for 73 fonts, out of 8000000 for 9000
+ 28717 strings out of 473832
+ 593928 string characters out of 5729482
+ 1012073 words of memory out of 5000000
+ 51258 multiletter control sequences out of 15000+600000
+ 563787 words of font info for 74 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,1066b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (24 pages, 173832 bytes).
+Output written on Thesis.xdv (21 pages, 148972 bytes).

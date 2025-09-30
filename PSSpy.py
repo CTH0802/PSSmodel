@@ -637,7 +637,7 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
 
     for i in range(num_points):
         radius_in_au = np.sqrt(streamercom_x[i] ** 2 + streamercom_z[i] ** 2)
-        radius_out_au = radius_in_au * 3
+        radius_out_au = radius_in_au * 30
         # 計算 PSS_model 曲線
         x_model, y_model, z_model, u_rotate, v_rotate, w_rotate = PSS_model(
             Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
@@ -662,7 +662,7 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
 
 
 """MCMC"""
-def log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num):
+def log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, M_star, radius_in_au, radius_out_au):
     """
     計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
     
@@ -680,12 +680,13 @@ def log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv,
 
     # 1. 根據新的參數，重新生成模型線的物理座標
     # 假設 PSS_model 輸出 x, y, z 是 AU 單位，v 是 km/s 單位
-    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta_best, Phi_best, Inclination_best, T_best, Omega_best, 2.58, 2e2, 2.8e3, 100)
+    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta_best, Phi_best, Inclination_best, T_best, Omega_best, M_star, radius_in_au, radius_out_au, 100)
     
     # 2. 將物理座標轉換為整數像素座標
-    x_pix_int = np.round(x_model / AU_per_pixel + im_center[1]).astype(int)
-    z_pix_int = np.round(z_model / AU_per_pixel + im_center[0]).astype(int) #
-    v_pix_int = np.round(v_lastch_num - (v_model - v_lastch_vel) / dv).astype(int)
+    x_pix_int = np.round((x_model / AU_per_pixel) + im_center[1]).astype(int)
+    z_pix_int = np.round(abs((z_model / AU_per_pixel) - im_center[0])).astype(int)
+    v_pix_int = np.round(v_lastch_num - (v_model - v_lastch_vel + v0) / dv).astype(int)
+
     
     # 3. 生成新的距離立方體
     model_line_coords = list(zip(v_pix_int, z_pix_int, x_pix_int))
@@ -717,11 +718,12 @@ def log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv,
     normalized_error = numerator / denominator
     
     # 5. 轉換為 Log Likelihood
-    return -normalized_error
+    return np.log10(normalized_error)
 
 # ---------------------------------------------------------------------------
 
-def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num):
+def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, AU_per_pixel, im_center, 
+                  dv, v_lastch_vel, v_lastch_num, v0, M_star, radius_in_au, radius_out_au):
     """
     計算對數後驗值。
     (移除 cube_shape 參數)
@@ -731,7 +733,8 @@ def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, AU_pe
         return -np.inf
     
     # 傳入 log_likelihood 需要的參數
-    ll = log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num)
+    ll = log_likelihood(params, data_cube, search_bound, AU_per_pixel, im_center, 
+                        dv, v_lastch_vel, v_lastch_num, v0, M_star, radius_in_au, radius_out_au)
     return lp + ll
 
 # ---------------------------------------------------------------------------
