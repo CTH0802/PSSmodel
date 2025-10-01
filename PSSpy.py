@@ -249,25 +249,25 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
     x_max_bound = min(nx - 1, x_max + buffer)
     z_min_bound = max(0, z_min - buffer)
     z_max_bound = min(nz - 1, z_max + buffer)
-    v_min_bound = max(0, v_min - buffer)
-    v_max_bound = min(nv - 1, v_max + buffer)
+    v_min_bound = min(0, v_min - buffer)
+    v_max_bound = max(nv - 1, v_max + buffer)
     
-    if v_min_bound >= v_max_bound:        
-        bound = ([v_max_bound, v_min_bound],
-                [z_min_bound, z_max_bound],
-                [x_min_bound, x_max_bound])
-    elif z_min_bound >= z_max_bound:
-        bound = ([v_min_bound, v_max_bound],
-                [z_max_bound, z_min_bound],
-                [x_min_bound, x_max_bound])
-    elif x_min_bound >= x_max_bound:
-        bound = ([v_min_bound, v_max_bound],
-                [z_min_bound, z_max_bound],
-                [x_max_bound, x_min_bound])
-    else:
-        bound = ([v_min_bound, v_max_bound],
-                [z_min_bound, z_max_bound],
-                [x_min_bound, x_max_bound])
+    # if v_min_bound >= v_max_bound:        
+    #     bound = ([v_max_bound, v_min_bound],
+    #             [z_min_bound, z_max_bound],
+    #             [x_min_bound, x_max_bound])
+    # elif z_min_bound >= z_max_bound:
+    #     bound = ([v_min_bound, v_max_bound],
+    #             [z_max_bound, z_min_bound],
+    #             [x_min_bound, x_max_bound])
+    # elif x_min_bound >= x_max_bound:
+    #     bound = ([v_min_bound, v_max_bound],
+    #             [z_min_bound, z_max_bound],
+    #             [x_max_bound, x_min_bound])
+    # else:
+    bound = ([v_min_bound, v_max_bound],
+            [z_min_bound, z_max_bound],
+            [x_min_bound, x_max_bound])
     return bound
 
 def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist_value, bound=None):
