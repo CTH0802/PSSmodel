@@ -309,24 +309,15 @@ OUTPUT Thesis.out
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/cjk/texinput/UTF8/UTF8.bdg
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/cjk/texinput/UTF8/UTF8.enc
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/cjk/texinput/UTF8/UTF8.chr
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 OUTPUT Thesis.xdv
 INPUT ./Abstract.tex
 INPUT ././Abstract.tex
 INPUT ./Abstract.tex
 INPUT ././Abstract.tex
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Abstract.tex
 INPUT ././Abstract.tex
 INPUT ./Abstract.tex
 INPUT ././Abstract.tex
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Thesis.toc
 INPUT ./Thesis.toc
 INPUT Thesis.toc
@@ -342,119 +333,32 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmr12.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmr8.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmr6.tfm
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 OUTPUT Thesis.toc
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Thesis.lof
 INPUT ./Thesis.lof
 INPUT Thesis.lof
 OUTPUT Thesis.lof
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Thesis.lot
 INPUT ./Thesis.lot
 INPUT Thesis.lot
 OUTPUT Thesis.lot
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Introduction.tex
 INPUT ././Introduction.tex
 INPUT ./Introduction.tex
 INPUT ././Introduction.tex
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Methods.tex
 INPUT ././Methods.tex
 INPUT ./Methods.tex
 INPUT ././Methods.tex
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT ./Appendix.tex
 INPUT ././Appendix.tex
 INPUT ./Appendix.tex
 INPUT ././Appendix.tex
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
-INPUT ./observation images/BHB2007 11_b.png
-INPUT ./observation images/BHB2007 11_b.png
-INPUT ./observation images/BHB2007 11_b.png
-INPUT ./observation images/BHB2007 11_r.png
-INPUT ./observation images/BHB2007 11_r.png
-INPUT ./observation images/BHB2007 11_r.png
-INPUT ./observation images/B5-IRS1.png
-INPUT ./observation images/B5-IRS1.png
-INPUT ./observation images/B5-IRS1.png
-INPUT ./observation images/G336.01-0.82.png
-INPUT ./observation images/G336.01-0.82.png
-INPUT ./observation images/G336.01-0.82.png
-INPUT ./observation images/IRAS 04239+2436.png
-INPUT ./observation images/IRAS 04239+2436.png
-INPUT ./observation images/IRAS 04239+2436.png
-INPUT ./observation images/IRAS 16253-2429.png
-INPUT ./observation images/IRAS 16253-2429.png
-INPUT ./observation images/IRAS 16253-2429.png
-INPUT ./observation images/IRAS 16544–1604.png
-INPUT ./observation images/IRAS 16544–1604.png
-INPUT ./observation images/IRAS 16544–1604.png
-INPUT ./observation images/Oph IRS 63.png
-INPUT ./observation images/Oph IRS 63.png
-INPUT ./observation images/Oph IRS 63.png
-INPUT ./observation images/SVS13A.png
-INPUT ./observation images/SVS13A.png
-INPUT ./observation images/SVS13A.png
-INPUT ./observation images/VLA 1623-2417W.png
-INPUT ./observation images/VLA 1623-2417W.png
-INPUT ./observation images/VLA 1623-2417W.png
-INPUT ./observation images/Per_emb_2.png
-INPUT ./observation images/Per_emb_2.png
-INPUT ./observation images/Per_emb_2.png
 INPUT ./Thesis.bbl
 INPUT ./Thesis.bbl
 INPUT Thesis.bbl
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
-INPUT ./NTNUgrey.png
 INPUT Thesis.aux
 INPUT ./Thesis.out
 INPUT ./Thesis.out

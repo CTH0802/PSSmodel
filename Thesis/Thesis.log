@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  3 OCT 2025 11:52
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  9 OCT 2025 05:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1043,24 +1043,16 @@ File: UTF8.enc 2021/10/16 4.8.5
 File: UTF8.chr 2021/10/16 4.8.5
 )
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [1
 
 ] (././Abstract.tex)
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [1] (././Abstract.tex)
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [2
 
 ] (./Thesis.toc
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [3
 
 
@@ -1070,16 +1062,12 @@ File: NTNUgrey.png Graphic file (type bmp)
 
 
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [4] (./Thesis.lof)
 \tf@lof=\write6
 \openout6 = `Thesis.lof'.
 
 
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [5
 
 
@@ -1089,154 +1077,61 @@ File: NTNUgrey.png Graphic file (type bmp)
 
 
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [6
 
 ]
 Chapter 1.
 (././Introduction.tex
 
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
 [1
 
 
-])
+]
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[2]
+[2])
+
+[3]
 Chapter 2.
 (././Methods.tex
 
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[3
+[4
 
 ]
 
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[4]
+[5]
 Overfull \hbox (19.12483pt too wide) detected at line 68
 []
  []
 
 
 
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[5])
+[6])
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[6]
+[7]
 Chapter 3.
 
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[7
+[8
 
 ]
 Chapter 4.
 
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[8
+[9
 
 ]
 Chapter 5.
 (././Appendix.tex
 
-File: ./NTNUgrey.png Graphic file (type bmp)
-<./NTNUgrey.png>
-[9
-
-]
-Appendix A.
-File: ./observation images/BHB2007 11_b.png Graphic file (type bmp)
-<./observation images/BHB2007 11_b.png>
-File: ./observation images/BHB2007 11_r.png Graphic file (type bmp)
-<./observation images/BHB2007 11_r.png>
-File: ./observation images/B5-IRS1.png Graphic file (type bmp)
-<./observation images/B5-IRS1.png>
-File: ./observation images/G336.01-0.82.png Graphic file (type bmp)
-<./observation images/G336.01-0.82.png>
-
-Overfull \hbox (62.15988pt too wide) in paragraph at lines 48--50
- [][] 
- []
-
-File: ./observation images/IRAS 04239+2436.png Graphic file (type bmp)
-<./observation images/IRAS 04239+2436.png>
-
-Overfull \hbox (49.40852pt too wide) in paragraph at lines 53--55
- [][] 
- []
-
-File: ./observation images/IRAS 16253-2429.png Graphic file (type bmp)
-<./observation images/IRAS 16253-2429.png>
-
-Overfull \hbox (40.35533pt too wide) in paragraph at lines 58--60
- [][] 
- []
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-File: ./observation images/IRAS 16544–1604.png Graphic file (type bmp)
-<./observation images/IRAS 16544–1604.png>
-File: ./observation images/Oph IRS 63.png Graphic file (type bmp)
-<./observation images/Oph IRS 63.png>
-
-Overfull \hbox (32.81628pt too wide) in paragraph at lines 72--74
- [][] 
- []
-
-File: ./observation images/SVS13A.png Graphic file (type bmp)
-<./observation images/SVS13A.png>
-
-Overfull \hbox (25.75354pt too wide) in paragraph at lines 77--79
- [][] 
- []
-
-File: ./observation images/VLA 1623-2417W.png Graphic file (type bmp)
-<./observation images/VLA 1623-2417W.png>
-File: ./observation images/Per_emb_2.png Graphic file (type bmp)
-<./observation images/Per_emb_2.png>
-
-Overfull \hbox (59.1017pt too wide) in paragraph at lines 87--89
- [][] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 65--91
-[][] []
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 65--91
-[] []
- []
-
-) (./Thesis.bbl
-
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
 [10
 
 ]
+Appendix A.
+) (./Thesis.bbl
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[11]
+[11
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[12]
+]
 ! Undefined control sequence.
 l.10 \newblock \doilink
                        {10.1051/0004-6361/201832891}{{S Coronae Australis: a...
@@ -1259,7 +1154,7 @@ and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
 l.15 \newblock \doilink
-                       {10.1051/0004-6361/202244183}{{PRODIGE - envelope to ...
+                       {10.1051/0004-6361/202245254}{{Reflections on nebulae...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -1270,7 +1165,7 @@ and I'll forget about whatever was undefined.
 <recently read> \aap 
                      
 l.16 \newblock \emph{\aap}
-                          , 669:\penalty0 A137, Jan. 2023.
+                          , 670:\penalty0 L8, Feb. 2023.
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -1279,7 +1174,18 @@ and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
 l.20 \newblock \doilink
-                       {10.1038/s41550-020-1150-z}{{A protostellar system fe...
+                       {10.1051/0004-6361/202244183}{{PRODIGE - envelope to ...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+<recently read> \aap 
+                     
+l.21 \newblock \emph{\aap}
+                          , 669:\penalty0 A137, Jan. 2023.
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -1288,6 +1194,15 @@ and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
 l.25 \newblock \doilink
+                       {10.1038/s41550-020-1150-z}{{A protostellar system fe...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.30 \newblock \doilink
                        {10.1051/0004-6361/202243310}{{PRODIGE - envelope to ...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1298,7 +1213,7 @@ and I'll forget about whatever was undefined.
 ! Undefined control sequence.
 <recently read> \aap 
                      
-l.26 \newblock \emph{\aap}
+l.31 \newblock \emph{\aap}
                           , 667:\penalty0 A12, Nov. 2022.
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1308,13 +1223,11 @@ and I'll forget about whatever was undefined.
 
 
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[13
+[12
 
 ]
 ! Undefined control sequence.
-l.30 \newblock \doilink
+l.35 \newblock \doilink
                        {10.3847/1538-4357/ab29f8}{{HL Tau Disk in HCO$^{+}$ ...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1325,7 +1238,7 @@ and I'll forget about whatever was undefined.
 ! Undefined control sequence.
 <recently read> \apj 
                      
-l.31 \newblock \emph{\apj}
+l.36 \newblock \emph{\apj}
                           , 880\penalty0 (2):\penalty0 69, Aug. 2019.
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1335,23 +1248,21 @@ and I'll forget about whatever was undefined.
 
 )
 
-File: NTNUgrey.png Graphic file (type bmp)
-<NTNUgrey.png>
-[14] (./Thesis.aux)
+[13] (./Thesis.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: C152EAEDBEBCBE9CC26A470A6593E029;4005.
+(rerunfilecheck)             Checksum: B96CD2E94A43AEFBFF60F3EF6CBBD06A;4009.
  ) 
 Here is how much of TeX's memory you used:
- 28715 strings out of 473832
- 593854 string characters out of 5729482
- 1011625 words of memory out of 5000000
- 51257 multiletter control sequences out of 15000+600000
+ 28448 strings out of 473832
+ 586380 string characters out of 5729482
+ 1006988 words of memory out of 5000000
+ 51006 multiletter control sequences out of 15000+600000
  563779 words of font info for 73 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 117i,19n,121p,1066b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,19n,121p,1586b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (21 pages, 156624 bytes).
+Output written on Thesis.xdv (20 pages, 146112 bytes).

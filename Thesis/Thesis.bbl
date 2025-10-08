@@ -1,4 +1,4 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{6}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -9,6 +9,11 @@
 G.~F. {Gahm}, P.~P. {Petrov}, L.~V. {Tambovsteva}, V.~P. {Grinin}, H.~C. {Stempels}, and F.~M. {Walter}.
 \newblock \doilink{10.1051/0004-6361/201832891}{{S Coronae Australis: a T Tauri twin}}.
 \newblock \emph{\aap}, 614:\penalty0 A117, June 2018.
+
+\bibitem[{Gupta} et~al.(2023){Gupta}, {Miotello}, {Manara}, {Williams}, {Facchini}, {Beccari}, {Birnstiel}, {Ginski}, {Hacar}, {K{\"u}ffmeier}, {Testi}, {Tychoniec}, and {Yen}]{Gupta_2023}
+A.~{Gupta}, A.~{Miotello}, C.~F. {Manara}, J.~P. {Williams}, S.~{Facchini}, G.~{Beccari}, T.~{Birnstiel}, C.~{Ginski}, A.~{Hacar}, M.~{K{\"u}ffmeier}, L.~{Testi}, L.~{Tychoniec}, and H.~W. {Yen}.
+\newblock \doilink{10.1051/0004-6361/202245254}{{Reflections on nebulae around young stars. A systematic search for late-stage infall of material onto Class II disks}}.
+\newblock \emph{\aap}, 670:\penalty0 L8, Feb. 2023.
 
 \bibitem[{Hsieh} et~al.(2023){Hsieh}, {Segura-Cox}, {Pineda}, {Caselli}, {Bouscasse}, {Neri}, {Lopez-Sepulcre}, {Valdivia-Mena}, {Maureira}, {Henning}, {Smirnov-Pinchukov}, {Semenov}, {M{\"o}ller}, {Cunningham}, {Fuente}, {Marino}, {Dutrey}, {Tafalla}, {Chapillon}, {Ceccarelli}, and {Zhao}]{Hsieh_2023}
 T.~H. {Hsieh}, D.~M. {Segura-Cox}, J.~E. {Pineda}, P.~{Caselli}, L.~{Bouscasse}, R.~{Neri}, A.~{Lopez-Sepulcre}, M.~T. {Valdivia-Mena}, M.~J. {Maureira}, T.~{Henning}, G.~V. {Smirnov-Pinchukov}, D.~{Semenov}, T.~{M{\"o}ller}, N.~{Cunningham}, A.~{Fuente}, S.~{Marino}, A.~{Dutrey}, M.~{Tafalla}, E.~{Chapillon}, C.~{Ceccarelli}, and B.~{Zhao}.

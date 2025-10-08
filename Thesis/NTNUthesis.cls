@@ -21,17 +21,17 @@
 \ProcessOptions\relax
 
 % Watermark of NTNU
-\ifdefined \nowatermark \else
-    \AtBeginShipout{
-        \AtBeginShipoutAddToBox{
-            \begin{tikzpicture}[overlay,remember picture]
-            \node[opacity=0.1] at (current page.center){
-                \includegraphics[height=100pt,width=100pt]{NTNUgrey.png}
-            };
-            \end{tikzpicture}
-        }
-    }
-\fi
+% \ifdefined \nowatermark \else
+%     \AtBeginShipout{
+%         \AtBeginShipoutAddToBox{
+%             \begin{tikzpicture}[overlay,remember picture]
+%             \node[opacity=0.1] at (current page.center){
+%                 \includegraphics[height=100pt,width=100pt]{NTNUgrey.png}
+%             };
+%             \end{tikzpicture}
+%         }
+%     }
+% \fi
 
 % Default spacing
 \setstretch{1.8}

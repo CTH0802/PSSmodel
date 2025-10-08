@@ -1,21 +1,21 @@
 # Fdb version 4
-["bibtex Thesis"] 1759463537.78876 "Thesis.aux" "Thesis.bbl" "Thesis" 1759463540.43322 0
+["bibtex Thesis"] 1759959955.08359 "Thesis.aux" "Thesis.bbl" "Thesis" 1759959956.31203 0
   "./abbrvnat.bst" 1756846681.65219 26869 e34bc1fe6f0f28fb07beec139336b94c ""
-  "./reference.bib" 1756839904.46883 10512 8a3ce46d44303f3c8663943426761850 ""
-  "Thesis.aux" 1759463538.63811 9439 cc7d2e250ecede9c42196f4c24b38e16 "xelatex"
+  "./reference.bib" 1759955187.24788 11586 dee3eccdac7391b18317834fcdee651f ""
+  "Thesis.aux" 1759959955.84119 6080 b3284f52ad628cb5a989b004fb610dbf "xelatex"
   (generated)
   "Thesis.bbl"
   "Thesis.blg"
   (rewritten before read)
-["xdvipdfmx"] 1759463538.86119 "Thesis.xdv" "Thesis.pdf" "Thesis" 1759463540.43495 0
-  "Thesis.xdv" 1759463538.63965 156624 ac90f103e9d29064eab9e88f74ba2419 "xelatex"
+["xdvipdfmx"] 1759959956.04129 "Thesis.xdv" "Thesis.pdf" "Thesis" 1759959956.31342 0
+  "Thesis.xdv" 1759959955.8421 146112 8a5eb1f2bc15e87a6c710504dd01e6f7 "xelatex"
   (generated)
   "Thesis.pdf"
   (rewritten before read)
-["xelatex"] 1759463537.87867 "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Thesis.tex" "Thesis.xdv" "Thesis" 1759463540.4333 2
+["xelatex"] 1759959955.16403 "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Thesis.tex" "Thesis.xdv" "Thesis" 1759959956.3121 2
   "./Abstract.tex" 1757506448.40753 946 802587323453305475c667491ca5a3f7 ""
-  "./Appendix.tex" 1756834321.49233 4248 24327de40a0be921f80263ba26dadaa7 ""
-  "./Introduction.tex" 1759463532.1847 2149 b9bd96eb3167c6072610e22129886873 ""
+  "./Appendix.tex" 1759951483.89236 4394 021f4d16cfa8315b9bef095179234d27 ""
+  "./Introduction.tex" 1759959950.80622 2955 560aaec92bac0a26a830bd5b0defa19f ""
   "./Methods.tex" 1759462588.06691 9416 e973b0a4930971e47e3e32626a80dd37 ""
   "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Thesis.tex" 1757520535.1896 3964 ae31d4dbeb4d05cd9b2310bf6bdde6ed ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -195,29 +195,17 @@
   "/usr/local/texlive/2025/texmf-var/web2c/xetex/xelatex.fmt" 1756833729 5639799 1455a5640b253077aef5cbcd429221f4 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
   "Abstract.tex" 1757506448.40753 946 802587323453305475c667491ca5a3f7 ""
-  "Appendix.tex" 1756834321.49233 4248 24327de40a0be921f80263ba26dadaa7 ""
-  "Introduction.tex" 1759463532.1847 2149 b9bd96eb3167c6072610e22129886873 ""
+  "Appendix.tex" 1759951483.89236 4394 021f4d16cfa8315b9bef095179234d27 ""
+  "Introduction.tex" 1759959950.80622 2955 560aaec92bac0a26a830bd5b0defa19f ""
   "Methods.tex" 1759462588.06691 9416 e973b0a4930971e47e3e32626a80dd37 ""
-  "NTNUgrey.png" 1756831971.56449 51719 b4dafaad340ce2f10ccd80722022f5e4 ""
-  "NTNUthesis.cls" 1756899529.68404 3261 439a46d2065b6981c5b8006f5127a1bf ""
-  "Thesis.aux" 1759463538.63811 9439 cc7d2e250ecede9c42196f4c24b38e16 "xelatex"
-  "Thesis.bbl" 1759463537.87601 3301 18f62b09145f5a95d108bfe789f0f497 "bibtex Thesis"
-  "Thesis.lof" 1759463538.63957 327 08a3d9c7fa0cc04b67eafeabdd8ce2f8 "xelatex"
-  "Thesis.lot" 1759463538.6396 274 49c562d6890d26722dc6734e3f635ff7 "xelatex"
-  "Thesis.out" 1759463538.63931 4005 c152eaedbebcbe9cc26a470a6593e029 "xelatex"
+  "NTNUthesis.cls" 1759951106.31029 3283 20c5abbe12b0b59f6060ff9ce62d9938 ""
+  "Thesis.aux" 1759959955.84119 6080 b3284f52ad628cb5a989b004fb610dbf "xelatex"
+  "Thesis.bbl" 1759959955.1618 3908 9d6c9588ec6d694568ea2bbe898564dc "bibtex Thesis"
+  "Thesis.lof" 1759959955.84205 120 4b5392bf4295ae9f4473a7a4fff7fdc5 "xelatex"
+  "Thesis.lot" 1759959955.84207 211 33acf6b9b806c8675bd532c863c32fa9 "xelatex"
+  "Thesis.out" 1759959955.84182 4009 b96cd2e94a43aefbff60f3ef6cbbd06a "xelatex"
   "Thesis.tex" 1757520535.1896 3964 ae31d4dbeb4d05cd9b2310bf6bdde6ed ""
-  "Thesis.toc" 1759463538.63955 2218 b53c469c6cb790a11a4ad2bc608f50bf "xelatex"
-  "observation images/B5-IRS1.png" 1731422328.81939 144954 200a76bf517598c387d23d01a6e487ea ""
-  "observation images/BHB2007 11_b.png" 1734883110.22149 278102 d6a10e055ba733dd324c8f24113e0166 ""
-  "observation images/BHB2007 11_r.png" 1734883120.84484 214565 7941b24f306ee234bf35762f444170da ""
-  "observation images/G336.01-0.82.png" 1729662259.26461 257590 a4ccc153360122f6eda9d5922a57eb0e ""
-  "observation images/IRAS 04239+2436.png" 1729659439.04171 202487 c9bb3f05013b27f615e05762b431c281 ""
-  "observation images/IRAS 16253-2429.png" 1728982562.99233 395927 e01d5d349b081d1d0a199c5fce6f857b ""
-  "observation images/IRAS 16544–1604.png" 1729654905.27084 437329 b2320b6346597ea5966d34f0d9800480 ""
-  "observation images/Oph IRS 63.png" 1734883182.41303 217124 c7b84d01c224ee86f997e0a7ffb70a82 ""
-  "observation images/Per_emb_2.png" 1734884900.60423 50124 035a087ee2f6e5e47d2b2674a054e597 ""
-  "observation images/SVS13A.png" 1728981939.64652 115649 e4082a9436920f61074396e42ad1cf4a ""
-  "observation images/VLA 1623-2417W.png" 1729661190.00727 189112 d2187d1e2deb4682dd2dd5cd750567e1 ""
+  "Thesis.toc" 1759959955.84202 2219 e6431c3d6a423209dd115467f1f65d82 "xelatex"
   (generated)
   "Thesis.aux"
   "Thesis.lof"
