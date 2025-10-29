@@ -40,15 +40,12 @@ def calc_ra_arcsec(ra_start, ra_end, dec_deg, distance_pc, n_pixels):
     dec_rad = np.deg2rad(dec_deg)
     delta_ra_arcsec = delta_ra_deg * 3600 * np.cos(dec_rad)
 
-    # 4. 四捨五入
-    arcsec_range = int(np.round(delta_ra_arcsec))
-
     # 5. 換成 AU
     AU_per_arcsec = 2 * np.pi * distance_pc * 206265 / 360 / 3600 # 1pc = 206265 arcsec
-    total_AU = arcsec_range * AU_per_arcsec
+    total_AU = delta_ra_arcsec * AU_per_arcsec
     AU_per_pixel = total_AU / n_pixels
 
-    return arcsec_range, AU_per_pixel
+    return delta_ra_arcsec, AU_per_pixel
 
 def pixel_to_arcsec(xpix, ypix, xcenpix, ycenpix, im):
     delx, dely = im.delx*3600., im.dely*3600.
@@ -245,12 +242,17 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
     z_min, z_max = np.min(z_pix), np.max(z_pix)
     v_min, v_max = np.min(v_pix), np.max(v_pix)
     
+    # x 軸邊界 (使用 max/min 來確保不超出 [0, nx-1])
     x_min_bound = max(0, x_min - buffer)
     x_max_bound = min(nx - 1, x_max + buffer)
+    
+    # z 軸邊界 (使用 max/min 來確保不超出 [0, nz-1])
     z_min_bound = max(0, z_min - buffer)
     z_max_bound = min(nz - 1, z_max + buffer)
-    v_min_bound = min(0, v_min - buffer)
-    v_max_bound = max(nv - 1, v_max + buffer)
+    
+    # v 軸邊界 (使用 max/min 來確保不超出 [0, nv-1])
+    v_min_bound = max(0, v_min - buffer)
+    v_max_bound = min(nv - 1, v_max + buffer)
     
     # if v_min_bound >= v_max_bound:        
     #     bound = ([v_max_bound, v_min_bound],
@@ -270,9 +272,26 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
             [x_min_bound, x_max_bound])
     return bound
 
-def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist_value, bound=None):
+def grow_distance_cube_bounded(cube_shape, model_line_coords, max_dist_value, v_weight, bound=None):
     """
-    在指定的邊界內，計算每個像素與模型線的最短歐幾里得距離。
+    在指定的邊界內，計算每個像素與模型線的最短「加權」距離。
+    
+    這個加權距離的計算方式是基於您提供的 error_function 邏G輯：
+    dist = sqrt( (dx_pix)^2 + (dz_pix)^2 + v_weight * (dv_chan)^2 )
+
+    Args:
+        cube_shape (tuple): 數據方塊的形狀 (nv, nz, nx)。
+        model_line_coords (list of tuples): 模型線上所有點的 (v, z, x) 座標列表。
+        max_dist_value (float): 允許的最大距離，超過此值的點將被標記為 -1.0。
+        v_weight (float): 速度(channel)維度的權重因子。
+                          對應 error_function 中的 weight_v。
+                          這是 (v_scale_factor)^2。
+        bound (tuple, optional): (v_bound, z_bound, x_bound) 的邊界。
+    
+    Returns:
+        np.ndarray: 一個與 cube_shape 相同形狀的 3D 陣列，
+                    包含每個體素到模型線的加權距離，
+                    超出邊界或 max_dist_value 的點被標記為 -1.0。
     """
     nv, nz, nx = cube_shape
 
@@ -285,35 +304,54 @@ def grow_distance_cube_euclidean_bounded(cube_shape, model_line_coords, max_dist
         v_min, z_min, x_min = 0, 0, 0
         v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
 
+    # 確保索引是整數
+    v_min, v_max = int(v_min), int(v_max)
+    z_min, z_max = int(z_min), int(z_max)
+    x_min, x_max = int(x_min), int(x_max)
+
+    # 創建子立方體
     sub_distance_cube = np.full(
-        (int(v_max) - int(v_min) + 1, 
-        int(z_max) - int(z_min) + 1, 
-        int(x_max) - int(x_min) + 1), 
+        (v_max - v_min + 1, 
+         z_max - z_min + 1, 
+         x_max - x_min + 1), 
         np.inf, 
-        dtype=np.float32
+        dtype=np.float32  # 使用 float32
     )
     v_grid, z_grid, x_grid = np.indices(sub_distance_cube.shape)
     
+    # 篩選出在邊界內部的模型點，並轉換為子立方體的相對座標
     relative_model_coords = []
     for v, z, x in model_line_coords:
         if v_min <= v <= v_max and z_min <= z <= z_max and x_min <= x <= x_max:
             relative_model_coords.append((v - v_min, z - z_min, x - x_min))
     
     if not relative_model_coords:
-        return np.full(cube_shape, -1, dtype=np.int32)
+        # 如果邊界內沒有模型點，返回一個全為 -1.0 的陣列
+        return np.full(cube_shape, -1.0, dtype=np.float32)
 
+    # 遍歷模型上的每個點
     for v_line, z_line, x_line in relative_model_coords:
-        dist = np.sqrt(
-            (v_grid - v_line)**2 +
+        # --- 核心修改：使用加權距離 ---
+        dist_sq = (
             (z_grid - z_line)**2 +
-            (x_grid - x_line)**2
+            (x_grid - x_line)**2 +
+            v_weight * (v_grid - v_line)**2  # <--- 速度維度被加權
         )
+        # 仍然取 sqrt，因為 max_dist_value 是距離，而不是距離的平方
+        dist = np.sqrt(dist_sq)
+        
+        # 更新子立方體中的最短距離
         sub_distance_cube = np.minimum(sub_distance_cube, dist)
 
-    sub_distance_cube[sub_distance_cube > max_dist_value] = np.nan
+    # --- 類型修正 ---
+    # 將超過最大距離的點標記為 -1.0 (而不是 np.nan，以避免 astype 錯誤)
+    sub_distance_cube[sub_distance_cube > max_dist_value] = -1.0
     
-    full_distance_cube = np.full(cube_shape, -1, dtype=np.int32)
-    full_distance_cube[int(v_min):int(v_max)+1, int(z_min):int(z_max)+1, int(x_min):int(x_max)+1] = sub_distance_cube.astype(np.int32)
+    # 創建完整的距離立方體，默認為 -1.0
+    full_distance_cube = np.full(cube_shape, -1.0, dtype=np.float32)
+    
+    # 將計算好的子立方體放回完整立方體的正確位置
+    full_distance_cube[v_min:v_max+1, z_min:z_max+1, x_min:x_max+1] = sub_distance_cube
 
     return full_distance_cube
 
@@ -448,7 +486,8 @@ def arrow_line(times, arrow_resolution, interval_of_arrows, x, y, z, u, v, w, x_
     return x_arrowline_interval, y_arrowline_interval, z_arrowline_interval, u_arrow, v_arrow, w_arrow, x_arrowline_rotate_interval, y_arrowline_rotate_interval, z_arrowline_rotate_interval, u_arrow_rotate, v_arrow_rotate, w_arrow_rotate
 
 def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
-              solar_mass, radius_in_au=1.5e3, radius_out_au=1e4, resolution=200):
+              solar_mass, radius_in_au=1.5e3, radius_out_au=1e4, resolution=200,
+              scale='log', log_power=2):
 
     # Omega = gM/r**3
     # T_Myr = free-fall time
@@ -466,19 +505,43 @@ def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega,
     # #######Variables#######
     # radius_edge_au = 3000 #Streamer edge (au)
     theta_value = Theta_zero
-
+    
     #######Unit conversion#######
     T_s = T_Myr * 1e6 * spc.year #Time (s)
     # Omega_ref = Omega_ref(radius_ref_pixel, distance_pc, pc_to_AU, pixel_scale_arcsec, arcsec_per_degree)
     radius_in_m = radius_in_au * spc.astronomical_unit #Streamer edge (m)
     radius_out_m = radius_out_au * spc.astronomical_unit #Streamer edge (m)
 
+    # --------------------------------------------------------------------
+    # 根據選擇的 scale 來產生 streamline_radius
+    # --------------------------------------------------------------------
+    if scale == 'linear':
+        streamline_radius = np.linspace(radius_in_m, radius_out_m, resolution)
+    elif scale == 'log':
+        # np.logspace 會在對數尺度上產生均勻間距的點
+        # 這需要傳入起始點和結束點的對數值 (log10)
+        # 1. 創建一個 0 到 1 的基礎線性空間 (s)
+        s = np.linspace(0.0, 1.0, resolution)
+                
+        # 2. 對這個基礎施加冪次扭曲 (s^power)
+        s_transformed = s ** log_power
+                
+        # 3. 將這個扭曲的 (0, 1) 空間，映射到實際的 (log_r_in, log_r_out) 範圍
+        log_r_in = np.log10(radius_in_m)
+        log_r_out = np.log10(radius_out_m)
+        log_r = log_r_in + (log_r_out - log_r_in) * s_transformed
+                
+        # 4. 轉換回線性半徑
+        streamline_radius = 10 ** log_r
+    else:
+        raise ValueError(f"無效的 scale: '{scale}'。請選擇 'linear' 或 'log'。")
+    # --------------------------------------------------------------------
+    
     #######Resolution parameters######
     # arrow_resolution = 20
     # interval_of_arrows = int(resolution / arrow_resolution)
     c_s = 200 #m/s
     
-    streamline_radius = np.linspace(radius_in_m, radius_out_m, resolution)
     # omega_ref = Omega_ref(radius_ref_au, solar_mass) #Keplerian velocity (radian)
     # phi_value = Phi_zero + T_s ** (-1/2) * omega * omega_ref * (streamline_radius / radius_ref_m) ** (-1/2) * (radius_ref_m / c_s) ** (3/2)
     # velocity_r = radius_ref_m * omega * omega_ref * np.sin(theta_value) * (streamline_radius / radius_ref_m) ** (-1)
@@ -641,7 +704,7 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
         # 計算 PSS_model 曲線
         x_model, y_model, z_model, u_rotate, v_rotate, w_rotate = PSS_model(
             Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
-            solar_mass, radius_in_au, radius_out_au, resolution=20)
+            solar_mass, radius_in_au, radius_out_au, resolution=20, scale='log')
 
         # 轉換為 NumPy 陣列
         x_model, z_model, v_model = np.array(x_model), np.array(z_model), np.array(v_rotate)
@@ -662,7 +725,7 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
 
 
 """MCMC"""
-def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, M_star, radius_in_au, radius_out_au):
+def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au):
     """
     計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
     
@@ -680,7 +743,7 @@ def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_cen
 
     # 1. 根據新的參數，重新生成模型線的物理座標
     # 假設 PSS_model 輸出 x, y, z 是 AU 單位，v 是 km/s 單位
-    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta_best, Phi_best, Inclination_best, T_best, Omega_best, M_star, radius_in_au, radius_out_au, 100)
+    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta_best, Phi_best, Inclination_best, T_best, Omega_best, M_star, radius_in_au, radius_out_au, 100, scale='log')
     
     # 2. 將物理座標轉換為整數像素座標
     x_pix_rotated = x_model / AU_per_pixel
@@ -693,10 +756,11 @@ def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_cen
     # 3. 生成新的距離立方體
     model_line_coords = list(zip(v_pix_int, z_pix_int, x_pix_int))
     max_dist_value = 15
-    distance_cube = grow_distance_cube_euclidean_bounded(
+    distance_cube = grow_distance_cube_bounded(
         cube_shape, 
         model_line_coords, 
         max_dist_value, 
+        v_weight_for_cube,
         bound=search_bound
     )
     
@@ -725,7 +789,7 @@ def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_cen
 # ---------------------------------------------------------------------------
 
 def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_rad, AU_per_pixel, im_center, 
-                  dv, v_lastch_vel, v_lastch_num, v0, M_star, radius_in_au, radius_out_au):
+                  dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au):
     """
     計算對數後驗值。
     (移除 cube_shape 參數)
@@ -736,7 +800,7 @@ def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_ra
     
     # 傳入 log_likelihood 需要的參數
     ll = log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, 
-                        dv, v_lastch_vel, v_lastch_num, v0, M_star, radius_in_au, radius_out_au)
+                        dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au)
     return lp + ll
 
 # ---------------------------------------------------------------------------
