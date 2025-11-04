@@ -214,7 +214,7 @@ def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=
         to_check = new_points
 
     return region_mask
-def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
+def get_bounding_box(x_pix, z_pix, v_pix, buffer, v_buffer, cube_shape):
     """
     根據模型線的像素座標，自動計算一個帶緩衝的邊界框。
 
@@ -251,8 +251,8 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
     z_max_bound = min(nz - 1, z_max + buffer)
     
     # v 軸邊界 (使用 max/min 來確保不超出 [0, nv-1])
-    v_min_bound = max(0, v_min - buffer)
-    v_max_bound = min(nv - 1, v_max + buffer)
+    v_min_bound = max(0, v_min - v_buffer)
+    v_max_bound = min(nv - 1, v_max + v_buffer)
     
     # if v_min_bound >= v_max_bound:        
     #     bound = ([v_max_bound, v_min_bound],
@@ -356,93 +356,94 @@ def grow_distance_cube_bounded(cube_shape, model_line_coords, max_dist_value, v_
     return full_distance_cube
 
 def Omega_ref(radius_ref_au, Mass_star):
-    Omega_ref = np.sqrt(spc.G * Mass_star * 2e30 / (radius_ref_au * 1.49e11)) / (radius_ref_au * 1.49e11) #Keplerian velocity (radian) 1e-13
+    Omega_ref = np.sqrt(spc.G * Mass_star * 2e30 / (radius_ref_au * 1.49e11)) / (radius_ref_au * 1.49e11) #Keplerian velocity (radian / s)
     return Omega_ref
 
-def x_func(Rx, A, k, R_0):
-    x_cos = A * np.cos(k * (Rx + R_0))
-    return x_cos
-
-def z_func(Rz, B, k, R_0, C):
-    z_sin = B * np.sin(k * (Rz + R_0)) + C
-    return z_sin
-
-def spherical_coords(x,y):
-    ''' Converts cartesian coordinates (x,y) to polar coordinates.'''
-    r = np.sqrt((x**2)+(y**2)) # total distance from center
-    theta = np.arctan2(y,x)  # Angle wrt x-axis, in radians
-    return(r,theta)
-
-def gaussian(x, mu, sig):
-    return np.exp(-np.power((x - mu) / sig, 2.0) / 2)
-
-def A_const(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    A = np.sum(X * np.cos(k * (R_i + R_0))) / np.sum(np.cos(k * (R_i + R_0)) ** 2)
-    return A
-
-def B_const(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    N = len(X)
-    B = (N * np.sum(Z * np.sin(k * (R_i + R_0))) - np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
-    return B
-
-def C_const(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    N = len(X)
-    C = (np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(Z * np.sin(k * (R_i + R_0))) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
-    return C
-
-def chi_square(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    A = A_const(R_0, k, params)
-    B = B_const(R_0, k, params)
-    C = C_const(R_0, k, params)
+def report_and_get_best_params(samples, confidence_level):
+    """
+    根據 MCMC 樣本和指定的信賴水準，計算、格式化輸出最佳參數和不確定性。
+    
+    參數:
+    - samples (np.ndarray): MCMC 採樣的扁平化結果 (flat chain)。
+    - confidence_level (float): 所需的信賴水準百分比 (例如 68.3, 95.0, 99.7)。
+    
+    回傳:
+    - tuple: 最佳擬合參數 (Theta, Phi, T, Inclination, Omega) 的弧度值。
+    """
+    
+    # 參數標籤 (必須與 samples 的列順序一致)
+    labels = ["Theta0", "Phi0", "Inclination", "T", "Omega"]
+    
+    # 1. 計算所需的百分位數 (兩端對稱)
+    if confidence_level >= 100 or confidence_level <= 0:
+        raise ValueError("信賴水準必須在 (0, 100) 之間。")
         
-    return np.sum((X - A * np.cos(k * (R_i + R_0))) ** 2 + (Z - B * np.sin(k * (R_i + R_0)) - C) ** 2)
+    tail_percent = (100.0 - confidence_level) / 2.0
+    
+    # 計算下限、中位數 (最佳值)、上限所需的百分位數
+    percentiles = [tail_percent, 50.0, 100.0 - tail_percent]
+    
+    print(f"\n--- MCMC 最佳擬合與不確定性 ({confidence_level:.1f}% 信賴區間) ---")
+    
+    # 用於儲存最佳參數的弧度值 (可以直接傳給 PSS_model)
+    best_fit_params_for_model = np.zeros(samples.shape[1])
+    
+    for i, label in enumerate(labels):
+        # 計算所需的百分位數
+        mcmc = np.percentile(samples[:, i], percentiles)
+        
+        # 最佳值 (50th 百分位數)
+        best_value = mcmc[1]
+        
+        # 誤差計算: q[0] 是下限誤差，q[1] 是上限誤差
+        q = np.diff(mcmc)
+        lower_error = q[0]
+        upper_error = q[1]
+        
+        # 3. 格式化輸出邏輯
+        
+        if label in ["Theta0", "Phi0", "Inclination"]:
+            # 儲存弧度值供模型使用
+            best_fit_params_for_model[i] = best_value 
+            
+            # 轉換為度數供輸出報告
+            best = np.rad2deg(best_value)
+            lower = np.rad2deg(lower_error)
+            upper = np.rad2deg(upper_error)
+            unit = "deg"
+            
+            # 輸出格式: 最佳值 (10.4f), 誤差 (.4e)
+            output_str = f"{label:<12s}: {best:10.4f} (+{upper:.4e} / -{lower:.4e}) {unit} ({confidence_level:.1f}%)"
+            
+        elif label == "T":
+            # 儲存原始值供模型使用
+            best_fit_params_for_model[i] = best_value
+            
+            # 時間參數 (最佳值 & 誤差都用科學記號, .4e)
+            best = best_value
+            lower = lower_error
+            upper = upper_error
+            unit = "Myr"
+            
+            output_str = f"{label:<12s}: {best:.4e} (+{upper:.4e} / -{lower:.4e}) {unit} ({confidence_level:.1f}%)"
 
-def f_kR(R_0, k, params):
-    
-    X, Z, R_i = params[0], params[1], params[2]
-    
-    A = A_const(R_0, k, params)
-    B = B_const(R_0, k, params)
-    C = C_const(R_0, k, params)
+        else: # Omega
+            # 儲存原始值供模型使用
+            best_fit_params_for_model[i] = best_value
+            
+            # Omega 參數 (最佳值: 10.4f, 誤差: .4e)
+            best = best_value
+            lower = lower_error
+            upper = upper_error
+            unit = ""
+            
+            output_str = f"{label:<12s}: {best:10.4f} (+{upper:.4e} / -{lower:.4e}) {unit} ({confidence_level:.1f}%)"
 
-    F_func = A * np.sum(X * R_i * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(R_i * np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * R_i * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(R_i * np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(R_i * np.cos(k * (R_i + R_0)))
-    return F_func
+        print(output_str)
 
-def g_kR(R_0, k, params):
-    
-    X, Z, R_i = params[0], params[1], params[2]
-    
-    A = A_const(R_0, k, params)
-    B = B_const(R_0, k, params)
-    C = C_const(R_0, k, params)
-    
-    G_func = A * np.sum(X * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(np.cos(k * (R_i + R_0)))
-    return G_func
+    # 回傳弧度形式的最佳參數
+    return tuple(best_fit_params_for_model)
 
-def calc_params(R_root2, K_root2, params, radius_ref_au):
-    A = A_const(R_root2, K_root2, params)
-    B = B_const(R_root2, K_root2, params)
-    C = C_const(R_root2, K_root2, params)
-    if A < 0:
-        A = -A
-        B = -B
-        C = -C
-        R_root2 += np.pi / K_root2
-    radius_ref_m = radius_ref_au * spc.astronomical_unit
-    
-    inclin = np.arcsin(-B / A)
-    phi_par = R_root2 * K_root2
-    theta_par = np.arctan2(A, C / np.cos(inclin))
-    omega_ref = (A / radius_ref_m / np.sin(theta_par)) ** (4/3) / np.cos(inclin)
-    t = K_root2 * (np.cos(inclin)) ** (1/4) / omega_ref ** (3/4)
-    
-    return A, B, C, inclin, phi_par, theta_par, omega_ref, t
-
-    
 def arrow_line(times, arrow_resolution, interval_of_arrows, x, y, z, u, v, w, x_rotate, y_rotate, z_rotate, u_rotate, v_rotate, w_rotate):
     ######Streamer coordinate for Arrow######
     x_arrowline = x + u * times
@@ -696,18 +697,15 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
     
     Theta_zero, Phi_zero = params
     total_error = 0
-    num_points = len(streamercom_x)  # 應該是 11
+    num_points = len(streamercom_x)  
 
     for i in range(num_points):
         radius_in_au = np.sqrt(streamercom_x[i] ** 2 + streamercom_z[i] ** 2)
         radius_out_au = radius_in_au * 30
         # 計算 PSS_model 曲線
-        x_model, y_model, z_model, u_rotate, v_rotate, w_rotate = PSS_model(
+        x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(
             Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
-            solar_mass, radius_in_au, radius_out_au, resolution=20, scale='log')
-
-        # 轉換為 NumPy 陣列
-        x_model, z_model, v_model = np.array(x_model), np.array(z_model), np.array(v_rotate)
+            solar_mass, radius_in_au, radius_out_au, resolution=10, scale='log')
         
         # 計算此數據點與這段曲線所有點的距離
         distances = (streamercom_x[i] - x_model) ** 2 + \
@@ -725,7 +723,7 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
 
 
 """MCMC"""
-def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au):
+def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, M_star, radius_in_au, radius_out_au):
     """
     計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
     
@@ -754,8 +752,7 @@ def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_cen
 
     
     # 3. 生成新的距離立方體
-    model_line_coords = list(zip(v_pix_int, z_pix_int, x_pix_int))
-    max_dist_value = 15
+    model_line_coords = zip(v_pix_int, z_pix_int, x_pix_int)
     distance_cube = grow_distance_cube_bounded(
         cube_shape, 
         model_line_coords, 
@@ -789,7 +786,8 @@ def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_cen
 # ---------------------------------------------------------------------------
 
 def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_rad, AU_per_pixel, im_center, 
-                  dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au):
+                  dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, 
+                  M_star, radius_in_au, radius_out_au):
     """
     計算對數後驗值。
     (移除 cube_shape 參數)
@@ -800,7 +798,8 @@ def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_ra
     
     # 傳入 log_likelihood 需要的參數
     ll = log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, 
-                        dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au)
+                        dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, 
+                        M_star, radius_in_au, radius_out_au)
     return lp + ll
 
 # ---------------------------------------------------------------------------
@@ -812,11 +811,96 @@ def log_prior(params, prior_ranges):
     Theta0, Phi0, Incl, T, Omega = params
     
     # 檢查參數是否在先驗範圍內
-    if not (prior_ranges['Theta0'][0] < Theta0 < prior_ranges['Theta0'][1] and
-            prior_ranges['Phi0'][0] < Phi0 < prior_ranges['Phi0'][1] and
-            prior_ranges['Incl'][0] < Incl < prior_ranges['Incl'][1] and
-            prior_ranges['T'][0] < T < prior_ranges['T'][1] and
-            prior_ranges['Omega'][0] < Omega < prior_ranges['Omega'][1]):
+    if not (prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1] and
+            prior_ranges["Phi zero"][0] < Phi0 < prior_ranges["Phi zero"][1] and
+            prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1] and
+            prior_ranges["Time"][0] < T < prior_ranges["Time"][1] and
+            prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]):
         return -np.inf # 如果超出範圍，對數先驗為負無窮
     
     return 0.0 # 均勻先驗，對數值為 0
+
+# ---------------------------------------------------------------------------
+
+def x_func(Rx, A, k, R_0):
+    x_cos = A * np.cos(k * (Rx + R_0))
+    return x_cos
+
+def z_func(Rz, B, k, R_0, C):
+    z_sin = B * np.sin(k * (Rz + R_0)) + C
+    return z_sin
+
+def spherical_coords(x,y):
+    ''' Converts cartesian coordinates (x,y) to polar coordinates.'''
+    r = np.sqrt((x**2)+(y**2)) # total distance from center
+    theta = np.arctan2(y,x)  # Angle wrt x-axis, in radians
+    return(r,theta)
+
+def gaussian(x, mu, sig):
+    return np.exp(-np.power((x - mu) / sig, 2.0) / 2)
+
+def A_const(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    A = np.sum(X * np.cos(k * (R_i + R_0))) / np.sum(np.cos(k * (R_i + R_0)) ** 2)
+    return A
+
+def B_const(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    N = len(X)
+    B = (N * np.sum(Z * np.sin(k * (R_i + R_0))) - np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
+    return B
+
+def C_const(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    N = len(X)
+    C = (np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(Z * np.sin(k * (R_i + R_0))) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
+    return C
+
+def chi_square(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    A = A_const(R_0, k, params)
+    B = B_const(R_0, k, params)
+    C = C_const(R_0, k, params)
+        
+    return np.sum((X - A * np.cos(k * (R_i + R_0))) ** 2 + (Z - B * np.sin(k * (R_i + R_0)) - C) ** 2)
+
+def f_kR(R_0, k, params):
+    
+    X, Z, R_i = params[0], params[1], params[2]
+    
+    A = A_const(R_0, k, params)
+    B = B_const(R_0, k, params)
+    C = C_const(R_0, k, params)
+
+    F_func = A * np.sum(X * R_i * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(R_i * np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * R_i * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(R_i * np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(R_i * np.cos(k * (R_i + R_0)))
+    return F_func
+
+def g_kR(R_0, k, params):
+    
+    X, Z, R_i = params[0], params[1], params[2]
+    
+    A = A_const(R_0, k, params)
+    B = B_const(R_0, k, params)
+    C = C_const(R_0, k, params)
+    
+    G_func = A * np.sum(X * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(np.cos(k * (R_i + R_0)))
+    return G_func
+
+def calc_params(R_root2, K_root2, params, radius_ref_au):
+    A = A_const(R_root2, K_root2, params)
+    B = B_const(R_root2, K_root2, params)
+    C = C_const(R_root2, K_root2, params)
+    if A < 0:
+        A = -A
+        B = -B
+        C = -C
+        R_root2 += np.pi / K_root2
+    radius_ref_m = radius_ref_au * spc.astronomical_unit
+    
+    inclin = np.arcsin(-B / A)
+    phi_par = R_root2 * K_root2
+    theta_par = np.arctan2(A, C / np.cos(inclin))
+    omega_ref = (A / radius_ref_m / np.sin(theta_par)) ** (4/3) / np.cos(inclin)
+    t = K_root2 * (np.cos(inclin)) ** (1/4) / omega_ref ** (3/4)
+    
+    return A, B, C, inclin, phi_par, theta_par, omega_ref, t
