@@ -617,3 +617,79 @@ def report_and_get_best_params(samples, confidence_level):
 
     # 回傳弧度形式的最佳參數
     return tuple(best_fit_params_for_model)
+
+# ---------------------------------------------------------------------------
+
+def x_func(Rx, A, k, R_0):
+    x_cos = A * np.cos(k * (Rx + R_0))
+    return x_cos
+
+def z_func(Rz, B, k, R_0, C):
+    z_sin = B * np.sin(k * (Rz + R_0)) + C
+    return z_sin
+
+def A_const(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    A = np.sum(X * np.cos(k * (R_i + R_0))) / np.sum(np.cos(k * (R_i + R_0)) ** 2)
+    return A
+
+def B_const(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    N = len(X)
+    B = (N * np.sum(Z * np.sin(k * (R_i + R_0))) - np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
+    return B
+
+def C_const(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    N = len(X)
+    C = (np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(Z * np.sin(k * (R_i + R_0))) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
+    return C
+
+def chi_square(R_0, k, params):
+    X, Z, R_i = params[0], params[1], params[2]
+    A = A_const(R_0, k, params)
+    B = B_const(R_0, k, params)
+    C = C_const(R_0, k, params)
+        
+    return np.sum((X - A * np.cos(k * (R_i + R_0))) ** 2 + (Z - B * np.sin(k * (R_i + R_0)) - C) ** 2)
+
+def f_kR(R_0, k, params):
+    
+    X, Z, R_i = params[0], params[1], params[2]
+    
+    A = A_const(R_0, k, params)
+    B = B_const(R_0, k, params)
+    C = C_const(R_0, k, params)
+
+    F_func = A * np.sum(X * R_i * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(R_i * np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * R_i * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(R_i * np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(R_i * np.cos(k * (R_i + R_0)))
+    return F_func
+
+def g_kR(R_0, k, params):
+    
+    X, Z, R_i = params[0], params[1], params[2]
+    
+    A = A_const(R_0, k, params)
+    B = B_const(R_0, k, params)
+    C = C_const(R_0, k, params)
+    
+    G_func = A * np.sum(X * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(np.cos(k * (R_i + R_0)))
+    return G_func
+
+def calc_params(R_root2, K_root2, params, radius_ref_au):
+    A = A_const(R_root2, K_root2, params)
+    B = B_const(R_root2, K_root2, params)
+    C = C_const(R_root2, K_root2, params)
+    if A < 0:
+        A = -A
+        B = -B
+        C = -C
+        R_root2 += np.pi / K_root2
+    radius_ref_m = radius_ref_au * spc.astronomical_unit
+    
+    inclin = np.arcsin(-B / A)
+    phi_par = R_root2 * K_root2
+    theta_par = np.arctan2(A, C / np.cos(inclin))
+    omega_ref = (A / radius_ref_m / np.sin(theta_par)) ** (4/3) / np.cos(inclin)
+    t = K_root2 * (np.cos(inclin)) ** (1/4) / omega_ref ** (3/4)
+    
+    return A, B, C, inclin, phi_par, theta_par, omega_ref, t
