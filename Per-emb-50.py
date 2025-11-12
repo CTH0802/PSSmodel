@@ -61,18 +61,77 @@ log_power = 1.5
 radius_in_au, radius_out_au = 2e2, 3.8e3
 cube_fname = "Per-emb-50_CD_l021l060_uvsub_H2CO_multi_small_fitcube.fits"
 
-PLOT_DIR = "Per-emb-50_plots"
+CACHE_DIR = "Per50_results/cache"
+os.makedirs(CACHE_DIR, exist_ok=True)
+PLOT_DIR = "Per50_results/plots"
 os.makedirs(PLOT_DIR, exist_ok=True)
 
-CACHE_PATH = os.path.join("Per-emb-50_fit_results.npz")
+CACHE_PATH_GRID = os.path.join(CACHE_DIR, "Per-emb-50_grid_results.npz")
+CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "Per-emb-50_mcmc_grid_results.npz")
+CACHE_PATH_MCMC_DISTANCE = os.path.join(CACHE_DIR, "Per-emb-50_mcmc_distance_results.npz")
+CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
+
+# ---------- 僅畫圖時要使用哪一個 cache 來源 ----------
+# 可選： "final"（預設）、"mcmc_distance", "mcmc_grid", "grid"
+USE_CACHE_SOURCE = "final"
+
+def _resolve_cache_path(source: str) -> str:
+    s = (source or "").lower()
+    if s == "final":
+        return CACHE_PATH_FINAL
+    elif s == "mcmc_distance":
+        return CACHE_PATH_MCMC_DISTANCE
+    elif s == "mcmc_grid":
+        return CACHE_PATH_MCMC_GRID
+    elif s == "grid":
+        return CACHE_PATH_GRID
+    return CACHE_PATH_FINAL
+
+def _extract_params_from_cache(c: dict, source: str):
+    s = (source or "").lower()
+    def _try(a,b,c1,d,e):
+        try:
+            return (float(c[a]), float(c[b]), float(c[c1]), float(c[d]), float(c[e]))
+        except Exception:
+            return None
+    if s == "mcmc_distance":
+        order = [
+            ("mcmc_distance_median_Theta","mcmc_distance_median_Phi","mcmc_distance_median_Incl","mcmc_distance_median_T","mcmc_distance_median_Omega"),
+            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
+        ]
+    elif s == "mcmc_grid":
+        order = [
+            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
+        ]
+    elif s == "grid":
+        order = [
+            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
+        ]
+    else:
+        order = [
+            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
+            ("mcmc_distance_median_Theta","mcmc_distance_median_Phi","mcmc_distance_median_Incl","mcmc_distance_median_T","mcmc_distance_median_Omega"),
+            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+        ]
+    for keys in order:
+        out = _try(*keys)
+        if out: return out
+    raise KeyError("Cache missing parameters.")
 
 # ---------- 開關 ----------
-RUN_GRID = False               # 5D grid search 找初始解
-RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
-RUN_MCMC_DISTANCE = False     # distance_cube MCMC
+RUN_GRID = True               # 5D grid search 找初始解
+RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+RUN_MCMC_DISTANCE = True     # distance_cube MCMC
 RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
 RUN_MCMC_3D = False           # (Theta, Phi, Incl) 測試
-RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 # 統一 cache 容器（本次執行逐步填入）
 cache = {
@@ -398,66 +457,66 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         norm=norm,
     )
 
-    # divider = make_axes_locatable(ax)
-    # cax = divider.append_axes("right", size="3%", pad=0.04)
-    # cbar = fig.colorbar(im, cax=cax)
-    # cbar.set_label("(Jy/beam km/s)")
-
-    # lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
-    # ax.add_collection(lc_edge)
-
-    # # 用 model v_m + LSR 當顏色（範圍依資料可調）
-    # v_model_LSR = v_m + Local_Standard_Velocity
-    # v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
-    # norm_v = mpl.colors.Normalize(vmin=5.5, vmax=8.0)
-    # lc = LineCollection(
-    #     segments,
-    #     cmap="coolwarm",
-    #     norm=norm_v,
-    #     linewidth=4.5,
-    #     zorder=3,
-    # )
-    # lc.set_array(v_seg)
-    # ax.add_collection(lc)
-    
-    num_element = 8
-    xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
-    weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
-    x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
-    ax.plot(x_means_arc, z_means_arc, color='w', lw=3, zorder=4)
     divider = make_axes_locatable(ax)
-    cax     = divider.append_axes('right', size='3%', pad=0.04)
-    cbar = fig.colorbar(weights_im, cax=cax)
-    cbar.set_label('weight value')
+    cax = divider.append_axes("right", size="3%", pad=0.04)
+    cbar = fig.colorbar(im, cax=cax)
+    cbar.set_label("(Jy/beam km/s)")
 
-    # # 質心點（若提供）
-    # if cen_x_pix is not None and cen_z_pix is not None:
-    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-    #     if cen_v_LS_km is not None:
-    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=5.5, vmax=8.0,
-    #             s=20,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.6,
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=36,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
+    lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
+    ax.add_collection(lc_edge)
+
+    # 用 model v_m + LSR 當顏色（範圍依資料可調）
+    v_model_LSR = v_m + Local_Standard_Velocity
+    v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
+    norm_v = mpl.colors.Normalize(vmin=5.5, vmax=8.0)
+    lc = LineCollection(
+        segments,
+        cmap="coolwarm",
+        norm=norm_v,
+        linewidth=4.5,
+        zorder=3,
+    )
+    lc.set_array(v_seg)
+    ax.add_collection(lc)
+    
+    # num_element = 8
+    # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
+    # weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
+    # x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
+    # ax.plot(x_means_arc, z_means_arc, color='w', lw=3, zorder=4)
+    # divider = make_axes_locatable(ax)
+    # cax     = divider.append_axes('right', size='3%', pad=0.04)
+    # cbar = fig.colorbar(weights_im, cax=cax)
+    # cbar.set_label('weight value')
+
+    # 質心點（若提供）
+    if cen_x_pix is not None and cen_z_pix is not None:
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+        if cen_v_LS_km is not None:
+            cen_v = cen_v_LS_km + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra, cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=5.5, vmax=8.0,
+                s=20,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.6,
+                zorder=5,
+                label="Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra, cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=36,
+                marker="o",
+                zorder=5,
+                label="Centroids",
+            )
 
     ax.scatter(0, 0, c="r", s=50, marker="+", zorder=6)
 
@@ -591,22 +650,22 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     cbar = fig.colorbar(im, cax=cax)
     cbar.set_label("Velocity (km/s)")
 
-    # # model 線
-    # lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
-    # ax.add_collection(lc_edge)
+    # model 線
+    lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
+    ax.add_collection(lc_edge)
 
-    # v_model_LSR = v_m + Local_Standard_Velocity
-    # v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
-    # norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-    # lc = LineCollection(
-    #     segments,
-    #     cmap="coolwarm",
-    #     norm=norm,
-    #     linewidth=4.5,
-    #     zorder=3,
-    # )
-    # lc.set_array(v_seg)
-    # ax.add_collection(lc)
+    v_model_LSR = v_m + Local_Standard_Velocity
+    v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    lc = LineCollection(
+        segments,
+        cmap="coolwarm",
+        norm=norm,
+        linewidth=4.5,
+        zorder=3,
+    )
+    lc.set_array(v_seg)
+    ax.add_collection(lc)
     
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
@@ -618,34 +677,34 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # cbar = fig.colorbar(weights_im, cax=cax)
     # cbar.set_label('weight value')
     
-    # # 質心
-    # if cen_x_pix is not None and cen_z_pix is not None:
-    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-    #     if cen_v_LS_km is not None:
-    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=vmin, vmax=vmax,
-    #             s=20,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.6,
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=36,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
+    # 質心
+    if cen_x_pix is not None and cen_z_pix is not None:
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+        if cen_v_LS_km is not None:
+            cen_v = cen_v_LS_km + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra, cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=vmin, vmax=vmax,
+                s=20,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.6,
+                zorder=5,
+                label="Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra, cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=36,
+                marker="o",
+                zorder=5,
+                label="Centroids",
+            )
 
     ax.scatter(0, 0, c="r", s=50, marker="+", zorder=6)
 
@@ -725,95 +784,59 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                                streamer_z_AU, streamer_v_LS_km,
                                outname,
                                label="Per-emb-50 H2CO z-v with data",
-                               nbins_z=200):
+                               nbins_z=200,
+                               streamer_x_AU=None):
     """
-    由 masked data cube 直接建立 z–v 圖：
+    由 masked data cube 建立 z–v 圖（**沿影像 x 軸堆疊**）：
 
-      x: model-frame z (AU)，以 protostar 為 0
+      x: image-frame z (AU) ，以 protostar 為 0 （不再用 streamer 垂直方向）
       y: V_LSR (km/s)
-      背景: new_cube_data 在「垂直於 streamer 方向」平均後的強度 (簡化實作)
-      藍線: PSS_model z-v
-      黑點: streamer 質心
-
-    只需要 cube，無需額外 PV fits。
+      背景: new_cube_data 沿 x 軸 (axis=2) 平均後的強度
+      藍線: PSS_model 轉到 **image frame** 後的 z–v
+      黑點: streamer 質心（若提供 x,z 會轉到 image frame；否則直接使用傳入的 z）
     """
 
     if new_cube_data is None:
         print("[z–v] new_cube_data is None, skip.")
         return
 
-    # ---------- 1. 速度軸 ----------
+    # ---------- 1) velocity 軸 ----------
     nz, ny, nx = new_cube_data.shape
     CRVAL3 = float(header["CRVAL3"])
     CRPIX3 = float(header["CRPIX3"])
     CDELT3 = float(header["CDELT3"])
     v_axis = CRVAL3 + (np.arange(nz) + 1 - CRPIX3) * CDELT3  # km/s, LSR
-
     vmin = np.nanmin(v_axis)
     vmax = np.nanmax(v_axis)
 
-    # ---------- 2. 建立旋轉後的 z 座標 (AU) ----------
-    # header CRPIX 是 1-based，要轉成 index-0
-    im_cy = float(header["CRPIX2"]) - 1.0
-    im_cx = float(header["CRPIX1"]) - 1.0
-
+    # ---------- 2) image-frame z (AU) ----------
+    # 注意：這裡不做 PA 旋轉，直接用影像的 y (row) 當作 z_img，原點在 protostar
+    im_cy = float(header["CRPIX2"]) - 1.0  # FITS -> 0-based
     y_idx = np.arange(ny)
-    x_idx = np.arange(nx)
-    xx, yy = np.meshgrid(x_idx, y_idx)  # xx: x, yy: y
+    z_img_pix = y_idx - im_cy
+    z_img_AU = z_img_pix * dx_au
 
-    x_rel = xx - im_cx
-    z_rel = yy - im_cy
+    # ---------- 3) 沿 x 軸平均，得到 pv(v,z_img) ----------
+    # 直接對每個速度切片做 column-wise 平均
+    pv = np.nanmean(new_cube_data, axis=2)  # shape = (nz, ny)
 
-    # 旋轉到 model frame
-    x_rot = x_rel * np.cos(pa_rad) + z_rel * np.sin(pa_rad)
-    z_rot = -x_rel * np.sin(pa_rad) + z_rel * np.cos(pa_rad)
-
-    # z in AU（以 protostar 為 0）
-    z_AU = z_rot * dx_au
-
-    # ---------- 3. 沿垂直方向平均，得到 pv(v, z) ----------
-    # 我們把每個 voxel 的 z_AU 丟進 bins，對應的強度加總，再除以權重
-    z_min = np.nanmin(z_AU)
-    z_max = np.nanmax(z_AU)
-    z_bins = np.linspace(z_min, z_max, nbins_z + 1)
-    z_centers = 0.5 * (z_bins[:-1] + z_bins[1:])
-
-    pv = np.zeros((nz, nbins_z))
-    pv[:] = np.nan
-
-    # 展平成 1D，方便 histogram
-    z_flat = z_AU.ravel()
-    for k in range(nz):
-        I = new_cube_data[k].ravel()
-        m = np.isfinite(I) & (I > 0)
-
-        if not np.any(m):
-            continue
-
-        # 對每個 z-bin 做加權平均
-        # 用 histogram 計算總權重和加權和
-        w_sum, _ = np.histogram(z_flat[m], bins=z_bins, weights=I[m])
-        cnt, _   = np.histogram(z_flat[m], bins=z_bins)
-
-        with np.errstate(invalid="ignore", divide="ignore"):
-            pv_row = w_sum / cnt
-        pv[k, :] = pv_row
-
-    # ---------- 4. 繪圖 ----------
+    # ---------- 4) 繪圖 ----------
     fig, ax = plt.subplots(figsize=(7, 4))
+    # 用百分位控制動態範圍，避免 outliers
+    vmin_img = np.nanpercentile(pv, 5)
+    vmax_img = np.nanpercentile(pv, 99)
 
-    # 背景 PV（灰階）
     img = ax.imshow(
         pv,
         origin="lower",
         cmap="Greys_r",
-        extent=[z_centers[0], z_centers[-1], vmin, vmax],
+        extent=[z_img_AU[0], z_img_AU[-1], vmin, vmax],
         aspect="auto",
-        vmin=np.nanpercentile(pv, 5),
-        vmax=np.nanpercentile(pv, 99),
+        vmin=vmin_img,
+        vmax=vmax_img,
     )
 
-    # ---------- 5. 疊上 PSS_model 的 z–v ----------
+    # ---------- 5) 疊上 PSS_model（先轉成 image frame 的 z_img） ----------
     theta = np.deg2rad(theta_deg)
     phi   = np.deg2rad(phi_deg)
     inc   = np.deg2rad(inc_deg)
@@ -828,24 +851,35 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         scale=scale,
         log_power=log_power,
     )
+    # 將 model 的 (x_m, z_m) 旋轉到影像座標的 y 軸（image-frame z）
+    # image-frame z = x*sin(PA) + z*cos(PA)
+    z_model_img_AU = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
 
     ax.plot(
-        z_m,
+        z_model_img_AU,
         v_m + Local_Standard_Velocity,
         color="tab:blue",
         lw=2.0,
-        label="Model",
+        label="Model (image-frame)",
         zorder=3,
     )
 
-    # ---------- 6. 疊上質心 ----------
+    # ---------- 6) 疊上質心 ----------
     if streamer_z_AU is not None and streamer_v_LS_km is not None:
-        z_data = np.asarray(streamer_z_AU)
-        v_data = np.asarray(streamer_v_LS_km) + Local_Standard_Velocity
-        good = np.isfinite(z_data) & np.isfinite(v_data)
+        # 若有提供 streamer_x_AU，則把 (x,z) 轉為 image-frame z；否則就使用傳入的 z
+        if streamer_x_AU is not None:
+            try:
+                z_cent_img = streamer_x_AU * np.sin(pa_rad) + streamer_z_AU * np.cos(pa_rad)
+            except Exception:
+                z_cent_img = np.asarray(streamer_z_AU)
+        else:
+            z_cent_img = np.asarray(streamer_z_AU)
+
+        v_cent = np.asarray(streamer_v_LS_km) + Local_Standard_Velocity
+        good = np.isfinite(z_cent_img) & np.isfinite(v_cent)
         ax.scatter(
-            z_data[good],
-            v_data[good],
+            z_cent_img[good],
+            v_cent[good],
             c="k",
             s=30,
             edgecolors="white",
@@ -854,8 +888,8 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             zorder=4,
         )
 
-    # ---------- 7. 外觀 ----------
-    ax.set_xlabel("z (AU)")
+    # ---------- 7) 裝飾 ----------
+    ax.set_xlabel("z (AU, image frame)")
     ax.set_ylabel("Velocity (km/s, LSR)")
     ax.set_title(label)
     ax.set_ylim(vmin, vmax)
@@ -875,44 +909,11 @@ if RUN_FROM_CACHE_ONLY:
     print("[Quick Mode] RUN_FROM_CACHE_ONLY=True → 僅讀取 cache 並繪圖")
 
     try:
-        c = np.load(CACHE_PATH, allow_pickle=True)
-        print(f"[cache] Loaded cache: {CACHE_PATH}")
+        cache_path_to_use = _resolve_cache_path(USE_CACHE_SOURCE)
+        c = np.load(cache_path_to_use, allow_pickle=True)
+        print(f"[cache] Loaded cache ({USE_CACHE_SOURCE}): {cache_path_to_use}")
 
-        # 選擇最終 best-fit（新欄位，若不存在則 fallback）
-        if "best_Theta" in c:
-            Theta_best = c["best_Theta"]
-            Phi_best   = c["best_Phi"]
-            Incl_best  = c["best_Incl"]
-            T_best     = c["best_T"]
-            Omega_best = c["best_Omega"]
-        else:
-            # 舊版 fallback：優先順序 MCMC_grid > MCMC_distance > grid
-            Theta_best = c.get(
-                "mcmc_grid_median_Theta",
-                c.get("mcmc_distance_median_Theta",
-                      c["grid_best_Theta"])
-            )
-            Phi_best = c.get(
-                "mcmc_grid_median_Phi",
-                c.get("mcmc_distance_median_Phi",
-                      c["grid_best_Phi"])
-            )
-            Incl_best = c.get(
-                "mcmc_grid_median_Incl",
-                c.get("mcmc_distance_median_Incl",
-                      c["grid_best_Incl"])
-            )
-            T_best = c.get(
-                "mcmc_grid_median_T",
-                c.get("mcmc_distance_median_T",
-                      c["grid_best_T"])
-            )
-            Omega_best = c.get(
-                "mcmc_grid_median_Omega",
-                c.get("mcmc_distance_median_Omega",
-                      c["grid_best_Omega"])
-            )
-
+        Theta_best, Phi_best, Incl_best, T_best, Omega_best = _extract_params_from_cache(c, USE_CACHE_SOURCE)
         Theta_best_deg = np.rad2deg(Theta_best)
         Phi_best_deg   = np.rad2deg(Phi_best)
         Incl_best_deg  = np.rad2deg(Incl_best)
@@ -974,6 +975,7 @@ if RUN_FROM_CACHE_ONLY:
                 streamer_z_AU=streamercom_z_AU,
                 streamer_v_LS_km=streamercom_v_LS_km,
                 outname="Per-emb-50_z_v_data_overlay.png",
+                streamer_x_AU=c.get("streamercom_x_AU", None),
             )
             if "streamercom_v_LS_km" in c:
                 cen_v_LS = c["streamercom_v_LS_km"]
@@ -1131,6 +1133,8 @@ if RUN_GRID:
     for key, (lo, hi) in parameter_prior_ranges.items():
         cache[f"prior_{key}_lo"] = float(lo)
         cache[f"prior_{key}_hi"] = float(hi)
+    np.savez(CACHE_PATH_GRID, **cache)
+    print(f"[cache] Saved grid search results to {CACHE_PATH_GRID}")
 else:
     print("[Grid] Skipped, using manual priors.")
     Theta_init = np.deg2rad(60.0)
@@ -1270,20 +1274,168 @@ if RUN_MCMC_GRID:
         "mcmc_grid_median_T":     float(T_med),
         "mcmc_grid_median_Omega": float(Omega_med),
     })
+    np.savez(CACHE_PATH_MCMC_GRID, **cache)
+    print(f"[cache] Saved MCMC grid results to {CACHE_PATH_MCMC_GRID}")
 else:
     cache["mcmc_grid_used"] = False
 
 # ============================================================
-# 7. MCMC_distance / MCMC_3D（如有開，邏輯同上，這裡略）
-#    你原本的實作可以保留，重點是最後把 median 寫進 cache
+# 7. MCMC_distance / MCMC_3D
 # ============================================================
 
-# （此處省略 RUN_MCMC_DISTANCE, RUN_MCMC_3D 的程式碼，你可以直接沿用，
-#  只要在完結時把 median 寫入：
-#   cache["mcmc_distance_median_Theta"] = ...
-#  並標記 cache["mcmc_distance_used"] = True
-#  即可被下面 best-fit 選擇邏輯使用。）
+if RUN_MCMC_DISTANCE:
+    print("\n[MCMC_distance] start")
 
+    # ---- 選擇 likelihood：有 distance 版就用，否則退回 centroid 版 ----
+    use_distance_like = hasattr(pss, "log_posterior_distance") and ("new_cube_data" in locals()) and (new_cube_data is not None)
+    if use_distance_like:
+        log_like_fn = pss.log_posterior_distance
+        print("[MCMC_distance] 使用 distance_cube-based log_posterior")
+    else:
+        log_like_fn = pss.log_posterior_fast
+        print("[MCMC_distance] distance log_posterior 不可用，改用 fast centroid 版本")
+
+    # ---- 先備好先驗範圍（前面 grid 或手動設定好的）----
+    priors = parameter_prior_ranges  # keys: ["Theta zero","Phi zero","Inclination","Time","Omega"]
+
+    # ---- 初始化 walkers：以 grid（或手動）給的初值為中心 ----
+    ndim = 5
+    labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
+    nwalkers, nsteps = 40, 10000
+
+    center_vals = [Theta_init, Phi_init, Incl_init, T_init, Omega_init]
+    sigmas = [
+        np.deg2rad(8.0),             # Theta
+        np.deg2rad(12.0),            # Phi
+        np.deg2rad(10.0),            # Incl
+        0.10 * T_init if T_init > 0 else 0.01,
+        0.15 * max(Omega_init, 0.2),
+    ]
+
+    p0 = np.zeros((nwalkers, ndim))
+    for j, key in enumerate(labels_5d):
+        lo, hi = priors[key]
+        prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
+        # Phi 週期性
+        if key == "Phi zero":
+            prop = (prop % (2*np.pi))
+        prop = np.clip(prop, lo, hi)
+        p0[:, j] = prop
+
+    # ---- log posterior 的參數 ----
+    if use_distance_like:
+        log_args = (
+            priors,
+            new_cube_data,   # masked cube
+            header,
+            pa_rad,
+            dx_au,
+            v_weight_phys,
+            M_star,
+            scale,
+            log_power,
+        )
+    else:
+        log_args = (
+            priors,
+            streamercom_x_AU,
+            streamercom_z_AU,
+            streamercom_v_LS_km,
+            v_weight_phys,
+            M_star,
+            scale,
+            log_power,
+        )
+
+    moves = get_mcmc_moves(mode="explore")
+    sampler = emcee.EnsembleSampler(
+        nwalkers, ndim,
+        log_like_fn,
+        args=log_args,
+        moves=moves,
+    )
+
+    sampler.run_mcmc(p0, nsteps, progress=True)
+
+    # ---- Burn-in / thin ----
+    try:
+        tau = sampler.get_autocorr_time()
+        burnin = int(2 * np.nanmax(tau))
+        thin   = max(1, int(0.1 * np.nanmin(tau)))
+    except Exception as e:
+        print("[MCMC_distance] tau 估計失敗，用預設。", e)
+        burnin, thin = 1500, 50
+
+    flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+
+    # unwrap Phi (same as MCMC_grid)
+    phi_samples = flat[:, 1]
+    phi_ref = Phi_init
+    phi_wrapped = ((phi_samples - phi_ref + np.pi) % (2*np.pi)) - np.pi + phi_ref
+    flat_wrapped = flat.copy()
+    flat_wrapped[:, 1] = phi_wrapped
+
+    q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
+    Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+
+    print("\n[MCMC_distance] median ±68%:")
+    for i, name in enumerate(labels_5d):
+        lo, md, hi = q16[i], q50[i], q84[i]
+        if i in [0, 1, 2]:
+            lo, md, hi = np.rad2deg([lo, md, hi])
+            unit = "deg"
+        elif name == "Time":
+            unit = "Myr"
+        else:
+            unit = ""
+        print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
+
+    print("\n[MCMC_distance] 1D posterior 形狀判斷：")
+    for i, name in enumerate(labels_5d):
+        summarize_1d_posterior(flat_wrapped[:, i], name)
+
+    # corner plot（角度轉度）
+    samples_plot = flat_wrapped.copy()
+    for idx in [0, 1, 2]:
+        samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
+    labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
+                   "Time (Myr)", "Omega"]
+    q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
+    ranges = []
+    for i in range(len(labels_plot)):
+        lo, md, hi = q16p[i], q50p[i], q84p[i]
+        width = hi - lo if hi > lo else 1e-3
+        ranges.append((md - 1.5*width, md + 1.5*width))
+
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=True,
+                        title_fmt=".2f",
+                        plot_datapoints=False,
+                        fill_contours=True,
+                        smooth=1.0)
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_distance.png"),
+                dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    # ---- 寫入 cache ----
+    cache.update({
+        "mcmc_distance_used": True,
+        "mcmc_distance_median_Theta": float(Theta_med),
+        "mcmc_distance_median_Phi":   float(Phi_med),
+        "mcmc_distance_median_Incl":  float(Incl_med),
+        "mcmc_distance_median_T":     float(T_med),
+        "mcmc_distance_median_Omega": float(Omega_med),
+        "mcmc_distance_burnin": int(burnin),
+        "mcmc_distance_thin":   int(thin),
+        "mcmc_distance_nwalkers": int(nwalkers),
+        "mcmc_distance_nsteps":   int(nsteps),
+    })
+    np.savez(CACHE_PATH_MCMC_DISTANCE, **cache)
+    print(f"[cache] Saved MCMC distance results to {CACHE_PATH_MCMC_DISTANCE}")
+else:
+    cache["mcmc_distance_used"] = False
 
 # ============================================================
 # 8. 決定最終 best-fit + 計算 RMSE + 寫 cache
@@ -1364,8 +1516,8 @@ print("====================================================================")
 
 # 寫 cache
 try:
-    np.savez(CACHE_PATH, **cache)
-    print(f"[cache] Saved results to {CACHE_PATH}")
+    np.savez(CACHE_PATH_FINAL, **cache)
+    print(f"[cache] Saved final combined results to {CACHE_PATH_FINAL}")
 except Exception as e:
     print(f"[cache] Failed to save cache: {e}")
 
@@ -1374,14 +1526,10 @@ except Exception as e:
 # ============================================================
 
 try:
-    c = np.load(CACHE_PATH)
-    print(f"[cache] Loaded for overlay: {CACHE_PATH}")
-
-    Theta_best = c["best_Theta"]
-    Phi_best   = c["best_Phi"]
-    Incl_best  = c["best_Incl"]
-    T_best     = c["best_T"]
-    Omega_best = c["best_Omega"]
+    cache_path_to_use = _resolve_cache_path(USE_CACHE_SOURCE)
+    c = np.load(cache_path_to_use, allow_pickle=True)
+    print(f"[cache] Loaded for overlay ({USE_CACHE_SOURCE}): {cache_path_to_use}")
+    Theta_best, Phi_best, Incl_best, T_best, Omega_best = _extract_params_from_cache(c, USE_CACHE_SOURCE)
 
     Theta_best_deg = np.rad2deg(Theta_best)
     Phi_best_deg   = np.rad2deg(Phi_best)
