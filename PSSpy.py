@@ -2,11 +2,14 @@ import sys
 import os
 import numpy as np
 import scipy.constants as spc
+import astropy.constants as astroc
+
 
 # ===================================================================
 # 1. 基礎工具 (Utilities)
 # =Date: 2020-01-20
 # ===================================================================
+M_SUN_KG = 1.98847e30  # kg
 
 def gaussian(x, mu, sig):
     return np.exp(-np.power((x - mu) / sig, 2.0) / 2)
@@ -15,40 +18,6 @@ def time_to_deg(ra_time):
     """將 'HH:MM:SS.SSS' 轉成度數"""
     h, m, s = [float(i) for i in ra_time.split(':')]
     return (h + m/60 + s/3600) * 15 # RA 1小時 = 15度
-
-def calc_ra_arcsec(ra_start, ra_end, dec_deg, distance_pc, n_pixels):
-    """
-    計算 RA 方向的範圍（單位：arcsec，四捨五入後）
-    並轉換成每個 pixel 的 AU 大小。
-
-    參數：
-    - ra_start, ra_end: RA起點和終點 (字串, 'HH:MM:SS.SSS'格式)
-    - dec_deg: DEC赤緯，單位是度
-    - distance_pc: 距離（單位pc）
-    - n_pixels: 圖片的pixels數量
-
-    輸出：
-    - arcsec_range: 四捨五入後的總arcsec範圍
-    - AU_per_pixel: 每個pixel代表多少AU
-    """
-
-    # 1. 轉成度
-    ra_start_deg = time_to_deg(ra_start)
-    ra_end_deg = time_to_deg(ra_end)
-    
-    # 2. RA範圍，單位 degree
-    delta_ra_deg = ra_end_deg - ra_start_deg
-    
-    # 3. 轉 arcsec 並考慮 cos(DEC)
-    dec_rad = np.deg2rad(dec_deg)
-    delta_ra_arcsec = delta_ra_deg * 3600 * np.cos(dec_rad)
-
-    # 5. 換成 AU
-    AU_per_arcsec = 2 * np.pi * distance_pc * 206265 / 360 / 3600 # 1pc = 206265 arcsec
-    total_AU = delta_ra_arcsec * AU_per_arcsec
-    AU_per_pixel = total_AU / n_pixels
-
-    return delta_ra_arcsec, AU_per_pixel
 
 def pixel_to_arcsec(xpix, ypix, xcenpix, ycenpix, im):
     """
@@ -94,12 +63,13 @@ def Omega_ref(radius_ref_au, Mass_star):
     """
     (註：此函數是 PSS_model 的輔助函數)
     """
-    Omega_ref = np.sqrt(spc.G * Mass_star * 2e30 / (radius_ref_au * 1.49e11)) / (radius_ref_au * 1.49e11) #Keplerian velocity (radian / s)
-    return Omega_ref
+    r_m = radius_ref_au * spc.astronomical_unit
+    M_kg = Mass_star * M_SUN_KG # 改用 SciPy 的 M⊙
+    return np.sqrt(spc.G * M_kg / r_m) / r_m
 
 def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
               solar_mass, radius_in_au=1.5e3, radius_out_au=1e4, resolution=200,
-              scale='log', log_power=2):
+              scale='log', log_power=1.5):
     """
     產生 3D 的流線模型 (PSS model)。
     (註：依賴 Omega_ref)
@@ -133,11 +103,11 @@ def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega,
     c_s = 200 #m/s
     
     r_s = c_s * T_s #m
-    V_infall = - np.sqrt(2 * spc.G * solar_mass * 2e30 / streamline_radius) - 3.3 * c_s #m/s
+    V_infall = - np.sqrt(2 * spc.G * solar_mass * M_SUN_KG / streamline_radius) - 3.3 * c_s #m/s
     alpha = -1/3
-    Omega_s = Omega_ref(r_s / 1.49e11, solar_mass) * omega #Keplerian velocity (radian)
+    Omega_s = Omega_ref(r_s / spc.astronomical_unit, solar_mass) * omega #Keplerian velocity (radian)
     Omega = Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
-    phi_value = Phi_zero + T_s * Omega_s * np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * 2e30)) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) #np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * 2e30)) * velocity_r = streamline_radius * Omega * np.sin(theta_value)
+    phi_value = Phi_zero + T_s * Omega_s * np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * M_SUN_KG)) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) #np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * 2e30)) * velocity_r = streamline_radius * Omega * np.sin(theta_value)
     velocity_r = streamline_radius * Omega * np.sin(theta_value)
 
     ######Streamer coordinate######
@@ -266,7 +236,7 @@ def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=
     for _ in range(max_iter):
         new_points = set()
         for z, y, x in to_check:
-            if (0 <= z < depth) and (0 <= y < width) and (0 <= x < height):
+            if (0 <= z < depth) and (0 <= y < height) and (0 <= x < width):
                 if data[z, y, x] > threshold and not region_mask[z, y, x]:
                     region_mask[z, y, x] = True
                     
@@ -326,42 +296,76 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, v_buffer, cube_shape):
 # ===================================================================
 
 def error_function(params, streamercom_x, streamercom_z, streamercom_v, 
-                   weight_v, T_Myr, omega, Inclination, solar_mass):
+                   weight_v, T_Myr, omega, Inclination, solar_mass, scale, log_power):
     """
     計算 PSS_model 與數據點的誤差，使用最近鄰匹配來尋找最佳對應點。
-    (註：依賴 PSS_model。此函數用於「質心擬合」)
-
-    params: PSS_model 的參數
-    streamercom_x, streamercom_y, streamercom_v: 數據中的 11 個元素 (觀測值)
-
-    返回:
-    - error: 總誤差
+    這裡同時：
+    - 使用加權距離 sqrt( pos^2 + w_v * vel^2 ) 作為主誤差 (AU-metric)，供 grid / MCMC 最小化。
+    - 紀錄分開的 RMS(position) 與 RMS(velocity)，方便之後轉換與診斷：
+        error_function.last_pos_rmse      (in AU)
+        error_function.last_vel_rmse      (in km/s)
+        error_function.last_eq_vel_rmse   (equivalent km/s from total AU-metric)
     """
     
     Theta_zero, Phi_zero = params
-    total_error = 0
-    num_points = len(streamercom_x)  
+    num_points = len(streamercom_x)
+    if num_points == 0:
+        return np.inf
+
+    # 累積「對應點」的平方誤差，用來計算 RMS
+    pos_sq_sum = 0.0
+    vel_sq_sum = 0.0
+    total_sq_sum = 0.0
 
     for i in range(num_points):
-        radius_in_au = np.sqrt(streamercom_x[i] ** 2 + streamercom_z[i] ** 2)
-        radius_out_au = radius_in_au * 30
-        # 計算 PSS_model 曲線
+        # 以該點半徑決定當下要畫的 streamline 範圍，避免太短或太長
+        radius_in_au = max(1.0, np.sqrt(streamercom_x[i] ** 2 + streamercom_z[i] ** 2) * 0.5)
+        radius_out_au = radius_in_au * 30.0
+
+        # 計算 PSS_model 曲線 (x,z: AU; v: km/s)
         x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(
-            Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
-            solar_mass, radius_in_au, radius_out_au, resolution=10, scale='log')
-        
-        # 計算此數據點與這段曲線所有點的距離
-        distances = (streamercom_x[i] - x_model) ** 2 + \
-                    (streamercom_z[i] - z_model) ** 2 + \
-                    weight_v * (streamercom_v[i] - v_model) ** 2
-        # print(np.shape(distances), np.shape(x_model))
-        # 找到最近的 PSS_model 點
-        nearest_index = np.argmin(distances)
-        
-        # 計算此點的誤差
-        error = distances[nearest_index]  # 已經是平方誤差
-        total_error += error
-    total_error = np.sqrt(total_error / num_points)
+            Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+            solar_mass, radius_in_au, radius_out_au,
+            resolution=100, scale=scale, log_power=log_power
+        )
+
+        # 對這個觀測點，計算它對所有模型點的加權距離
+        dx = streamercom_x[i] - x_model
+        dz = streamercom_z[i] - z_model
+        dv = streamercom_v[i] - v_model
+
+        # 加權平方距離 (全部轉成 AU^2 度量)
+        distances_sq = dx**2 + dz**2 + weight_v * dv**2
+
+        # 找最近的模型點
+        j = np.argmin(distances_sq)
+
+        # 分別記錄這個最佳對應點的 pos / vel / total 誤差
+        pos_sq = dx[j]**2 + dz[j]**2          # AU^2
+        vel_sq = dv[j]**2                     # (km/s)^2
+        total_sq = distances_sq[j]            # AU^2 (含權重)
+
+        pos_sq_sum += pos_sq
+        vel_sq_sum += vel_sq
+        total_sq_sum += total_sq
+
+    # 計算 RMS
+    mean_pos_sq = pos_sq_sum / num_points
+    mean_vel_sq = vel_sq_sum / num_points
+    mean_total_sq = total_sq_sum / num_points
+
+    # 主誤差：給 grid / MCMC 用的「AU-metric」
+    total_error = np.sqrt(mean_total_sq)
+
+    # 紀錄診斷資訊（不改變回傳介面）
+    error_function.last_pos_rmse = np.sqrt(mean_pos_sq)           # in AU
+    error_function.last_vel_rmse = np.sqrt(mean_vel_sq)           # in km/s
+    # 如果 weight_v > 0，換算等效 km/s；否則給 NaN
+    if weight_v > 0:
+        error_function.last_eq_vel_rmse = total_error / np.sqrt(weight_v)
+    else:
+        error_function.last_eq_vel_rmse = np.nan
+
     return total_error
 
 def grow_distance_cube_bounded(cube_shape, model_line_coords, max_dist_value, v_weight, bound=None):
@@ -412,16 +416,14 @@ def grow_distance_cube_bounded(cube_shape, model_line_coords, max_dist_value, v_
             (z_grid - z_line)**2 +
             (x_grid - x_line)**2 +
             v_weight * (v_grid - v_line)**2  # <--- 速度維度被加權
-        )
-        # 仍然取 sqrt，因為 max_dist_value 是距離，而不是距離的平方
-        dist = np.sqrt(dist_sq)
+        )        
         
         # 更新子立方體中的最短距離
-        sub_distance_cube = np.minimum(sub_distance_cube, dist)
+        sub_distance_cube = np.minimum(sub_distance_cube, dist_sq)
 
     # --- 類型修正 ---
     # 將超過最大距離的點標記為 -1.0 (而不是 np.nan，以避免 astype 錯誤)
-    sub_distance_cube[sub_distance_cube > max_dist_value] = -1.0
+    sub_distance_cube[sub_distance_cube > max_dist_value ** 2] = -1.0
     
     # 創建完整的距離立方體，默認為 -1.0
     full_distance_cube = np.full(cube_shape, -1.0, dtype=np.float32)
@@ -491,10 +493,28 @@ def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_cen
         return -np.inf 
         
     # 計算最終誤差 (要最小化的量)
-    normalized_error = numerator / denominator
+    normalized_error = np.sqrt(numerator / denominator)
     
     # 5. 轉換為 Log Likelihood
     return - np.log10(normalized_error)
+
+def in_phi_range(phi, phi_min, phi_max):
+    """
+    Handle periodic prior for Phi in [0, 2π):
+    若區間沒有跨 0 度：直接判斷 phi_min <= phi <= phi_max
+    若區間跨越 0 度：例如 (350°, 10°)，則接受 phi >= phi_min 或 phi <= phi_max
+    """
+    # 正規化到 [0, 2π)
+    two_pi = 2.0 * np.pi
+    phi = phi % two_pi
+    phi_min = phi_min % two_pi
+    phi_max = phi_max % two_pi
+
+    if phi_min <= phi_max:
+        return (phi_min <= phi) and (phi <= phi_max)
+    else:
+        # wrap-around case
+        return (phi >= phi_min) or (phi <= phi_max)
 
 def log_prior(params, prior_ranges):
     """
@@ -503,11 +523,13 @@ def log_prior(params, prior_ranges):
     Theta0, Phi0, Incl, T, Omega = params
     
     # 檢查參數是否在先驗範圍內
-    if not (prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1] and
-            prior_ranges["Phi zero"][0] < Phi0 < prior_ranges["Phi zero"][1] and
-            prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1] and
-            prior_ranges["Time"][0] < T < prior_ranges["Time"][1] and
-            prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]):
+    if not (
+        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
+        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
+        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
+        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
+        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
+    ):
         return -np.inf # 如果超出範圍，對數先驗為負無窮
     
     return 0.0 # 均勻先驗，對數值為 0
@@ -527,6 +549,96 @@ def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_ra
     ll = log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, 
                         dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, 
                         M_star, radius_in_au, radius_out_au)
+    return lp + ll
+
+# ===================================================================
+# 1. MCMC 先驗 (Prior)
+# ===================================================================
+def log_prior_fast(params, prior_ranges):
+    """
+    計算對數先驗值。
+    (這與您舊的 log_prior 函數相同，只檢查 5 個參數是否在範圍內)
+    """
+    Theta0, Phi0, Incl, T, Omega = params
+    
+    # 檢查參數是否在先驗範圍內
+    # 與這裡的 "Theta zero", "Phi zero" 等字串完全匹配。
+    if not (
+        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
+        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
+        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
+        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
+        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
+    ):
+        return -np.inf # 如果超出範圍，對數先驗為負無窮
+    
+    return 0.0 # 均勻先驗，對數值為 0
+
+# ===================================================================
+# 2. MCMC 似然 (Likelihood) - [核心函數]
+# ===================================================================
+def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
+                        weight_v, solar_mass, scale, log_power):
+    """
+    這是一個「快速」的對數似然函數。
+    它只擬合 11 個質心點，而不是整個 3D 立方體。
+    
+    參數:
+    - params (list/array): MCMC 傳入的 5 個自由參數 
+                           [Theta0, Phi0, Incl, T_Myr, Omega]
+    - (其他...): 您的觀測數據和固定參數
+    """
+    
+    # 1. 解包 MCMC 傳入的 5 個參數
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega = params
+    
+    # 2. 準備 pss.error_function 需要的參數
+    #    (注意：您的 error_function 的第一個參數 'params' 只需要 2 個值)
+    params_for_error_func = [Theta_zero, Phi_zero]
+    
+    # 3. 呼叫您 *快速* 且 *有效* 的 error_function
+    #    (它會回傳 RMSE)
+    rmse_error = error_function(
+        params_for_error_func, 
+        streamercom_x, 
+        streamercom_z, 
+        streamercom_v, 
+        weight_v, 
+        T_Myr,          # T_Myr 作為獨立參數傳入
+        omega,          # omega 作為獨立參數傳入
+        Inclination,    # Inclination 作為獨立參數傳入
+        solar_mass,
+        scale,
+        log_power
+    )
+    
+    # 4. 將 RMSE 轉換為 Log Likelihood
+    #    我們使用 -log10(Error)，這與您慢速方法的邏輯一致
+    if rmse_error <= 0 or np.isnan(rmse_error):
+        return -np.inf # 避免 log10(0) 或 log10(nan)
+        
+    return -np.log10(rmse_error)
+
+# ===================================================================
+# 3. MCMC 後驗 (Posterior)
+# ===================================================================
+def log_posterior_fast(params, prior_ranges, streamercom_x, streamercom_z, streamercom_v, 
+                       weight_v, solar_mass, scale, log_power):
+    """
+    這是 MCMC 採樣器 (sampler) 真正會呼叫的函數。
+    它結合了 Prior 和 Likelihood。
+    """
+    
+    # 1. 檢查先驗 (Priors)
+    lp = log_prior_fast(params, prior_ranges)
+    if not np.isfinite(lp):
+        return -np.inf
+    
+    # 2. 計算快速的似然 (Likelihood)
+    ll = log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
+                             weight_v, solar_mass, scale, log_power)
+    
+    # 3. 回傳總和
     return lp + ll
 
 # ===================================================================
