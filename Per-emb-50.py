@@ -73,7 +73,14 @@ CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
 
 # ---------- 僅畫圖時要使用哪一個 cache 來源 ----------
 # 可選： "final"（預設）、"mcmc_distance", "mcmc_grid", "grid"
-USE_CACHE_SOURCE = "final"
+USE_CACHE_SOURCE = "mcmc_grid"
+# ---------- 開關 ----------
+RUN_GRID = True               # 5D grid search 找初始解
+RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+RUN_MCMC_DISTANCE = True     # distance_cube MCMC
+RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
+RUN_MCMC_3D = False           # (Theta, Phi, Incl) 測試
+RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 def _resolve_cache_path(source: str) -> str:
     s = (source or "").lower()
@@ -125,13 +132,6 @@ def _extract_params_from_cache(c: dict, source: str):
         if out: return out
     raise KeyError("Cache missing parameters.")
 
-# ---------- 開關 ----------
-RUN_GRID = True               # 5D grid search 找初始解
-RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
-RUN_MCMC_DISTANCE = True     # distance_cube MCMC
-RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
-RUN_MCMC_3D = False           # (Theta, Phi, Incl) 測試
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 # 統一 cache 容器（本次執行逐步填入）
 cache = {
@@ -264,7 +264,7 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
 
         weight_theta = (x_rel * np.cos(theta0) + z_rel * np.sin(theta0)) / r
         weight_theta[r == 0] = 0
-        weight_theta[weight_theta < 0.99] = 0
+        weight_theta[weight_theta < 0.7] = 0
 
         d = (r > pars[i]) & (r <= pars[i+1]) & (new_cube_data > 0)
         if np.sum(d) > 0:
@@ -320,19 +320,14 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
         v_array_list.append(v[d])
         weights_list.append(weights[d]/np.max(weights[d]))
 
-    # step 4: 轉物理單位 + 旋轉到 model frame
-    streamer_x_pix = np.array(x_means)
-    streamer_z_pix = np.array(z_means)
-    streamer_v_pix = np.array(v_means)
-
-    x_rot = streamer_x_pix * np.cos(pa_rad) + streamer_z_pix * np.sin(pa_rad)
-    z_rot = -streamer_x_pix * np.sin(pa_rad) + streamer_z_pix * np.cos(pa_rad)
+    x_rot = x_means * np.cos(pa_rad) + z_means * np.sin(pa_rad)
+    z_rot = -x_means * np.sin(pa_rad) + z_means * np.cos(pa_rad)
 
     streamer_x_AU = x_rot * dx_au
     streamer_z_AU = z_rot * dx_au
 
     dv = abs(float(header["CDELT3"]))  # km/s / channel
-    streamer_v_km = v_lastch_vel + (v_lastch_num - streamer_v_pix) * dv
+    streamer_v_km = v_lastch_vel + (v_lastch_num - v_means) * dv
     streamer_v_LS = streamer_v_km - Local_Standard_Velocity
     x_array = np.array(x_array_list, dtype=object)
     z_array = np.array(z_array_list, dtype=object)
@@ -781,11 +776,10 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
 def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                                new_cube_data, header, pa_rad, dx_au,
-                               streamer_z_AU, streamer_v_LS_km,
+                               z_means_pix, streamer_v_LS_km,
                                outname,
                                label="Per-emb-50 H2CO z-v with data",
-                               nbins_z=200,
-                               streamer_x_AU=None):
+                               nbins_z=200):
     """
     由 masked data cube 建立 z–v 圖（**沿影像 x 軸堆疊**）：
 
@@ -808,6 +802,7 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     v_axis = CRVAL3 + (np.arange(nz) + 1 - CRPIX3) * CDELT3  # km/s, LSR
     vmin = np.nanmin(v_axis)
     vmax = np.nanmax(v_axis)
+    rms_channel = 3.521605434804e-1
 
     # ---------- 2) image-frame z (AU) ----------
     # 注意：這裡不做 PA 旋轉，直接用影像的 y (row) 當作 z_img，原點在 protostar
@@ -819,23 +814,45 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # ---------- 3) 沿 x 軸平均，得到 pv(v,z_img) ----------
     # 直接對每個速度切片做 column-wise 平均
     pv = np.nanmean(new_cube_data, axis=2)  # shape = (nz, ny)
-
+    if CDELT3 < 0:
+        pv = pv[::-1]
+        v_axis = v_axis[::-1]
     # ---------- 4) 繪圖 ----------
     fig, ax = plt.subplots(figsize=(7, 4))
     # 用百分位控制動態範圍，避免 outliers
     vmin_img = np.nanpercentile(pv, 5)
-    vmax_img = np.nanpercentile(pv, 99)
+    vmax_img = np.nanpercentile(pv, 100)
 
     img = ax.imshow(
         pv,
         origin="lower",
-        cmap="Greys_r",
+        cmap="inferno",
         extent=[z_img_AU[0], z_img_AU[-1], vmin, vmax],
         aspect="auto",
         vmin=vmin_img,
         vmax=vmax_img,
     )
+    # ---------- Add colorbar ----------
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="3%", pad=0.05)
+    cbar = fig.colorbar(img, cax=cax)
+    cbar.set_label("Averaged Intensity", fontsize=10)
 
+    # ---------- Add contour ----------
+    try:
+        levels = np.linspace(vmin_img, vmax_img, 5)
+        ax.contour(
+            z_img_AU,
+            v_axis,
+            pv,
+            levels=levels,
+            colors="white",
+            linewidths=0.6,
+            alpha=0.7
+        )
+    except Exception as e:
+        print(f"[z–v] contour failed: {e}")
+        
     # ---------- 5) 疊上 PSS_model（先轉成 image frame 的 z_img） ----------
     theta = np.deg2rad(theta_deg)
     phi   = np.deg2rad(phi_deg)
@@ -865,20 +882,13 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # ---------- 6) 疊上質心 ----------
-    if streamer_z_AU is not None and streamer_v_LS_km is not None:
-        # 若有提供 streamer_x_AU，則把 (x,z) 轉為 image-frame z；否則就使用傳入的 z
-        if streamer_x_AU is not None:
-            try:
-                z_cent_img = streamer_x_AU * np.sin(pa_rad) + streamer_z_AU * np.cos(pa_rad)
-            except Exception:
-                z_cent_img = np.asarray(streamer_z_AU)
-        else:
-            z_cent_img = np.asarray(streamer_z_AU)
-
+    if z_means_pix is not None and streamer_v_LS_km is not None:
+        # z_means_pix 已經是相對 protostar 的影像座標像素位移，直接乘上 dx_au 變成 AU
+        z_cent_img_AU = np.asarray(z_means_pix) * dx_au
         v_cent = np.asarray(streamer_v_LS_km) + Local_Standard_Velocity
-        good = np.isfinite(z_cent_img) & np.isfinite(v_cent)
+        good = np.isfinite(z_cent_img_AU) & np.isfinite(v_cent)
         ax.scatter(
-            z_cent_img[good],
+            z_cent_img_AU[good],
             v_cent[good],
             c="k",
             s=30,
@@ -892,8 +902,11 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     ax.set_xlabel("z (AU, image frame)")
     ax.set_ylabel("Velocity (km/s, LSR)")
     ax.set_title(label)
-    ax.set_ylim(vmin, vmax)
-    ax.legend(frameon=False, fontsize=9)
+    ax.set_ylim(6, 8)
+    ax.set_xlim(1000, -4000)
+    leg = ax.legend(frameon=False, fontsize=9)
+    for txt in leg.get_texts():
+        txt.set_color("white")
     ax.grid(alpha=0.2)
 
     plt.tight_layout()
@@ -934,15 +947,17 @@ if RUN_FROM_CACHE_ONLY:
 
         im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
         dx_arcsec = abs(header["CDELT2"]) * 3600.0
+        dv = abs(float(header["CDELT3"]))
         dx_au = dx_arcsec * distance_pc
+        v_weight_phys = (dv / dx_au) ** 2
 
-        # 讀取 masked streamer cube（若有）
+        # --- Load masked cube (if exists) ---
+        new_cube_data = None
         try:
             new_cube_data = fits.getdata("Per-emb-50_H2CO_streamer_cube.fits")
             print("[cache] Loaded streamer cube from FITS")
-        except Exception:
-            print("[cache] No streamer cube found in FITS, skip loading new_cube_data")
-            new_cube_data = None
+        except Exception as e:
+            print(f"[cache] No streamer cube FITS available ({e}), Quick Mode may skip z–v diagram")
 
         # 從 cache 抓質心（若有），轉成像素座標
         cen_x_pix = cen_z_pix = cen_v_LS = None
@@ -954,7 +969,11 @@ if RUN_FROM_CACHE_ONLY:
             cen_x_pix = x_rot * np.cos(pa_rad) - z_rot * np.sin(pa_rad) + im_center[1]
             cen_z_pix = x_rot * np.sin(pa_rad) + z_rot * np.cos(pa_rad) + im_center[0]
             # 這裡 streamercom_z_AU, streamercom_v_LS_km 若需要也從 c 取
-            if "streamercom_z_AU" in c:
+            if "streamercom_x_AU" in c:
+                streamercom_x_AU = c["streamercom_x_AU"]
+            else:
+                streamercom_x_AU = None
+            if "streamercom_x_AU" in c:
                 streamercom_z_AU = c["streamercom_z_AU"]
             else:
                 streamercom_z_AU = None
@@ -962,21 +981,7 @@ if RUN_FROM_CACHE_ONLY:
                 streamercom_v_LS_km = c["streamercom_v_LS_km"]
             else:
                 streamercom_v_LS_km = None
-            plot_z_v_diagram_from_cube(
-                theta_deg=np.rad2deg(Theta_best),
-                phi_deg=np.rad2deg(Phi_best),
-                inc_deg=np.rad2deg(Incl_best),
-                T_Myr=T_best,
-                omega=Omega_best,
-                new_cube_data=new_cube_data,
-                header=header,
-                pa_rad=pa_rad,
-                dx_au=dx_au,
-                streamer_z_AU=streamercom_z_AU,
-                streamer_v_LS_km=streamercom_v_LS_km,
-                outname="Per-emb-50_z_v_data_overlay.png",
-                streamer_x_AU=c.get("streamercom_x_AU", None),
-            )
+
             if "streamercom_v_LS_km" in c:
                 cen_v_LS = c["streamercom_v_LS_km"]
                 x_array = c["x_array"]
@@ -986,7 +991,22 @@ if RUN_FROM_CACHE_ONLY:
                 x_means = c["x_means"]
                 z_means = c["z_means"]
                 v_means = c["v_means"]
-
+        
+        
+        plot_z_v_diagram_from_cube(
+            theta_deg=np.rad2deg(Theta_best),
+            phi_deg=np.rad2deg(Phi_best),
+            inc_deg=np.rad2deg(Incl_best),
+            T_Myr=T_best,
+            omega=Omega_best,
+            new_cube_data=new_cube_data,
+            header=header,
+            pa_rad=pa_rad,
+            dx_au=dx_au,
+            z_means_pix=None,
+            streamer_v_LS_km=None,
+            outname="Per-emb-50_z_v_data_overlay.png",
+        )
 
         # 畫圖
         plot_streamer_on_mom1(
@@ -1013,7 +1033,42 @@ if RUN_FROM_CACHE_ONLY:
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
         )
+        # 用 cache file parameter 評估一次 error_function（會更新 last_* RMSE if implemented）
+        rmse_combo = pss.error_function(
+            [Theta_best, Phi_best],
+            streamercom_x_AU,
+            streamercom_z_AU,
+            streamercom_v_LS_km,
+            v_weight_phys,
+            T_best, Omega_best, Incl_best,
+            M_star,
+            scale,
+            log_power,
+        )
 
+        pos_rmse = getattr(pss.error_function, "last_pos_rmse", np.nan)
+        vel_rmse = getattr(pss.error_function, "last_vel_rmse", np.nan)
+        eq_rmse  = getattr(pss.error_function, "last_eq_vel_rmse", np.nan)
+
+        r_ref_AU = 200 * T_best * 1e6 * spc.year / spc.astronomical_unit
+
+        # M_0, Mdot（用 best-fit 的 T）
+        M_0 = M_star * M_SUN_KG * spc.G / (200.0**3 * T_best * 1e6 * spc.year)
+        M_dot = M_star / (T_best * 1e6)  # [M_sun / yr]，假設全星質量在 T 內累積
+
+        print("\n==================== Parameters (Per-emb-50) ====================")
+        print(f"Theta        = {np.rad2deg(Theta_best):.3f} deg")
+        print(f"Phi          = {np.rad2deg(Phi_best):.3f} deg")
+        print(f"Inclination  = {np.rad2deg(Incl_best):.3f} deg")
+        print(f"Time (T_Myr) = {T_best:.6f} Myr")
+        print(f"Omega        = {Omega_best:.4f}")
+        print(f"r_ref        = {r_ref_AU:.3f} AU")
+        print(f"Position RMSE: {pos_rmse:.4f} AU")
+        print(f"Velocity RMSE: {vel_rmse:.4f} km/s")
+        print(f"Combined RMSE: {eq_rmse:.4f} km/s-equivalent")
+        print(f"M_0          = {M_0:.3e} (dimensionless)")
+        print(f"Mdot         = {M_dot:.3e} M_sun/yr")
+        print("====================================================================")
         print("[Quick Mode] 完成 cache-based 圖片，結束程式。")
         sys.exit(0)
 
@@ -1055,6 +1110,15 @@ h1.writeto("Per-emb-50_H2CO_mom1.fits", overwrite=True)
 im_center, masked_center_cube, masked_cube, new_cube_data = build_streamer_masked_cube(
     subcube, header, rms_channel
 )
+
+# --- Save masked streamer cube for later quick-mode loading ---
+try:
+    fits.PrimaryHDU(data=new_cube_data, header=header).writeto(
+        "Per-emb-50_H2CO_streamer_cube.fits", overwrite=True
+    )
+    print("[mask] Saved masked streamer cube to FITS")
+except Exception as e:
+    print(f"[mask] Failed to save streamer cube FITS: {e}")
 
 str_mom0 = masked_cube.moment(order=0).value
 str_mom1 = masked_cube.moment(order=1).value
@@ -1136,30 +1200,8 @@ if RUN_GRID:
     np.savez(CACHE_PATH_GRID, **cache)
     print(f"[cache] Saved grid search results to {CACHE_PATH_GRID}")
 else:
-    print("[Grid] Skipped, using manual priors.")
-    Theta_init = np.deg2rad(60.0)
-    Phi_init   = np.deg2rad(20.0)
-    Incl_init  = np.deg2rad(-30.0)
-    T_init     = 0.05
-    Omega_init = 0.2
-    parameter_prior_ranges = {
-        "Theta zero": (np.deg2rad(10.0),  np.deg2rad(89.0)),
-        "Phi zero":   (0.0,               2.0 * np.pi),
-        "Inclination":(np.deg2rad(-89.0), np.deg2rad(89.0)),
-        "Time":       (0.01,              0.5),
-        "Omega":      (0.0,               1.0),
-    }
-    cache.update({
-        "grid_best_Theta": float(Theta_init),
-        "grid_best_Phi":   float(Phi_init),
-        "grid_best_Incl":  float(Incl_init),
-        "grid_best_T":     float(T_init),
-        "grid_best_Omega": float(Omega_init),
-        "grid_best_error": np.nan,
-    })
-    for key, (lo, hi) in parameter_prior_ranges.items():
-        cache[f"prior_{key}_lo"] = float(lo)
-        cache[f"prior_{key}_hi"] = float(hi)
+    cache["grid_used"] = False
+
 
 # ============================================================
 # 6. MCMC_grid（選配, 用 11 質心）
@@ -1258,10 +1300,10 @@ if RUN_MCMC_GRID:
                         labels=labels_plot,
                         range=ranges,
                         show_titles=True,
-                        title_fmt=".2f",
+                        title_fmt=".3f",
                         plot_datapoints=False,
                         fill_contours=True,
-                        smooth=1.0)
+                        smooth=1)
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -1286,8 +1328,63 @@ else:
 if RUN_MCMC_DISTANCE:
     print("\n[MCMC_distance] start")
 
-    # ---- 選擇 likelihood：有 distance 版就用，否則退回 centroid 版 ----
-    use_distance_like = hasattr(pss, "log_posterior_distance") and ("new_cube_data" in locals()) and (new_cube_data is not None)
+    # ---- Priors: choose between grid-search priors OR MCMC_grid-based priors ----
+    USE_MCMC_GRID_AS_PRIOR = True   # <--- switch here
+
+    if USE_MCMC_GRID_AS_PRIOR and cache.get("mcmc_grid_used", False):
+        # --- Use MCMC_grid medians as center ---
+        Theta_center = cache["mcmc_grid_median_Theta"]
+        Phi_center   = cache["mcmc_grid_median_Phi"]
+        Incl_center  = cache["mcmc_grid_median_Incl"]
+        T_center     = cache["mcmc_grid_median_T"]
+        Omega_center = cache["mcmc_grid_median_Omega"]
+
+        # redefine priors using tight ranges around MCMC_grid result
+        priors = {
+            "Theta zero": (Theta_center - np.deg2rad(8),  Theta_center + np.deg2rad(8)),
+            "Phi zero":   (Phi_center   - np.deg2rad(12), Phi_center   + np.deg2rad(12)),
+            "Inclination":(Incl_center  - np.deg2rad(10), Incl_center  + np.deg2rad(10)),
+            "Time":       (max(1e-4, T_center - 0.10*T_center),
+                           T_center + 0.10*T_center),
+            "Omega":      (max(0.01, Omega_center - 0.15*Omega_center),
+                           Omega_center + 0.15*Omega_center),
+        }
+
+        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+
+    else:
+        # --- Use grid-search-based center & prior ---
+        priors = parameter_prior_ranges
+        center_vals = [Theta_init, Phi_init, Incl_init, T_init, Omega_init]
+
+    # ---- Walker initialization ----
+    ndim = 5
+    labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
+    nwalkers, nsteps = 40, 10000
+
+    sigmas = [
+        np.deg2rad(8.0),
+        np.deg2rad(12.0),
+        np.deg2rad(10.0),
+        0.10 * center_vals[3] if center_vals[3] > 0 else 0.01,
+        0.15 * max(center_vals[4], 0.2),
+    ]
+
+    p0 = np.zeros((nwalkers, ndim))
+    for j, key in enumerate(labels_5d):
+        lo, hi = priors[key]
+        prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
+        if key == "Phi zero":
+            prop = (prop % (2*np.pi))
+        prop = np.clip(prop, lo, hi)
+        p0[:, j] = prop
+
+    # ---- Arguments for log posterior ----
+    use_distance_like = (
+        hasattr(pss, "log_posterior_distance")
+        and ("new_cube_data" in locals())
+        and (new_cube_data is not None)
+    )
     if use_distance_like:
         log_like_fn = pss.log_posterior_distance
         print("[MCMC_distance] 使用 distance_cube-based log_posterior")
@@ -1295,45 +1392,71 @@ if RUN_MCMC_DISTANCE:
         log_like_fn = pss.log_posterior_fast
         print("[MCMC_distance] distance log_posterior 不可用，改用 fast centroid 版本")
 
-    # ---- 先備好先驗範圍（前面 grid 或手動設定好的）----
-    priors = parameter_prior_ranges  # keys: ["Theta zero","Phi zero","Inclination","Time","Omega"]
-
-    # ---- 初始化 walkers：以 grid（或手動）給的初值為中心 ----
-    ndim = 5
-    labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
-    nwalkers, nsteps = 40, 10000
-
-    center_vals = [Theta_init, Phi_init, Incl_init, T_init, Omega_init]
-    sigmas = [
-        np.deg2rad(8.0),             # Theta
-        np.deg2rad(12.0),            # Phi
-        np.deg2rad(10.0),            # Incl
-        0.10 * T_init if T_init > 0 else 0.01,
-        0.15 * max(Omega_init, 0.2),
-    ]
-
-    p0 = np.zeros((nwalkers, ndim))
-    for j, key in enumerate(labels_5d):
-        lo, hi = priors[key]
-        prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
-        # Phi 週期性
-        if key == "Phi zero":
-            prop = (prop % (2*np.pi))
-        prop = np.clip(prop, lo, hi)
-        p0[:, j] = prop
-
-    # ---- log posterior 的參數 ----
     if use_distance_like:
-        log_args = (
-            priors,
-            new_cube_data,   # masked cube
-            header,
-            pa_rad,
-            dx_au,
-            v_weight_phys,
+        # --- search_bound 與 max_dist_value 設定（改用 model streamline + get_bounding_box） ---
+        max_dist_value = 30
+        buffer  = max_dist_value + 20
+        vbuffer = max_dist_value + 5
+
+        # 使用目前的中心值（center_vals）產生一條 PSS_model 的 streamer 線
+        # center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center] 或 grid 初始值
+        theta0, phi0, incl0, T0, omega0 = center_vals
+
+        # 1) 在 model frame 中產生 (x_m, z_m, v_m)
+        x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
+            theta0, phi0, incl0,
+            T0, omega0,
             M_star,
-            scale,
-            log_power,
+            radius_in_au=radius_in_au,
+            radius_out_au=radius_out_au,
+            resolution=200,
+            scale=scale,
+            log_power=log_power,
+        )
+
+        # 2) AU → pixel offset（以 dx_au 為 1 pixel 對應的 AU）
+        x_pix = x_m / dx_au
+        z_pix = z_m / dx_au
+
+        # 3) 轉到影像座標系並加上中心，變成 cube 的絕對像素座標
+        #    影像 x 軸 = RA 方向（header CRPIX1），影像 y 軸 = Dec 方向（header CRPIX2）
+        x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad) + im_center[1]
+        z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad) + im_center[0]
+
+        # 4) 將 model velocity 轉成 channel index
+        #    v_LSR = v_m + Local_Standard_Velocity
+        CRVAL3 = float(header["CRVAL3"])
+        CRPIX3 = float(header["CRPIX3"])
+        CDELT3 = float(header["CDELT3"])
+        v_LSR  = v_m + Local_Standard_Velocity
+        v_pix  = (v_LSR - CRVAL3) / CDELT3 + CRPIX3 - 1.0  # 0-based channel 座標
+
+        # 5) 用 model 的 (x_pix_rot, z_pix_rot, v_pix) 定義 search_bound
+        search_bound = pss.get_bounding_box(
+            x_pix_rot,          # 模型的 x 像素座標（column）
+            z_pix_rot,          # 模型的 z 像素座標（row）
+            v_pix,              # 模型的 channel 座標
+            buffer,             # 空間緩衝
+            vbuffer,            # 速度緩衝
+            new_cube_data.shape # cube_shape = (nz, ny, nx)
+        )
+
+        log_args = (
+            new_cube_data,
+            search_bound,
+            priors,
+            pa_rad,
+            dx_au,             # AU_per_pixel
+            im_center,
+            dv,
+            v_lastch_vel,
+            v_lastch_num,
+            v0,
+            v_weight_phys,
+            max_dist_value,
+            M_star,
+            radius_in_au,
+            radius_out_au,
         )
     else:
         log_args = (
@@ -1411,7 +1534,7 @@ if RUN_MCMC_DISTANCE:
                         labels=labels_plot,
                         range=ranges,
                         show_titles=True,
-                        title_fmt=".2f",
+                        title_fmt=".3f",
                         plot_datapoints=False,
                         fill_contours=True,
                         smooth=1.0)

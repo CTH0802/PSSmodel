@@ -438,7 +438,7 @@ def grow_distance_cube_bounded(cube_shape, model_line_coords, max_dist_value, v_
 # (註：此區塊依賴 PSS_model 和 grow_distance_cube_bounded)
 # ===================================================================
 
-def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, M_star, radius_in_au, radius_out_au):
+def log_likelihood_distance(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, M_star, radius_in_au, radius_out_au):
     """
     計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
     
@@ -516,7 +516,7 @@ def in_phi_range(phi, phi_min, phi_max):
         # wrap-around case
         return (phi >= phi_min) or (phi <= phi_max)
 
-def log_prior(params, prior_ranges):
+def log_prior_distance(params, prior_ranges):
     """
     計算對數先驗值。
     """
@@ -534,19 +534,19 @@ def log_prior(params, prior_ranges):
     
     return 0.0 # 均勻先驗，對數值為 0
 
-def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_rad, AU_per_pixel, im_center, 
+def log_posterior_distance(params, data_cube, search_bound, parameter_prior_ranges, pa_rad, AU_per_pixel, im_center, 
                   dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, 
                   M_star, radius_in_au, radius_out_au):
     """
     計算對數後驗值。
     (註：依賴 log_prior 和 log_likelihood)
     """
-    lp = log_prior(params, parameter_prior_ranges)
+    lp = log_prior_distance(params, parameter_prior_ranges)
     if not np.isfinite(lp):
         return -np.inf
     
     # 傳入 log_likelihood 需要的參數
-    ll = log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, 
+    ll = log_likelihood_distance(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, 
                         dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, max_dist_value, 
                         M_star, radius_in_au, radius_out_au)
     return lp + ll
