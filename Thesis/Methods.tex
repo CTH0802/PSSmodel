@@ -76,6 +76,16 @@ The fitting procedure described below is applied to each dataset to constrain th
 \YN{This step can be neglected if the disk PA on the sky is known. Otherwise, the previous step needs to be repeated until the optimal is found.}
 
 \subsection{Global fitting of the full model}
+We model the streamer kinematics using a five–dimensional parameter space ($\Theta_0$, $\Phi_0$, i, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamline, the inclination of the system, the characteristic collapse timescale, and the ratio of rotation velocity. For each target, we first perform a coarse 5D grid search to identify reasonable regions of parameter space. The grid covers $\Theta_0 \in (0, \pi/2)$, $\Phi_0 \in (0, 2\pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ is sampled logarithmically around a characteristic dynamical timescale set by the Keplerian period at a reference radius, and $\omega$ is sampled linearly between 0 and 1.
+
+The grid search uses the same 11 streamer centroids extracted from the data to evaluate the model performance. At each grid point, we compute the misfit between the model streamline and the observed streamer centroids using the error metric $E = \sqrt{\left\langle \Delta x^2 + \Delta z^2 + w_v\,\Delta v^2 \right\rangle}$, where $\Delta x$ and $\Delta z$ are the differences in projected position (in AU), and $\Delta v$ is the corresponding line-of-sight velocity residual (in $\rm km s^{-1}$) for each of the measured centroids. The weight $w_v = (\Delta v_{\rm km\,s^{-1}} / \Delta x_{\rm AU})^2$ is chosen such that spatial and velocity deviations contribute in comparable physical units.
+
+We then use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and f is typically 0.05$\sim$0.10 (relaxed if necessary to include at least several tens of models). For each parameter we take the 5th$\sim$95th percentile range of these “good” models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data-driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
+
+Starting from these priors, we run an ensemble Markov Chain Monte Carlo (MCMC) sampler (emcee) in the same 5D space. For the fast likelihood based on the 11 streamer centroids, we use of order $N_{\rm walkers}\sim 20$ and $N_{\rm steps}\sim 1.5\times10^4$, initializing the walkers around the best grid solution but clipping them to the prior ranges. 
+\subsection{Fitting with observations}
+
+\subsection{Fitting with partially known parameters}
 
 
 % \YN{Re-include the infall term. Perform full model fitting around the optimal parameters found in the first step. }
@@ -185,6 +195,3 @@ The fitting procedure described below is applied to each dataset to constrain th
 % \YN{The external part of the streamer where the infall term cannot be safely neglected should be truncated. The procedure should be repeated until convergence is obtained.}
 
 % \YN{If the inclination is known, fitting could be simplified. $B=-A\sin{i}$. Re-write the equations for the regression model: only 4 equations to be solved.}
-\section{Fitting with observations}
-
-\subsection{Fitting with partially known parameters}

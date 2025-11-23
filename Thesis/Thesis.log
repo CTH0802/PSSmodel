@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  15 OCT 2025 06:31
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  19 NOV 2025 12:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1082,54 +1082,60 @@ File: UTF8.chr 2021/10/16 4.8.5
 ]
 Chapter 1.
 (././Introduction.tex
+Missing character: There is no ≳ (U+2273) in font [lmroman12-regular]:mapping=tex-text;!
+
 
 [1
 
 
 ]
 
-[2])
+[2]
 
-[3]
+[3])
+
+[4]
 Chapter 2.
 (././Methods.tex
 
-[4
+[5
 
 ]
 
-[5]
+[6]
 Overfull \hbox (19.12483pt too wide) detected at line 68
 []
  []
 
 
 
-[6])
-
 [7]
+
+[8])
+
+[9]
 Chapter 3.
 
 
-[8
+[10
 
 ]
 Chapter 4.
 (././Conclusion.tex)
 
-[9
+[11
 
 ]
 Chapter 5.
 (././Appendix.tex
 
-[10
+[12
 
 ]
 Appendix A.
 ) (./Thesis.bbl
 
-[11
+[13
 
 ]
 ! Undefined control sequence.
@@ -1223,7 +1229,7 @@ and I'll forget about whatever was undefined.
 
 
 
-[12
+[14
 
 ]
 ! Undefined control sequence.
@@ -1248,21 +1254,21 @@ and I'll forget about whatever was undefined.
 
 )
 
-[13] (./Thesis.aux)
+[15] (./Thesis.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: B96CD2E94A43AEFBFF60F3EF6CBBD06A;4009.
+(rerunfilecheck)             Checksum: C13C4E340532DACBFA1B6644325F643F;4016.
  ) 
 Here is how much of TeX's memory you used:
- 28454 strings out of 473832
- 586499 string characters out of 5729482
- 1006988 words of memory out of 5000000
- 51009 multiletter control sequences out of 15000+600000
- 563779 words of font info for 73 fonts, out of 8000000 for 9000
+ 28492 strings out of 473832
+ 588931 string characters out of 5729482
+ 1006991 words of memory out of 5000000
+ 51046 multiletter control sequences out of 15000+600000
+ 563787 words of font info for 74 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,1586b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (20 pages, 146112 bytes).
+Output written on Thesis.xdv (22 pages, 187264 bytes).

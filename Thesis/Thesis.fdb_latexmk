@@ -1,23 +1,23 @@
 # Fdb version 4
-["bibtex Thesis"] 1760481104.93198 "Thesis.aux" "Thesis.bbl" "Thesis" 1760481106.16781 0
+["bibtex Thesis"] 1763528037.75958 "Thesis.aux" "Thesis.bbl" "Thesis" 1763528038.97419 0
   "./abbrvnat.bst" 1756846681.65219 26869 e34bc1fe6f0f28fb07beec139336b94c ""
-  "./reference.bib" 1760480893.66631 12905 c3ecebe7420a8f7c665feb53f2090ff6 ""
-  "Thesis.aux" 1760481105.6741 6080 b3284f52ad628cb5a989b004fb610dbf "xelatex"
+  "./reference.bib" 1760481107.56946 11588 deb70e3e7196aceaa7828e8d55eaf108 ""
+  "Thesis.aux" 1763528038.50114 6092 9018a0fe8c2858ef69eff3c71bc940c7 "xelatex"
   (generated)
   "Thesis.bbl"
   "Thesis.blg"
   (rewritten before read)
-["xdvipdfmx"] 1760481105.88833 "Thesis.xdv" "Thesis.pdf" "Thesis" 1760481106.16925 0
-  "Thesis.xdv" 1760481105.67501 146112 db8326ac1e5573f07680385d382adefd "xelatex"
+["xdvipdfmx"] 1763528038.69989 "Thesis.xdv" "Thesis.pdf" "Thesis" 1763528038.97562 0
+  "Thesis.xdv" 1763528038.50226 187264 c5a86532d028083ba5576fec13ceb8cb "xelatex"
   (generated)
   "Thesis.pdf"
   (rewritten before read)
-["xelatex"] 1760481105.0155 "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Thesis.tex" "Thesis.xdv" "Thesis" 1760481106.16787 2
+["xelatex"] 1763528037.83395 "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Thesis.tex" "Thesis.xdv" "Thesis" 1763528038.97425 2
   "./Abstract.tex" 1757506448.40753 946 802587323453305475c667491ca5a3f7 ""
   "./Appendix.tex" 1759951483.89236 4394 021f4d16cfa8315b9bef095179234d27 ""
   "./Conclusion.tex" 1760481101.44104 0 d41d8cd98f00b204e9800998ecf8427e ""
-  "./Introduction.tex" 1759959950.80622 2955 560aaec92bac0a26a830bd5b0defa19f ""
-  "./Methods.tex" 1759462588.06691 9416 e973b0a4930971e47e3e32626a80dd37 ""
+  "./Introduction.tex" 1763525258.52392 4928 a78801989e0a0d67a48d216f5b7565f0 ""
+  "./Methods.tex" 1763528035.86621 11867 2cb62ad3d2d825091b925cfcbdb28722 ""
   "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Thesis.tex" 1760472469.72518 3991 a68561e0b903e6a530ee43f09d9e6211 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1136768653 1528 f853c4d1b4e0550255e02831fdc8496f ""
@@ -198,16 +198,16 @@
   "Abstract.tex" 1757506448.40753 946 802587323453305475c667491ca5a3f7 ""
   "Appendix.tex" 1759951483.89236 4394 021f4d16cfa8315b9bef095179234d27 ""
   "Conclusion.tex" 1760481101.44104 0 d41d8cd98f00b204e9800998ecf8427e ""
-  "Introduction.tex" 1759959950.80622 2955 560aaec92bac0a26a830bd5b0defa19f ""
-  "Methods.tex" 1759462588.06691 9416 e973b0a4930971e47e3e32626a80dd37 ""
+  "Introduction.tex" 1763525258.52392 4928 a78801989e0a0d67a48d216f5b7565f0 ""
+  "Methods.tex" 1763528035.86621 11867 2cb62ad3d2d825091b925cfcbdb28722 ""
   "NTNUthesis.cls" 1759951106.31029 3283 20c5abbe12b0b59f6060ff9ce62d9938 ""
-  "Thesis.aux" 1760481105.6741 6080 b3284f52ad628cb5a989b004fb610dbf "xelatex"
-  "Thesis.bbl" 1760481105.01308 3908 9d6c9588ec6d694568ea2bbe898564dc "bibtex Thesis"
-  "Thesis.lof" 1760481105.67496 120 4b5392bf4295ae9f4473a7a4fff7fdc5 "xelatex"
-  "Thesis.lot" 1760481105.67498 211 33acf6b9b806c8675bd532c863c32fa9 "xelatex"
-  "Thesis.out" 1760481105.67474 4009 b96cd2e94a43aefbff60f3ef6cbbd06a "xelatex"
+  "Thesis.aux" 1763528038.50114 6092 9018a0fe8c2858ef69eff3c71bc940c7 "xelatex"
+  "Thesis.bbl" 1763528037.83138 3908 9d6c9588ec6d694568ea2bbe898564dc "bibtex Thesis"
+  "Thesis.lof" 1763528038.50221 120 4b5392bf4295ae9f4473a7a4fff7fdc5 "xelatex"
+  "Thesis.lot" 1763528038.50223 211 4761457ba60297bbd773351b69ca998e "xelatex"
+  "Thesis.out" 1763528038.50198 4016 c13c4e340532dacbfa1b6644325f643f "xelatex"
   "Thesis.tex" 1760472469.72518 3991 a68561e0b903e6a530ee43f09d9e6211 ""
-  "Thesis.toc" 1760481105.67494 2219 e6431c3d6a423209dd115467f1f65d82 "xelatex"
+  "Thesis.toc" 1763528038.50218 2231 d2783adba7571a809db60f94b1afd655 "xelatex"
   (generated)
   "Thesis.aux"
   "Thesis.lof"
