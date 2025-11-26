@@ -327,12 +327,11 @@ def get_bounding_box(x_pix, z_pix, v_pix, buffer, v_buffer, cube_shape):
 # ===================================================================
 
 @njit
-def nearest_weighted_distance_numba(x, z, v, model_x, model_z, model_v, v_weight):
+def weighted_distance_numba(x, z, v, model_x, model_z, model_v, v_weight):
     """
-    numba 版本：回傳距離平方 d^2 和最近點 index
+    numba 版本：回傳距離平方 d^2
     """
     dmin = 1e30 
-    idx_min = -1
     n = model_x.shape[0]
 
     for j in range(n):
@@ -343,9 +342,8 @@ def nearest_weighted_distance_numba(x, z, v, model_x, model_z, model_v, v_weight
 
         if dist_sq < dmin:
             dmin = dist_sq
-            idx_min = j
 
-    return dmin, idx_min
+    return dmin
 
 def error_function(params, streamercom_x, streamercom_z, streamercom_v,
                    weight_v, T_Myr, omega, Inclination, solar_mass, scale, log_power):
@@ -376,7 +374,7 @@ def error_function(params, streamercom_x, streamercom_z, streamercom_v,
             solar_mass, radius_in_au, radius_out_au,
             resolution=100, scale=scale, log_power=log_power
         )
-        d_min, _ = nearest_weighted_distance_numba(
+        d_min = weighted_distance_numba(
             streamercom_x[i],
             streamercom_z[i],
             streamercom_v[i],
@@ -563,7 +561,7 @@ def fill_distance_cube_core(distance_cube,
     for vv in prange(v_min, v_max + 1):
         for zz in range(z_min, z_max + 1):
             for xx in range(x_min, x_max + 1):
-                d2, _ = nearest_weighted_distance_numba(
+                d2 = weighted_distance_numba(
                     float(xx), float(zz), float(vv),
                     model_x, model_z, model_v,
                     v_weight,
@@ -636,11 +634,6 @@ def grow_distance_cube_bounded(
         # 沒有任何模型點落在 cube 內，直接回傳全 -1
         return distance_cube
 
-    # 方便後面計算，轉成 numpy array（float64）
-    model_x = np.asarray(x_pix, dtype=float)
-    model_z = np.asarray(z_pix, dtype=float)
-    model_v = np.asarray(v_pix, dtype=float)
-
     # ---------- 4. 決定實際要掃描的 (v,z,x) 邊界 ----------
     if bound is not None:
         v_bound, z_bound, x_bound = bound
@@ -652,13 +645,14 @@ def grow_distance_cube_bounded(
         v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
 
     # 再跟 model 本身的位置 ± max_dist_value 取交集，避免掃太大
-    pad = int(np.ceil(max_dist_value))
-    v_min_model = int(np.floor(model_v.min())) - pad
-    v_max_model = int(np.ceil(model_v.max())) + pad
-    z_min_model = int(np.floor(model_z.min())) - pad
-    z_max_model = int(np.ceil(model_z.max())) + pad
-    x_min_model = int(np.floor(model_x.min())) - pad
-    x_max_model = int(np.ceil(model_x.max())) + pad
+    pad = 50
+    pad_v = pad / np.sqrt(v_weight)    
+    v_min_model = int(np.floor(v_pix.min())) - pad_v
+    v_max_model = int(np.ceil(v_pix.max())) + pad_v
+    z_min_model = int(np.floor(z_pix.min())) - pad
+    z_max_model = int(np.ceil(z_pix.max())) + pad
+    x_min_model = int(np.floor(x_pix.min())) - pad
+    x_max_model = int(np.ceil(x_pix.max())) + pad
 
     v_min = max(0,          max(v_min, v_min_model))
     z_min = max(0,          max(z_min, z_min_model))
@@ -673,7 +667,7 @@ def grow_distance_cube_bounded(
 
     fill_distance_cube_core(
         distance_cube,
-        model_x, model_z, model_v,
+        x_pix, z_pix, v_pix,
         float(v_weight), float(max_dist_value),
         int(v_min), int(v_max),
         int(z_min), int(z_max),
@@ -700,27 +694,28 @@ def log_likelihood_shell(
     log_power,
 ):
     """
-    基於「殼層距離 cube」的 log-likelihood（實驗性）
+    基於「殼層距離 cube」的 log-likelihood
 
     search_bound 若非 None，格式為 ([v_min,v_max],[z_min,z_max],[x_min,x_max])，
     僅在該子區域內 stamp 殼層並計算殼層誤差。
     """
     Theta_zero, Phi_zero, Inclination, T_Myr, omega = params
 
-    if data_cube is None:
-        return -np.inf
-    data_arr = np.asarray(data_cube, dtype=float)
-    if not np.any(np.isfinite(data_arr) & (data_arr != 0.0)):
+    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
         return -np.inf
 
     E = shell_error_from_cube(
-        data_arr,
+        data_cube,
         Theta_zero, Phi_zero, Inclination, T_Myr, omega,
         pa_rad, dx_au, header, Local_Standard_Velocity,
         max_dist_value,
         M_star, radius_in_au, radius_out_au,
         scale, log_power,
     )
+    if not np.isfinite(E):
+        return -np.inf
+    if E <= 0:
+        return -np.inf
     logL = -np.log10(E)
     return logL
 
@@ -784,7 +779,11 @@ def log_posterior_shell(
     if not np.isfinite(logL):
         return -np.inf
 
-    return lp + logL
+    post = lp + logL
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
 
 def log_likelihood_distance(params, data_cube, search_bound,
                             pa_rad, dx_au, header, Local_Standard_Velocity,
@@ -799,7 +798,8 @@ def log_likelihood_distance(params, data_cube, search_bound,
     由它負責：
       PSS_model → 物理座標 → (x_pix, z_pix, v_pix) → distance cube。
     """
-    
+    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
+        return -np.inf
     # 從 data_cube 獲取形狀
     cube_shape = data_cube.shape
     
@@ -818,9 +818,11 @@ def log_likelihood_distance(params, data_cube, search_bound,
     valid_mask = distance_cube >= 0
     numerator = np.nansum(distance_cube[valid_mask] * data_cube[valid_mask])
     denominator = np.nansum(data_cube[valid_mask])
-    if denominator == 0 or np.isnan(numerator):
-        return -np.inf     
     normalized_error = np.sqrt(numerator / denominator)
+    if not np.isfinite(normalized_error):
+        return -np.inf
+    if normalized_error <= 0:
+        return -np.inf
     return -np.log10(normalized_error)
 
 def in_phi_range(phi, phi_min, phi_max):
@@ -881,7 +883,13 @@ def log_posterior_distance(params, data_cube, search_bound, parameter_prior_rang
         M_star, radius_in_au, radius_out_au,
         scale, log_power,
     )
-    return lp + ll
+    if not np.isfinite(ll):
+        return -np.inf
+    post = lp + ll
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
 
 # ===================================================================
 # 1. MCMC 先驗 (Prior)
@@ -920,7 +928,12 @@ def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v,
                            [Theta0, Phi0, Incl, T_Myr, Omega]
     - (其他...): 您的觀測數據和固定參數
     """
-    
+    if not np.any(np.isfinite(streamercom_v) & (streamercom_v != 0.0)):
+        return -np.inf
+    elif not np.any(np.isfinite(streamercom_z) & (streamercom_z != 0.0)):
+        return -np.inf
+    elif not np.any(np.isfinite(streamercom_x) & (streamercom_x != 0.0)):
+        return -np.inf
     # 1. 解包 MCMC 傳入的 5 個參數
     Theta_zero, Phi_zero, Inclination, T_Myr, omega = params
     
@@ -944,10 +957,10 @@ def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v,
         log_power
     )
     
-    # 4. 將 RMSE 轉換為 Log Likelihood
-    #    我們使用 -log10(Error)，這與您慢速方法的邏輯一致
-    if rmse_error <= 0 or np.isnan(rmse_error):
-        return -np.inf # 避免 log10(0) 或 log10(nan)
+    if not np.isfinite(rmse_error):
+        return -np.inf
+    if rmse_error <= 0:
+        return -np.inf
         
     return -np.log10(rmse_error)
 
@@ -970,8 +983,13 @@ def log_posterior_fast(params, prior_ranges, streamercom_x, streamercom_z, strea
     ll = log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
                              weight_v, solar_mass, scale, log_power)
     
-    # 3. 回傳總和
-    return lp + ll
+    if not np.isfinite(ll):
+        return -np.inf
+    post = lp + ll
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
 
 # ===================================================================
 # 6. MCMC 結果分析 (MCMC Analysis)

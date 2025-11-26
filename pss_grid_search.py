@@ -55,7 +55,6 @@ def run_grid_search(
         error[i_th, i_ph, i_I, i_T, i_O] = val
         if val < best_val:
             best_val = val
-            best_idx = (i_th, i_ph, i_I, i_T, i_O)
 
     min_th, min_ph, min_I, min_T, min_O = np.unravel_index(np.argmin(error), error.shape)
     best_params = dict(
@@ -127,13 +126,4 @@ def compute_priors_from_grid(error, grid, best_val, frac=0.05):
         "Time":       padded_range(T_good, abs_min=0.0),
         "Omega":      padded_range(Omega_good, abs_min=0.0, abs_max=1.0)
     }
-
-    print("\n[Priors from grid]")
-    for name, (lo, hi) in priors.items():
-        if name in ["Theta zero", "Phi zero", "Inclination"]:
-            print(f"{name:<12s}: ({np.rad2deg(lo):6.2f}, {np.rad2deg(hi):6.2f}) deg")
-        elif name == "Time":
-            print(f"{name:<12s}: ({lo:.5f}, {hi:.5f}) Myr")
-        else:
-            print(f"{name:<12s}: ({lo:.3f}, {hi:.3f})")
     return priors

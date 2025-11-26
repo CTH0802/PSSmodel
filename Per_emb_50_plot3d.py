@@ -47,7 +47,7 @@ LSR_velocity  = 7.5  # km/s
 DISTANCE_PC   = 300.0        
 M_STAR_MSUN   = 2.58         
 M_SUN_KG      = 1.98847e30
-R_IN_AU       = 2e2
+R_IN_AU       = 2.2e2
 R_OUT_AU      = 3.8e3
 RESOLUTION    = 200
 SCALE         = "log"
@@ -135,6 +135,75 @@ def pixel_to_world_arrays(x_pix, z_pix, v_pix, header):
     return ra_off_arcsec, dec_off_arcsec, v_lsr
 
 
+def compute_isotropic_axis_ranges_from_world(ra, dec, vlsr, pad_frac=0.05):
+    """
+    給定世界座標 (ra, dec, vlsr)，自動：
+      1. 算出每軸的 min/max 並加一點 padding
+      2. 讓三個軸的視覺長度一樣（等比例 box）
+      3. RA 軸維持天文慣例：左邊大、右邊小
+
+    ra, dec 單位: arcsec
+    vlsr    單位: km/s
+    pad_frac: 0.05 表示兩端各多留 5% 的空間
+    """
+
+    def _rng(arr):
+        arr = arr[np.isfinite(arr)]
+        if arr.size == 0:
+            return None
+        amin = arr.min()
+        amax = arr.max()
+        if amin == amax:
+            # 避免全都一樣 → range = [x, x]
+            delta = 0.5 * max(abs(amin), 1.0)
+            return [amin - delta, amax + delta]
+        pad = (amax - amin) * pad_frac
+        return [amin - pad, amax + pad]
+
+    # 先算原始範圍
+    x_range = _rng(ra)
+    y_range = _rng(dec)
+    z_range = _rng(vlsr)
+
+    if (x_range is None) or (y_range is None) or (z_range is None):
+        return None  # 交給呼叫端 fallback
+
+    # RA 軸反向（左大右小）
+    x_range = x_range[::-1]
+
+    # ==== 下面開始做「三軸等長」 ====
+
+    # 長度用絕對值（因為 x_range 可能是 [正, 負] 反向）
+    Lx = abs(x_range[1] - x_range[0])
+    Ly = abs(y_range[1] - y_range[0])
+    Lz = abs(z_range[1] - z_range[0])
+
+    Lmax = max(Lx, Ly, Lz)
+
+    def _expand(r, L_target):
+        c = 0.5 * (r[0] + r[1])   # 中心
+        half = 0.5 * L_target
+        return [c - half, c + half]
+    def _expand_z(r, L_target):
+        c = 0.5 * (r[0] + r[1])   # 中心
+        half = 0.2 * L_target
+        return [c - half, c + half]
+    # y, z 直接展開成同樣長度
+    y_new = _expand(y_range, Lmax)
+    z_new = _expand_z(z_range, Lmax)
+
+    # x 軸要維持「方向」，所以先 sort 再決定要不要翻回來
+    x_sorted = sorted(x_range)           # 小 → 大
+    x_iso    = _expand(x_sorted, Lmax)   # 小 → 大
+
+    if x_range[0] > x_range[1]:
+        # 原本是大 → 小，就反轉回大 → 小（天文 RA 慣例）
+        x_new = x_iso[::-1]
+    else:
+        x_new = x_iso
+
+    return dict(x_range=x_new, y_range=y_new, z_range=z_new)
+
 def build_model_line_in_cube(params, header, pa_rad, dx_au, lsr_vel):
     """
     使用 PSS_model 建立 3D 流線，並轉成：
@@ -218,7 +287,7 @@ def prepare_cubes_and_model():
     dx_au     = dx_arcsec * DISTANCE_PC
     CDELT3    = float(header["CDELT3"])   # km/s per channel
     dv        = abs(CDELT3)
-    v_weight_phys = (dv / dx_au)**2
+    v_weight_phys = (dx_au / dv)**2
 
     # 3) best-fit params
     params = load_best_params(cache_path)
@@ -273,13 +342,35 @@ def make_fig_model_plus_shell(info):
     """model + shell (用 shell index 當顏色)"""
     shell_cube = info["shell_cube"]
     header     = info["header"]
+    
+    # 1) 從 header 讀取像素刻度
+    dx_ra_arcsec  = abs(header["CDELT1"]) * 3600.0  # RA 每像素 arcsec
+    dx_dec_arcsec = abs(header["CDELT2"]) * 3600.0  # Dec 每像素 arcsec
+    dv_kms        = abs(header["CDELT3"])           # 每 channel km/s
 
+    # 2) 這裡用 RA/Dec 的平均刻度當 sky scale
+    dx_sky_arcsec = 0.5 * (dx_ra_arcsec + dx_dec_arcsec)
+
+    # 3) 讓「1 km/s 看起來跟 1 arcsec 差不多長」
+    #    => aspect_z = dv / dx_sky_arcsec
+    aspect_z = dv_kms / dx_sky_arcsec * 1.2
+    
     mask_shell = shell_cube >= 1
     v_s, z_s, x_s = np.where(mask_shell)
     shell_k = shell_cube[mask_shell]
 
     ra_s, dec_s, vlsr_s = pixel_to_world_arrays(x_s, z_s, v_s, header)
 
+    ra_m   = info["model_line"]["ra_off"]
+    dec_m  = info["model_line"]["dec_off"]
+    vlsr_m = info["model_line"]["v_lsr"]
+
+    ra_all   = np.concatenate([ra_s,   ra_m])
+    dec_all  = np.concatenate([dec_s,  dec_m])
+    vlsr_all = np.concatenate([vlsr_s, vlsr_m])
+
+    ranges = compute_isotropic_axis_ranges_from_world(ra_all, dec_all, vlsr_all)
+    
     fig = go.Figure()
 
     fig.add_trace(go.Scatter3d(
@@ -315,7 +406,21 @@ def make_fig_model_plus_shell(info):
         ),
     ))
 
-    _update_layout_common(fig, "Model + Shell (RA offset, DEC offset, v_LSR)")
+    _update_layout_common(fig, "Model + Shell (RA offset, DEC offset, v_LSR)", info["header"])
+
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="RA offset (arcsec)",
+            yaxis_title="DEC offset (arcsec)",
+            zaxis_title="v_LSR (km/s)",
+            xaxis=dict(range=ranges["x_range"]),
+            yaxis=dict(range=ranges["y_range"]),
+            zaxis=dict(range=ranges["z_range"]),
+            aspectmode="manual",
+            aspectratio=dict(x=1, y=1, z=aspect_z),  # 三軸視覺比例 1:1:1
+        ),
+        margin=dict(l=0, r=0, b=0, t=40),
+    )
     return fig
 
 
@@ -367,7 +472,7 @@ def make_fig_model_plus_distance(info):
         ),
     ))
 
-    _update_layout_common(fig, "Model + Distance cube (RA offset, DEC offset, v_LSR)")
+    _update_layout_common(fig, "Model + Distance cube (RA offset, DEC offset, v_LSR)", info["header"])
     return fig
 
 
@@ -448,7 +553,7 @@ def make_fig_model_plus_shell_error(info):
         ),
     ))
 
-    _update_layout_common(fig, "Model + Shell error (RA offset, DEC offset, v_LSR)")
+    _update_layout_common(fig, "Model + Shell error (RA offset, DEC offset, v_LSR)", info["header"])
     return fig
 
 
@@ -528,7 +633,7 @@ def make_fig_model_plus_distance_error(info):
         ),
     ))
 
-    _update_layout_common(fig, "Model + Distance error (RA offset, DEC offset, v_LSR)")
+    _update_layout_common(fig, "Model + Distance error (RA offset, DEC offset, v_LSR)", info["header"])
     return fig
 
 
@@ -578,19 +683,34 @@ def make_fig_model_plus_data(info):
         ),
     ))
 
-    _update_layout_common(fig, "Model + Observations (RA offset, DEC offset, v_LSR)")
+    _update_layout_common(fig, "Model + Observations (RA offset, DEC offset, v_LSR)", info["header"])
     return fig
 
 
-def _update_layout_common(fig, title):
+def _update_layout_common(fig, title, header):
+    # 1) 從 header 讀取像素刻度
+    dx_ra_arcsec  = abs(header["CDELT1"]) * 3600.0  # RA 每像素 arcsec
+    dx_dec_arcsec = abs(header["CDELT2"]) * 3600.0  # Dec 每像素 arcsec
+    dv_kms        = abs(header["CDELT3"])           # 每 channel km/s
+
+    # 2) 這裡用 RA/Dec 的平均刻度當 sky scale
+    dx_sky_arcsec = 0.5 * (dx_ra_arcsec + dx_dec_arcsec)
+
+    # 3) 讓「1 km/s 看起來跟 1 arcsec 差不多長」
+    #    => aspect_z = dv / dx_sky_arcsec
+    aspect_z = dv_kms / dx_sky_arcsec
+
     fig.update_layout(
         title=title,
         scene=dict(
             xaxis_title='RA offset (arcsec)',
             yaxis_title='DEC offset (arcsec)',
             zaxis_title='v_LSR (km/s)',
+            xaxis=dict(range=[4.0, -10.5]),
+            yaxis=dict(range=[-12.0, 2.5]),
+            zaxis=dict(range=[5.0, 8.5]),
             aspectmode="manual",
-            aspectratio=dict(x=1, y=1, z=1),
+            aspectratio=dict(x=1, y=1, z=aspect_z),
         ),
         margin=dict(l=0, r=0, b=0, t=40),
     )
@@ -603,9 +723,9 @@ def main():
 
     figs = [
         ("Per50_model_shell.html",            make_fig_model_plus_shell(info)),
-        ("Per50_model_distance.html",         make_fig_model_plus_distance(info)),
+        # ("Per50_model_distance.html",         make_fig_model_plus_distance(info)),
         ("Per50_model_shell_error.html",      make_fig_model_plus_shell_error(info)),
-        ("Per50_model_distance_error.html",   make_fig_model_plus_distance_error(info)),
+        # ("Per50_model_distance_error.html",   make_fig_model_plus_distance_error(info)),
         ("Per50_model_data.html",             make_fig_model_plus_data(info)),
     ]
 

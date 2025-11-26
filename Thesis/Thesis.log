@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  19 NOV 2025 12:53
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  26 NOV 2025 10:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1111,31 +1111,42 @@ Overfull \hbox (19.12483pt too wide) detected at line 68
 
 [7]
 
-[8])
+[8]
+
+Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
+(xeCJK)                
+(xeCJK)                Try to use `\setCJKmonofont[<...>]{<...>}' to define
+(xeCJK)                it.
+
+
 
 [9]
+
+[10])
+
+[11]
 Chapter 3.
 
 
-[10
+[12
 
 ]
 Chapter 4.
 (././Conclusion.tex)
 
-[11
+[13
 
 ]
 Chapter 5.
 (././Appendix.tex
 
-[12
+[14
 
 ]
 Appendix A.
 ) (./Thesis.bbl
 
-[13
+[15
 
 ]
 ! Undefined control sequence.
@@ -1229,7 +1240,7 @@ and I'll forget about whatever was undefined.
 
 
 
-[14
+[16
 
 ]
 ! Undefined control sequence.
@@ -1254,21 +1265,21 @@ and I'll forget about whatever was undefined.
 
 )
 
-[15] (./Thesis.aux)
+[17] (./Thesis.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: C13C4E340532DACBFA1B6644325F643F;4016.
+(rerunfilecheck)             Checksum: E2598DE40F7DEF79BE9D3C5C2136FA2E;4421.
  ) 
 Here is how much of TeX's memory you used:
- 28492 strings out of 473832
- 588931 string characters out of 5729482
- 1006991 words of memory out of 5000000
- 51046 multiletter control sequences out of 15000+600000
- 563787 words of font info for 74 fonts, out of 8000000 for 9000
+ 28512 strings out of 473832
+ 589722 string characters out of 5729482
+ 1007405 words of memory out of 5000000
+ 51063 multiletter control sequences out of 15000+600000
+ 563795 words of font info for 75 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,1586b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (22 pages, 187264 bytes).
+Output written on Thesis.xdv (24 pages, 219996 bytes).

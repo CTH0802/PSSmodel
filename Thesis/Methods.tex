@@ -67,7 +67,7 @@ Velocity rotates by inclination
     \right.
 \end{align}
 
-$\theta$ corresponds to the initial polar angle of the streamer, $\phi$ is the initial azimuth angle, $i$ is the inclination angle (zero inclination corresponds to an edge-on disk), $\omega$ is the ratio of Keplerian rotation velocity, and $t_{\rm s}$ is the collapsing time of the particle within the streamer.
+$\theta$ corresponds to the initial polar angle of the streamer, $\phi_0$ is the initial azimuth angle, $i$ is the inclination angle (zero inclination corresponds to an edge-on disk), $\omega$ is the ratio of Keplerian rotation velocity, and $t_{\rm s}$ is the collapsing time of the particle within the streamer.
 
 \section{Fitting procedure}
 The fitting procedure described below is applied to each dataset to constrain the model parameters. The results are compared to the observed streamer morphology and kinematics to assess the validity of the model.
@@ -75,16 +75,49 @@ The fitting procedure described below is applied to each dataset to constrain th
 \subsection{Position angle}
 \YN{This step can be neglected if the disk PA on the sky is known. Otherwise, the previous step needs to be repeated until the optimal is found.}
 
-\subsection{Global fitting of the full model}
-We model the streamer kinematics using a five–dimensional parameter space ($\Theta_0$, $\Phi_0$, i, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamline, the inclination of the system, the characteristic collapse timescale, and the ratio of rotation velocity. For each target, we first perform a coarse 5D grid search to identify reasonable regions of parameter space. The grid covers $\Theta_0 \in (0, \pi/2)$, $\Phi_0 \in (0, 2\pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ is sampled logarithmically around a characteristic dynamical timescale set by the Keplerian period at a reference radius, and $\omega$ is sampled linearly between 0 and 1.
+\subsection{Extracting the position and velocity from observations}
+To characterize the observed streamer structure, we extract position and velocity centroids as a function of projected radius from the data cube. Starting from the masked streamer cube, we define a sequence of radial bins extending along the approximate direction of the streamer. The radial coordinate ($r$) and polar angle ($\theta$) of each pixel relative to the protostar are computed in the image plane, and an initial reference $\theta(r)$ profile is obtained from a smoothed interpolation of visually identified streamer pixels.
 
-The grid search uses the same 11 streamer centroids extracted from the data to evaluate the model performance. At each grid point, we compute the misfit between the model streamline and the observed streamer centroids using the error metric $E = \sqrt{\left\langle \Delta x^2 + \Delta z^2 + w_v\,\Delta v^2 \right\rangle}$, where $\Delta x$ and $\Delta z$ are the differences in projected position (in AU), and $\Delta v$ is the corresponding line-of-sight velocity residual (in $\rm km s^{-1}$) for each of the measured centroids. The weight $w_v = (\Delta v_{\rm km\,s^{-1}} / \Delta x_{\rm AU})^2$ is chosen such that spatial and velocity deviations contribute in comparable physical units.
+For each radial bin, we compute the centroid position using an intensity–weighted average that favors pixels aligned with the local streamer direction. Specifically, we calculate a directional weight
+\[
+w_\theta = \exp\left[-\frac{(\theta - \theta_{\rm ref}(r))^2}{2\sigma_\theta(r)^2}\right],
+\]
+where $\theta_{\rm ref}(r)$ is the interpolated streamer direction and $\sigma_\theta(r)$ is derived from the local spatial dispersion of the preliminary centroids. The position centroid ($\bar{x}$, $\bar{z}$) within each radial bin is then computed from
+\[
+\bar{x} = \frac{\sum I\,w_\theta\,x}{\sum I\,w_\theta}, \qquad
+\bar{z} = \frac{\sum I\,w_\theta\,z}{\sum I\,w_\theta},
+\]
+where $I$ is the data cube intensity at each pixel.
 
-We then use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and f is typically 0.05$\sim$0.10 (relaxed if necessary to include at least several tens of models). For each parameter we take the 5th$\sim$95th percentile range of these “good” models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data-driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
+The velocity centroid for each radial bin is computed in the same region using
+\[
+\bar{v} = \frac{\sum I\,w_\theta\,v}{\sum I\,w_\theta},
+\]
+where $v$ is the channel velocity converted to the LSR frame. This procedure yields a set of 11 position–velocity centroids ($\bar{x}(r)$, $\bar{z}(r)$, $\bar{v}(r)$) that trace the observed streamer morphology. These centroids represent a compact, noise–suppressed summary of the streamer trajectory and are used both in the grid search and in the fast–likelihood MCMC analysis.
 
-Starting from these priors, we run an ensemble Markov Chain Monte Carlo (MCMC) sampler (emcee) in the same 5D space. For the fast likelihood based on the 11 streamer centroids, we use of order $N_{\rm walkers}\sim 20$ and $N_{\rm steps}\sim 1.5\times10^4$, initializing the walkers around the best grid solution but clipping them to the prior ranges. 
-\subsection{Fitting with observations}
+\subsection{Grid search parameter estimation}
+We model the streamer kinematics using five parameters ($\theta$, $\phi_0$, $i$, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamer, the inclination of the system, the characteristic collapse time, and the ratio of rotation velocity. For each target, we first perform a coarse five–dimensional grid search to identify reasonable regions of parameter space. The grid covers $\theta \in (0, \pi/2)$, $\phi \in (0, 2\pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ is sampled logarithmically around a characteristic dynamical timescale set by the Keplerian period at a reference radius, and $\omega$ is sampled linearly between 0 and 1.
 
+The grid search uses the same 11 streamer centroids extracted from the data to evaluate the model performance. At each grid point, we compute the misfit between the model streamer and the observed streamer centroids using the error metric
+\[
+E = \sqrt{\left\langle \Delta x^2 + \Delta z^2 + w_v\,\Delta v^2 \right\rangle},
+\]
+where $\Delta x$ and $\Delta z$ are the differences in projected position (in AU), and $\Delta v$ is the corresponding line–of–sight velocity residual (in $\rm km\,s^{-1}$) for each of the measured centroids. The weight
+\[
+w_v = \left(\frac{\Delta x_{\rm AU}}{\Delta v_{\rm km\,s^{-1}}}\right)^2
+\]
+is chosen such that spatial and velocity deviations contribute in comparable physical units.
+
+\subsection{Markov Chain Monte Carlo exploration}
+After constructing data–driven prior ranges from the grid search, we perform Markov Chain Monte Carlo (MCMC) exploration of the five parameters. The MCMC sampling is carried out using the \texttt{emcee} package, which implements an affine–invariant ensemble sampler that efficiently explores correlated and multi–modal parameter distributions.
+
+We use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and $f$ is typically 0.05–0.10 (relaxed if necessary to include at least several tens of models). For each parameter we take the 5th–95th percentile range of these “good’’ models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data–driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
+
+Each MCMC run begins by initializing an ensemble of walkers within the prior intervals, distributed in a narrow region around the best–performing grid–search solution. For the likelihood function based on the 11 position and velocity centroids, we typically use $N_{\rm walkers}=20$ and $N_{\rm steps}=2\times10^4$, initializing the walkers around the best grid solution but clipping them to the prior ranges. This “fast–likelihood’’ stage provides an efficient refinement of the parameter space and helps to identify the dominant modes of the posterior distribution.
+
+For the full datacube likelihood, we evaluate the agreement between the model and the observed Position–Position–Velocity structure using a shell–based distance metric. Instead of computing distances for every voxel, the method constructs a shell–distance cube around the model streamer and compares it with the data cube through intensity–weighted shell distances. For this shell-based likelihood, we adopt $N_{\rm walkers}=20$, and $N_{\rm steps}=8\times10^{3}$. This stage allows the MCMC to probe the global three–dimensional structure while remaining computationally tractable and provides a more restrictive, global constraint on the model parameters.
+
+Convergence of the chains is evaluated using the autocorrelation time of each parameter, as well as visual inspection of walker trajectories. An initial burn–in phase is discarded, and the remaining samples are used to compute posterior medians and credible intervals as the final estimates of the five parameters.
 \subsection{Fitting with partially known parameters}
 
 

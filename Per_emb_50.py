@@ -32,6 +32,7 @@ from astropy import units as u
 from astropy.io import fits
 from astropy.wcs import WCS
 from spectral_cube import SpectralCube
+from multiprocessing import Pool
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -76,13 +77,13 @@ CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
 # 可選： "final"（預設）、"mcmc_distance", "mcmc_grid", "grid"
 USE_CACHE_SOURCE = "mcmc_shell"
 # ---------- 開關 ----------
-RUN_GRID = True               # 5D grid search 找初始解
-RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
-RUN_MCMC_DISTANCE = True     # distance_cube MCMC
-RUN_MCMC_SHELL = True     # distance_cube MCMC
+RUN_GRID = False               # 5D grid search 找初始解
+RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
+RUN_MCMC_DISTANCE = False      # distance_cube MCMC
+RUN_MCMC_SHELL = False         # distance_cube MCMC
 RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
 RUN_MCMC_3D = False           # (Theta, Phi, Incl) 測試
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 USE_EDT_ERROR_FOR_GRID = False
 
 def _resolve_cache_path(source: str) -> str:
@@ -276,7 +277,7 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
 
         weight_theta = (x_rel * np.cos(theta0) + z_rel * np.sin(theta0)) / r
         weight_theta[r == 0] = 0
-        weight_theta[weight_theta < 0.7] = 0
+        weight_theta[weight_theta < 0.5] = 0
 
         d = (r > pars[i]) & (r <= pars[i+1]) & (new_cube_data > 0)
         if np.sum(d) > 0:
@@ -403,14 +404,13 @@ def find_posterior_peaks_1d(samples, bins=80, prominence_frac=0.1):
 # === Overlay helpers（與 Per-emb-2 統一風格） ===
 
 def _compute_extent(header, im_center, ny, nx):
-    dx_arcsec = abs(header["CDELT1"]) * 3600.0
-    dz_arcsec = abs(header["CDELT2"]) * 3600.0
+    dx_arcsec = header["CDELT1"] * 3600.0
+    dz_arcsec = header["CDELT2"] * 3600.0
     ra_min = (0   - im_center[1]) * dx_arcsec
     ra_max = (nx  - im_center[1]) * dx_arcsec
     dec_min= (0   - im_center[0]) * dz_arcsec
     dec_max= (ny  - im_center[0]) * dz_arcsec
-    return (min(ra_min, ra_max), max(ra_min, ra_max),
-            min(dec_min, dec_max), max(dec_min, dec_max)), dx_arcsec, dz_arcsec
+    return (ra_min, ra_max, dec_min, dec_max), dx_arcsec, dz_arcsec
 
 
 def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
@@ -529,7 +529,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
-    ax.set_xlim(-4, 10.5)
+    ax.set_xlim(4, -10.5)
     ax.set_ylim(-12, 2.5)
     ax.set_title(label)
     ax.set_aspect("equal", adjustable="box")
@@ -537,7 +537,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # 定義比例尺位置（以 arcsec 為單位）
     x0, x1 = ax.get_xlim()
     y0, y1 = ax.get_ylim()
-    text_pos_x = x1 - 0.05 * (x1 - x0)
+    text_pos_x = x1 + 0.15 * (x0 - x1)
     text_pos_y = y0 + 0.15 * (y1 - y0)
     scale_length = 500  # AU
 
@@ -717,7 +717,7 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
-    ax.set_xlim(-4, 10.5)
+    ax.set_xlim(4, -10.5)
     ax.set_ylim(-12, 2.5)
     ax.set_title(label)
     ax.set_aspect("equal", adjustable="box")
@@ -725,7 +725,7 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # 定義比例尺位置（以 arcsec 為單位）
     x0, x1 = ax.get_xlim()
     y0, y1 = ax.get_ylim()
-    text_pos_x = x1 - 0.05 * (x1 - x0)
+    text_pos_x = x1 + 0.15 * (x0 - x1)
     text_pos_y = y0 + 0.15 * (y1 - y0)
     scale_length = 500  # AU
 
@@ -961,8 +961,6 @@ if RUN_FROM_CACHE_ONLY:
         dx_arcsec = abs(header["CDELT2"]) * 3600.0
         dv = abs(float(header["CDELT3"]))
         dx_au = dx_arcsec * distance_pc
-        v_weight_phys = (dv / dx_au) ** 2
-
         # --- Load masked cube (if exists) ---
         new_cube_data = None
         try:
@@ -1085,8 +1083,8 @@ def prepare_data():
 
     im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
     dx_arcsec = abs(header["CDELT2"]) * 3600.0
-    dx_au = dx_arcsec * distance_pc
-    dv = abs(float(header["CDELT3"]))
+    dx_au = dx_arcsec * distance_pc # AU/pixel
+    dv = abs(float(header["CDELT3"])) #km/s / channel
     v0 = header["CRVAL3"]
 
     # 根據你原本設定
@@ -1149,7 +1147,7 @@ def prepare_data():
     })
 
     # 權重（error_function 裡面會用這個）
-    v_weight_phys = (dv / dx_au) ** 2 * 5.0
+    v_weight_phys = (dx_au / dv) ** 2
 
 # ============================================================
 # 5. Grid search
@@ -1213,17 +1211,27 @@ def run_grid():
 def run_mcmc_grid_search():
     if RUN_MCMC_GRID:
         print("\n[MCMC_grid] start (11 質心 fast likelihood)")
+
+        cache.get("grid_used", False)
+        # --- Use MCMC_grid medians as center ---
+        Theta_center = cache["grid_best_Theta"]
+        Phi_center   = cache["grid_best_Phi"]
+        Incl_center  = cache["grid_best_Incl"]
+        T_center     = cache["grid_best_T"]
+        Omega_center = cache["grid_best_Omega"]
+
+        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+        
         ndim = 5
         labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
         nwalkers, nsteps = 20, 20000
-
-        center_vals = [Theta_init, Phi_init, Incl_init, T_init, Omega_init]
+        
         sigma_vals  = [
             np.deg2rad(5.0),
-            np.deg2rad(8.0),
-            np.deg2rad(8.0),
-            0.05 * T_init,
-            0.10 * Omega_init,
+            np.deg2rad(18.0),
+            np.deg2rad(9.0),
+            0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
+            0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
         ]
 
         p0 = np.zeros((nwalkers, ndim))
@@ -1253,19 +1261,27 @@ def run_mcmc_grid_search():
 
         try:
             tau = sampler.get_autocorr_time(quiet=True)
+            if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+                raise RuntimeError(f"tau invalid: {tau}")
             burnin = int(2 * np.nanmax(tau))
             thin   = max(1, int(0.1 * np.nanmin(tau)))
             print(f"[MCMC_grid] tau: {tau}, burnin={burnin}, thin={thin}")
         except Exception as e:
             print("[MCMC_grid] tau failed, use default.", e)
             burnin, thin = 1000, 50
+            
+        chain = sampler.get_chain()
+        print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+        print("mean acceptance:", np.mean(sampler.acceptance_fraction))
 
+        lp = sampler.get_log_prob(flat=True)
+        print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
+        
         flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
 
         # unwrap Phi
         phi_samples = flat[:, 1]
-        phi_ref = Phi_init
-        phi_wrapped = ((phi_samples - phi_ref + np.pi) % (2*np.pi)) - np.pi + phi_ref
+        phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2*np.pi)) - np.pi + Phi_center
         flat_wrapped = flat.copy()
         flat_wrapped[:, 1] = phi_wrapped
 
@@ -1333,34 +1349,15 @@ def run_mcmc_distance():
     if RUN_MCMC_DISTANCE:
         print("\n[MCMC_distance] start")
 
-        # ---- Priors: choose between grid-search priors OR MCMC_grid-based priors ----
-        USE_MCMC_GRID_AS_PRIOR = True   # <--- switch here
+        cache.get("mcmc_grid_used", False)
+        # --- Use MCMC_grid medians as center ---
+        Theta_center = cache["mcmc_grid_median_Theta"]
+        Phi_center   = cache["mcmc_grid_median_Phi"]
+        Incl_center  = cache["mcmc_grid_median_Incl"]
+        T_center     = cache["mcmc_grid_median_T"]
+        Omega_center = cache["mcmc_grid_median_Omega"]
 
-        if USE_MCMC_GRID_AS_PRIOR and cache.get("mcmc_grid_used", False):
-            # --- Use MCMC_grid medians as center ---
-            Theta_center = cache["mcmc_grid_median_Theta"]
-            Phi_center   = cache["mcmc_grid_median_Phi"]
-            Incl_center  = cache["mcmc_grid_median_Incl"]
-            T_center     = cache["mcmc_grid_median_T"]
-            Omega_center = cache["mcmc_grid_median_Omega"]
-
-            # redefine priors using tight ranges around MCMC_grid result
-            priors = {
-                "Theta zero": (Theta_center - np.deg2rad(8),  Theta_center + np.deg2rad(8)),
-                "Phi zero":   (Phi_center   - np.deg2rad(12), Phi_center   + np.deg2rad(12)),
-                "Inclination":(Incl_center  - np.deg2rad(10), Incl_center  + np.deg2rad(10)),
-                "Time":       (max(1e-4, T_center - 0.10*T_center),
-                            T_center + 0.10*T_center),
-                "Omega":      (max(0.01, Omega_center - 0.15*Omega_center),
-                            Omega_center + 0.15*Omega_center),
-            }
-
-            center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
-
-        else:
-            # --- Use grid-search-based center & prior ---
-            priors = parameter_prior_ranges
-            center_vals = [Theta_init, Phi_init, Incl_init, T_init, Omega_init]
+        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
 
         # ---- Walker initialization ----
         ndim = 5
@@ -1368,19 +1365,17 @@ def run_mcmc_distance():
         nwalkers, nsteps = 20, 8000
 
         sigmas = [
-            np.deg2rad(8.0),
-            np.deg2rad(12.0),
-            np.deg2rad(10.0),
-            0.10 * center_vals[3] if center_vals[3] > 0 else 0.01,
-            0.15 * max(center_vals[4], 0.2),
+            np.deg2rad(5.0),
+            np.deg2rad(18.0),
+            np.deg2rad(9.0),
+            0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
+            0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
         ]
 
         p0 = np.zeros((nwalkers, ndim))
         for j, key in enumerate(labels_5d):
-            lo, hi = priors[key]
+            lo, hi = parameter_prior_ranges[key]
             prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
-            if key == "Phi zero":
-                prop = (prop % (2*np.pi))
             prop = np.clip(prop, lo, hi)
             p0[:, j] = prop
 
@@ -1423,7 +1418,7 @@ def run_mcmc_distance():
         log_args = (
             new_cube_data,
             search_bound,
-            priors,
+            parameter_prior_ranges,
             pa_rad,
             dx_au,
             header,
@@ -1450,13 +1445,22 @@ def run_mcmc_distance():
         # ---- Burn-in / thin ----
         try:
             tau = sampler.get_autocorr_time(quiet=True)
+            if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+                raise RuntimeError(f"tau invalid: {tau}")
             burnin = int(2 * np.nanmax(tau))
             thin   = max(1, int(0.1 * np.nanmin(tau)))
             print(f"[MCMC_distance] tau: {tau}, burnin={burnin}, thin={thin}")
         except Exception as e:
             print("[MCMC_distance] tau 估計失敗，用預設。", e)
             burnin, thin = 130, 5
+            
+        chain = sampler.get_chain()
+        print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+        print("mean acceptance:", np.mean(sampler.acceptance_fraction))
 
+        lp = sampler.get_log_prob(flat=True)
+        print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
+        
         flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
 
         # unwrap Phi (same as MCMC_grid)
@@ -1535,62 +1539,40 @@ def run_mcmc_shell():
     if RUN_MCMC_SHELL:
         print("\n[MCMC_shell] start")
 
-        # ---- Priors: choose between grid-search priors OR MCMC_grid-based priors ----
-        USE_MCMC_GRID_AS_PRIOR = True   # <--- switch here
+        cache.get("mcmc_grid_used", False)
+        # --- Use MCMC_grid medians as center ---
+        Theta_center = cache["mcmc_grid_median_Theta"]
+        Phi_center   = cache["mcmc_grid_median_Phi"]
+        Incl_center  = cache["mcmc_grid_median_Incl"]
+        T_center     = cache["mcmc_grid_median_T"]
+        Omega_center = cache["mcmc_grid_median_Omega"]
 
-        if USE_MCMC_GRID_AS_PRIOR and cache.get("mcmc_grid_used", False):
-            # --- Use MCMC_grid medians as center ---
-            Theta_center = cache["mcmc_grid_median_Theta"]
-            Phi_center   = cache["mcmc_grid_median_Phi"]
-            Incl_center  = cache["mcmc_grid_median_Incl"]
-            T_center     = cache["mcmc_grid_median_T"]
-            Omega_center = cache["mcmc_grid_median_Omega"]
+        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
 
-            # redefine priors using tight ranges around MCMC_grid result
-            priors = {
-                "Theta zero": (Theta_center - np.deg2rad(8),  Theta_center + np.deg2rad(8)),
-                "Phi zero":   (Phi_center   - np.deg2rad(12), Phi_center   + np.deg2rad(12)),
-                "Inclination":(Incl_center  - np.deg2rad(10), Incl_center  + np.deg2rad(10)),
-                "Time":       (max(1e-4, T_center - 0.10*T_center),
-                            T_center + 0.10*T_center),
-                "Omega":      (max(0.01, Omega_center - 0.15*Omega_center),
-                            Omega_center + 0.15*Omega_center),
-            }
-
-            center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
-
-        else:
-            # --- Use grid-search-based center & prior ---
-            priors = parameter_prior_ranges
-            center_vals = [Theta_init, Phi_init, Incl_init, T_init, Omega_init]
-
-        # ---- Walker initialization ----
         ndim = 5
         labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
         nwalkers, nsteps = 20, 8000
 
-        sigmas = [
-            np.deg2rad(8.0),
-            np.deg2rad(12.0),
-            np.deg2rad(10.0),
-            0.10 * center_vals[3] if center_vals[3] > 0 else 0.01,
-            0.15 * max(center_vals[4], 0.2),
+        sigmas  = [
+            np.deg2rad(5.0),
+            np.deg2rad(18.0),
+            np.deg2rad(9.0),
+            0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
+            0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
         ]
 
         p0 = np.zeros((nwalkers, ndim))
         for j, key in enumerate(labels_5d):
-            lo, hi = priors[key]
+            lo, hi = parameter_prior_ranges[key]
             prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
-            if key == "Phi zero":
-                prop = (prop % (2*np.pi))
             prop = np.clip(prop, lo, hi)
             p0[:, j] = prop
 
-        max_dist_value = 30.0
+        max_dist_value = 20.0
 
         log_args = (
             new_cube_data,
-            priors,
+            parameter_prior_ranges,
             pa_rad,
             dx_au,
             header,
@@ -1605,9 +1587,7 @@ def run_mcmc_shell():
 
         moves = get_mcmc_moves(mode="refine")
 
-        from multiprocessing import Pool
-
-        with Pool(processes=8) as pool:     # ← 用 8 核心
+        with Pool(processes=8) as pool:
             sampler = emcee.EnsembleSampler(
                 nwalkers,
                 ndim,
@@ -1621,19 +1601,27 @@ def run_mcmc_shell():
         # ---- Burn-in / thin ----
         try:
             tau = sampler.get_autocorr_time(quiet=True)
+            if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+                raise RuntimeError(f"tau invalid: {tau}")
             burnin = int(2 * np.nanmax(tau))
             thin   = max(1, int(0.1 * np.nanmin(tau)))
             print(f"[MCMC_shell] tau: {tau}, burnin={burnin}, thin={thin}")
         except Exception as e:
             print("[MCMC_shell] tau 估計失敗，用預設。", e)
-            burnin, thin = 130, 5
+            burnin, thin = 30, 5
+            
+        chain = sampler.get_chain()
+        print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+        print("mean acceptance:", np.mean(sampler.acceptance_fraction))
 
+        lp = sampler.get_log_prob(flat=True)
+        print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
+        
         flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
 
         # unwrap Phi (same as MCMC_grid)
         phi_samples = flat[:, 1]
-        phi_ref = Phi_init
-        phi_wrapped = ((phi_samples - phi_ref + np.pi) % (2*np.pi)) - np.pi + phi_ref
+        phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2*np.pi)) - np.pi + Phi_center
         flat_wrapped = flat.copy()
         flat_wrapped[:, 1] = phi_wrapped
 
