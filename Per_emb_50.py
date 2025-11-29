@@ -69,29 +69,34 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 
 CACHE_PATH_GRID = os.path.join(CACHE_DIR, "Per-emb-50_grid_results.npz")
 CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "Per-emb-50_mcmc_grid_results.npz")
-CACHE_PATH_MCMC_DISTANCE = os.path.join(CACHE_DIR, "Per-emb-50_mcmc_distance_results.npz")
+# CACHE_PATH_MCMC_DISTANCE = os.path.join(CACHE_DIR, "Per-emb-50_mcmc_distance_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "Per-emb-50_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
 
 # ---------- 僅畫圖時要使用哪一個 cache 來源 ----------
 # 可選： "final"（預設）、"mcmc_distance", "mcmc_grid", "grid"
-USE_CACHE_SOURCE = "mcmc_shell"
+USE_CACHE_SOURCE = "mcmc_grid"
 # ---------- 開關 ----------
-RUN_GRID = False               # 5D grid search 找初始解
-RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
-RUN_MCMC_DISTANCE = False      # distance_cube MCMC
-RUN_MCMC_SHELL = False         # distance_cube MCMC
-RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
-RUN_MCMC_3D = False           # (Theta, Phi, Incl) 測試
-RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
-USE_EDT_ERROR_FOR_GRID = False
+RUN_GRID = True               # 5D grid search 找初始解
+RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+RUN_MCMC_SHELL = True         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+
+# RUN_GRID = False               # 5D grid search 找初始解
+# RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
+# RUN_MCMC_SHELL = False         # distance_cube MCMC
+# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+
+# USE_EDT_ERROR_FOR_GRID = False
+# RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
+# RUN_MCMC_3D = False           # (Theta, Phi, Incl) 測試
 
 def _resolve_cache_path(source: str) -> str:
     s = (source or "").lower()
     if s == "final":
         return CACHE_PATH_FINAL
-    elif s == "mcmc_distance":
-        return CACHE_PATH_MCMC_DISTANCE
+    # elif s == "mcmc_distance":
+    #     return CACHE_PATH_MCMC_DISTANCE
     elif s == "mcmc_shell":
         return CACHE_PATH_MCMC_SHELL
     elif s == "mcmc_grid":
@@ -107,15 +112,15 @@ def _extract_params_from_cache(c: dict, source: str):
             return (float(c[a]), float(c[b]), float(c[c1]), float(c[d]), float(c[e]))
         except Exception:
             return None
-    if s == "mcmc_distance":
-        order = [
-            ("mcmc_distance_median_Theta","mcmc_distance_median_Phi","mcmc_distance_median_Incl","mcmc_distance_median_T","mcmc_distance_median_Omega"),
-            ("mcmc_shell_median_Theta","mcmc_shell_median_Phi","mcmc_shell_median_Incl","mcmc_shell_median_T","mcmc_shell_median_Omega"),
-            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
-            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
-            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
-        ]
-    elif s == "mcmc_shell":
+    # if s == "mcmc_distance":
+    #     order = [
+    #         ("mcmc_distance_median_Theta","mcmc_distance_median_Phi","mcmc_distance_median_Incl","mcmc_distance_median_T","mcmc_distance_median_Omega"),
+    #         ("mcmc_shell_median_Theta","mcmc_shell_median_Phi","mcmc_shell_median_Incl","mcmc_shell_median_T","mcmc_shell_median_Omega"),
+    #         ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+    #         ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+    #         ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
+    #     ]
+    if s == "mcmc_shell":
         order = [
             ("mcmc_shell_median_Theta","mcmc_shell_median_Phi","mcmc_shell_median_Incl","mcmc_shell_median_T","mcmc_shell_median_Omega"),
             ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
@@ -346,7 +351,7 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
     z_array = np.array(z_array_list, dtype=object)
     v_array = np.array(v_array_list, dtype=object)
     weights_array = np.array(weights_list, dtype=object)
-    print(f"[Centroids] 有效質心點數量 = {np.sum(np.isfinite(streamer_x_AU))}")
+    print(f"[Extracted] {np.sum(np.isfinite(streamer_x_AU))} valid centroids")
     return streamer_x_AU, streamer_z_AU, streamer_v_LS, x_array, z_array, v_array, weights_array, x_means, z_means, v_means
 
 
@@ -378,28 +383,6 @@ def summarize_1d_posterior(samples, name, bins=30):
     else:
         shape = "multimodal"
     print(f"  {name:<12s}: {shape}")
-
-
-def find_posterior_peaks_1d(samples, bins=80, prominence_frac=0.1):
-    samples = np.asarray(samples)
-    samples = samples[np.isfinite(samples)]
-    if samples.size == 0:
-        return []
-
-    hist, edges = np.histogram(samples, bins=bins)
-    if np.all(hist == 0):
-        return []
-
-    prominence = prominence_frac * np.max(hist)
-    peaks, _ = find_peaks(hist, prominence=prominence)
-    if peaks.size == 0:
-        return []
-
-    centers = 0.5 * (edges[peaks] + edges[peaks + 1])
-    bin_width = edges[1] - edges[0]
-    half_widths = np.full_like(centers, 3.0 * bin_width)
-    return list(zip(centers, half_widths))
-
 
 # === Overlay helpers（與 Per-emb-2 統一風格） ===
 
@@ -467,7 +450,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3%", pad=0.04)
     cbar = fig.colorbar(im, cax=cax)
-    cbar.set_label("(Jy/beam km/s)")
+    cbar.set_label("(K km/s)")
 
     lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
     ax.add_collection(lc_edge)
@@ -545,7 +528,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     scale_length_arcsec = scale_length / (distance_pc)  # 1" ≈ 1 AU / distance(pc)
 
     # 定義比例尺線段 (RA offset 軸)
-    scale_range_x = [text_pos_x, text_pos_x - scale_length_arcsec]
+    scale_range_x = [text_pos_x, text_pos_x - 1.6]
     scale_range_y = [text_pos_y - 0.2, text_pos_y - 0.2]
 
     # 繪製比例尺與文字
@@ -560,8 +543,8 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     # --- 加上方向箭頭 (NE arrow) ---
     ax.quiver(
-        0.4,  0.4 * np.tan(np.deg2rad(10)),
-        1.4, -1.4 * np.tan(np.deg2rad(10)),
+        -0.4,  -0.4 * np.tan(np.deg2rad(10)),
+        -1.4, -1.4 * np.tan(np.deg2rad(10)),
         color='lightgrey', scale=12, zorder=10
     )
     # beam（若有）
@@ -603,7 +586,6 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           header, pa_rad, dx_au, im_center,
                           mom1, label, outname,
                           cen_x_pix=None, cen_z_pix=None, cen_v_LS_km=None,
-                          v_range=1.0,
                           radius_in_au=radius_in_au,
                           radius_out_au=radius_out_au):
 
@@ -748,8 +730,8 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     # --- 加上方向箭頭 (NE arrow) ---
     ax.quiver(
-        0.4,  0.4 * np.tan(np.deg2rad(10)),
-        1.4, -1.4 * np.tan(np.deg2rad(10)),
+        -0.4,  -0.4 * np.tan(np.deg2rad(10)),
+        -1.4, -1.4 * np.tan(np.deg2rad(10)),
         color='grey', scale=12, zorder=10
     )
     # beam（若有）
@@ -790,8 +772,7 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                                new_cube_data, header, pa_rad, dx_au,
                                z_means_pix, streamer_v_LS_km,
                                outname,
-                               label="Per-emb-50 H2CO z-v with data",
-                               nbins_z=200):
+                               label="Per-emb-50 H2CO z-v with data"):
     """
     由 masked data cube 建立 z–v 圖（**沿影像 x 軸堆疊**）：
 
@@ -814,7 +795,6 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     v_axis = CRVAL3 + (np.arange(nz) + 1 - CRPIX3) * CDELT3  # km/s, LSR
     vmin = np.nanmin(v_axis)
     vmax = np.nanmax(v_axis)
-    rms_channel = 3.521605434804e-1
 
     # ---------- 2) image-frame z (AU) ----------
     # 注意：這裡不做 PA 旋轉，直接用影像的 y (row) 當作 z_img，原點在 protostar
@@ -1029,7 +1009,6 @@ if RUN_FROM_CACHE_ONLY:
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
-            v_range=1.0,
         )
 
         plot_streamer_on_mom0(
@@ -1065,7 +1044,7 @@ if RUN_FROM_CACHE_ONLY:
 
     except Exception as e:
         print(f"[Quick Mode] 失敗，改跑完整流程: {e}")
-        # 繼續往下跑
+
 # ============================================================
 # 4. 正常流程：讀 cube + 建 mask + 質心
 # ============================================================
@@ -1147,7 +1126,7 @@ def prepare_data():
     })
 
     # 權重（error_function 裡面會用這個）
-    v_weight_phys = (dx_au / dv) ** 2
+    v_weight_phys = (1.5 * dx_au / dv) ** 2
 
 # ============================================================
 # 5. Grid search
@@ -1339,198 +1318,20 @@ def run_mcmc_grid_search():
         })
         np.savez(CACHE_PATH_MCMC_GRID, **cache)
         print(f"[cache] Saved MCMC grid results to {CACHE_PATH_MCMC_GRID}")
+        # ---- 寫入 FINAL cache ----
+        cache.update({
+            "best_Theta": float(Theta_med),
+            "best_Phi":   float(Phi_med),
+            "best_Incl":  float(Incl_med),
+            "best_T":     float(T_med),
+            "best_Omega": float(Omega_med),
+            "best_source": "mcmc_shell",   # optional
+        })
+
+        np.savez(CACHE_PATH_FINAL, **cache)
+        print(f"[cache] Saved FINAL best-fit to {CACHE_PATH_FINAL}")
     else:
         cache["mcmc_grid_used"] = False
-
-# ============================================================
-# 7. MCMC_distance / MCMC_3D
-# ============================================================
-def run_mcmc_distance():
-    if RUN_MCMC_DISTANCE:
-        print("\n[MCMC_distance] start")
-
-        cache.get("mcmc_grid_used", False)
-        # --- Use MCMC_grid medians as center ---
-        Theta_center = cache["mcmc_grid_median_Theta"]
-        Phi_center   = cache["mcmc_grid_median_Phi"]
-        Incl_center  = cache["mcmc_grid_median_Incl"]
-        T_center     = cache["mcmc_grid_median_T"]
-        Omega_center = cache["mcmc_grid_median_Omega"]
-
-        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
-
-        # ---- Walker initialization ----
-        ndim = 5
-        labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
-        nwalkers, nsteps = 20, 8000
-
-        sigmas = [
-            np.deg2rad(5.0),
-            np.deg2rad(18.0),
-            np.deg2rad(9.0),
-            0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
-            0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
-        ]
-
-        p0 = np.zeros((nwalkers, ndim))
-        for j, key in enumerate(labels_5d):
-            lo, hi = parameter_prior_ranges[key]
-            prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
-            prop = np.clip(prop, lo, hi)
-            p0[:, j] = prop
-
-        max_dist_value = 30.0
-        buffer = max_dist_value + 20
-        vbuffer = max_dist_value + 5
-
-        nv, nz, nx = new_cube_data.shape
-
-        # 1) 用某組初始參數（grid 或 MCMC_grid 的 center_vals）產生 model 線
-        x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
-            center_vals[0], center_vals[1], center_vals[2],
-            center_vals[3], center_vals[4],
-            M_star,
-            radius_in_au=radius_in_au,
-            radius_out_au=radius_out_au,
-            resolution=200,
-            scale=scale,
-            log_power=log_power,
-        )
-
-        # 2) 轉成 pixel / channel
-        im_center_y = float(header["CRPIX2"]) - 1.0
-        im_center_x = float(header["CRPIX1"]) - 1.0
-
-        x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
-        z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
-
-        x_pix = np.round(x_rot / dx_au + im_center_x)
-        z_pix = np.round(z_rot / dx_au + im_center_y)
-        v_lsr = v_m + Local_Standard_Velocity
-        v_pix = pss.velocity_to_channel_index(v_lsr, header, nz)
-
-        search_bound = pss.get_bounding_box(
-            x_pix, z_pix, v_pix,
-            buffer, vbuffer,
-            new_cube_data.shape
-        )
-
-        log_args = (
-            new_cube_data,
-            search_bound,
-            parameter_prior_ranges,
-            pa_rad,
-            dx_au,
-            header,
-            Local_Standard_Velocity,
-            v_weight_phys,
-            max_dist_value,
-            M_star,
-            radius_in_au,
-            radius_out_au,
-            scale,
-            log_power,
-        )
-
-        moves = get_mcmc_moves(mode="refine")
-        sampler = emcee.EnsembleSampler(
-            nwalkers, ndim,
-            pss.log_posterior_distance,
-            args=log_args,
-            moves=moves,
-        )
-
-        sampler.run_mcmc(p0, nsteps, progress=True)
-
-        # ---- Burn-in / thin ----
-        try:
-            tau = sampler.get_autocorr_time(quiet=True)
-            if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
-                raise RuntimeError(f"tau invalid: {tau}")
-            burnin = int(2 * np.nanmax(tau))
-            thin   = max(1, int(0.1 * np.nanmin(tau)))
-            print(f"[MCMC_distance] tau: {tau}, burnin={burnin}, thin={thin}")
-        except Exception as e:
-            print("[MCMC_distance] tau 估計失敗，用預設。", e)
-            burnin, thin = 130, 5
-            
-        chain = sampler.get_chain()
-        print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
-        print("mean acceptance:", np.mean(sampler.acceptance_fraction))
-
-        lp = sampler.get_log_prob(flat=True)
-        print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
-        
-        flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
-
-        # unwrap Phi (same as MCMC_grid)
-        phi_samples = flat[:, 1]
-        phi_ref = Phi_init
-        phi_wrapped = ((phi_samples - phi_ref + np.pi) % (2*np.pi)) - np.pi + phi_ref
-        flat_wrapped = flat.copy()
-        flat_wrapped[:, 1] = phi_wrapped
-
-        q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
-        Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
-
-        print("\n[MCMC_distance] median ±68%:")
-        for i, name in enumerate(labels_5d):
-            lo, md, hi = q16[i], q50[i], q84[i]
-            if i in [0, 1, 2]:
-                lo, md, hi = np.rad2deg([lo, md, hi])
-                unit = "deg"
-            elif name == "Time":
-                unit = "Myr"
-            else:
-                unit = ""
-            print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
-
-        print("\n[MCMC_distance] 1D posterior 形狀判斷：")
-        for i, name in enumerate(labels_5d):
-            summarize_1d_posterior(flat_wrapped[:, i], name)
-
-        # corner plot（角度轉度）
-        samples_plot = flat_wrapped.copy()
-        for idx in [0, 1, 2]:
-            samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-        labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
-                    "Time (Myr)", "Omega"]
-        q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
-        ranges = []
-        for i in range(len(labels_plot)):
-            lo, md, hi = q16p[i], q50p[i], q84p[i]
-            width = hi - lo if hi > lo else 1e-3
-            ranges.append((md - 1.5*width, md + 1.5*width))
-
-        fig = corner.corner(samples_plot,
-                            labels=labels_plot,
-                            range=ranges,
-                            show_titles=True,
-                            title_fmt=".3f",
-                            plot_datapoints=False,
-                            fill_contours=True,
-                            smooth=1.0)
-        fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_distance.png"),
-                    dpi=200, bbox_inches="tight")
-        plt.close(fig)
-
-        # ---- 寫入 cache ----
-        cache.update({
-            "mcmc_distance_used": True,
-            "mcmc_distance_median_Theta": float(Theta_med),
-            "mcmc_distance_median_Phi":   float(Phi_med),
-            "mcmc_distance_median_Incl":  float(Incl_med),
-            "mcmc_distance_median_T":     float(T_med),
-            "mcmc_distance_median_Omega": float(Omega_med),
-            "mcmc_distance_burnin": int(burnin),
-            "mcmc_distance_thin":   int(thin),
-            "mcmc_distance_nwalkers": int(nwalkers),
-            "mcmc_distance_nsteps":   int(nsteps),
-        })
-        np.savez(CACHE_PATH_MCMC_DISTANCE, **cache)
-        print(f"[cache] Saved MCMC distance results to {CACHE_PATH_MCMC_DISTANCE}")
-    else:
-        cache["mcmc_distance_used"] = False
 
 # ============================================================
 # 8. MCMC_shell / MCMC_3D
@@ -1568,7 +1369,7 @@ def run_mcmc_shell():
             prop = np.clip(prop, lo, hi)
             p0[:, j] = prop
 
-        max_dist_value = 20.0
+        max_dist_value = 30.0
 
         log_args = (
             new_cube_data,
@@ -1684,6 +1485,18 @@ def run_mcmc_shell():
         })
         np.savez(CACHE_PATH_MCMC_SHELL, **cache)
         print(f"[cache] Saved MCMC distance results to {CACHE_PATH_MCMC_SHELL}")
+        # ---- 寫入 FINAL cache ----
+        cache.update({
+            "best_Theta": float(Theta_med),
+            "best_Phi":   float(Phi_med),
+            "best_Incl":  float(Incl_med),
+            "best_T":     float(T_med),
+            "best_Omega": float(Omega_med),
+            "best_source": "mcmc_shell",   # optional
+        })
+
+        np.savez(CACHE_PATH_FINAL, **cache)
+        print(f"[cache] Saved FINAL best-fit to {CACHE_PATH_FINAL}")
     else:
         cache["mcmc_shell_used"] = False
 
@@ -1746,7 +1559,6 @@ def run_final_best_fit_and_overlay():
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
-            v_range=1.0,
         )
 
         plot_streamer_on_mom0(
@@ -1775,8 +1587,8 @@ def main():
     if RUN_MCMC_GRID:
         run_mcmc_grid_search()
         
-    if RUN_MCMC_DISTANCE:
-        run_mcmc_distance()
+    # if RUN_MCMC_DISTANCE:
+    #     run_mcmc_distance()
         
     if RUN_MCMC_SHELL:
         run_mcmc_shell()
@@ -1785,3 +1597,194 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+
+# ============================================================
+# 7. MCMC_distance / MCMC_3D
+# ============================================================
+# def run_mcmc_distance():
+#     if RUN_MCMC_DISTANCE:
+#         print("\n[MCMC_distance] start")
+
+#         cache.get("mcmc_grid_used", False)
+#         # --- Use MCMC_grid medians as center ---
+#         Theta_center = cache["mcmc_grid_median_Theta"]
+#         Phi_center   = cache["mcmc_grid_median_Phi"]
+#         Incl_center  = cache["mcmc_grid_median_Incl"]
+#         T_center     = cache["mcmc_grid_median_T"]
+#         Omega_center = cache["mcmc_grid_median_Omega"]
+
+#         center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+
+#         # ---- Walker initialization ----
+#         ndim = 5
+#         labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
+#         nwalkers, nsteps = 20, 8000
+
+#         sigmas = [
+#             np.deg2rad(5.0),
+#             np.deg2rad(18.0),
+#             np.deg2rad(9.0),
+#             0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
+#             0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
+#         ]
+
+#         p0 = np.zeros((nwalkers, ndim))
+#         for j, key in enumerate(labels_5d):
+#             lo, hi = parameter_prior_ranges[key]
+#             prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
+#             prop = np.clip(prop, lo, hi)
+#             p0[:, j] = prop
+
+#         max_dist_value = 30.0
+#         buffer = max_dist_value + 20
+#         vbuffer = max_dist_value + 5
+
+#         nv, nz, nx = new_cube_data.shape
+
+#         # 1) 用某組初始參數（grid 或 MCMC_grid 的 center_vals）產生 model 線
+#         x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
+#             center_vals[0], center_vals[1], center_vals[2],
+#             center_vals[3], center_vals[4],
+#             M_star,
+#             radius_in_au=radius_in_au,
+#             radius_out_au=radius_out_au,
+#             resolution=200,
+#             scale=scale,
+#             log_power=log_power,
+#         )
+
+#         # 2) 轉成 pixel / channel
+#         im_center_y = float(header["CRPIX2"]) - 1.0
+#         im_center_x = float(header["CRPIX1"]) - 1.0
+
+#         x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
+#         z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
+
+#         x_pix = np.round(x_rot / dx_au + im_center_x)
+#         z_pix = np.round(z_rot / dx_au + im_center_y)
+#         v_lsr = v_m + Local_Standard_Velocity
+#         v_pix = pss.velocity_to_channel_index(v_lsr, header, nz)
+
+#         search_bound = pss.get_bounding_box(
+#             x_pix, z_pix, v_pix,
+#             buffer, vbuffer,
+#             new_cube_data.shape
+#         )
+
+#         log_args = (
+#             new_cube_data,
+#             search_bound,
+#             parameter_prior_ranges,
+#             pa_rad,
+#             dx_au,
+#             header,
+#             Local_Standard_Velocity,
+#             v_weight_phys,
+#             max_dist_value,
+#             M_star,
+#             radius_in_au,
+#             radius_out_au,
+#             scale,
+#             log_power,
+#         )
+
+#         moves = get_mcmc_moves(mode="refine")
+#         sampler = emcee.EnsembleSampler(
+#             nwalkers, ndim,
+#             pss.log_posterior_distance,
+#             args=log_args,
+#             moves=moves,
+#         )
+
+#         sampler.run_mcmc(p0, nsteps, progress=True)
+
+#         # ---- Burn-in / thin ----
+#         try:
+#             tau = sampler.get_autocorr_time(quiet=True)
+#             if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+#                 raise RuntimeError(f"tau invalid: {tau}")
+#             burnin = int(2 * np.nanmax(tau))
+#             thin   = max(1, int(0.1 * np.nanmin(tau)))
+#             print(f"[MCMC_distance] tau: {tau}, burnin={burnin}, thin={thin}")
+#         except Exception as e:
+#             print("[MCMC_distance] tau 估計失敗，用預設。", e)
+#             burnin, thin = 130, 5
+            
+#         chain = sampler.get_chain()
+#         print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+#         print("mean acceptance:", np.mean(sampler.acceptance_fraction))
+
+#         lp = sampler.get_log_prob(flat=True)
+#         print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
+        
+#         flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+
+#         # unwrap Phi (same as MCMC_grid)
+#         phi_samples = flat[:, 1]
+#         phi_ref = Phi_init
+#         phi_wrapped = ((phi_samples - phi_ref + np.pi) % (2*np.pi)) - np.pi + phi_ref
+#         flat_wrapped = flat.copy()
+#         flat_wrapped[:, 1] = phi_wrapped
+
+#         q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
+#         Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+
+#         print("\n[MCMC_distance] median ±68%:")
+#         for i, name in enumerate(labels_5d):
+#             lo, md, hi = q16[i], q50[i], q84[i]
+#             if i in [0, 1, 2]:
+#                 lo, md, hi = np.rad2deg([lo, md, hi])
+#                 unit = "deg"
+#             elif name == "Time":
+#                 unit = "Myr"
+#             else:
+#                 unit = ""
+#             print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
+
+#         print("\n[MCMC_distance] 1D posterior 形狀判斷：")
+#         for i, name in enumerate(labels_5d):
+#             summarize_1d_posterior(flat_wrapped[:, i], name)
+
+#         # corner plot（角度轉度）
+#         samples_plot = flat_wrapped.copy()
+#         for idx in [0, 1, 2]:
+#             samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
+#         labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
+#                     "Time (Myr)", "Omega"]
+#         q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
+#         ranges = []
+#         for i in range(len(labels_plot)):
+#             lo, md, hi = q16p[i], q50p[i], q84p[i]
+#             width = hi - lo if hi > lo else 1e-3
+#             ranges.append((md - 1.5*width, md + 1.5*width))
+
+#         fig = corner.corner(samples_plot,
+#                             labels=labels_plot,
+#                             range=ranges,
+#                             show_titles=True,
+#                             title_fmt=".3f",
+#                             plot_datapoints=False,
+#                             fill_contours=True,
+#                             smooth=1.0)
+#         fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_distance.png"),
+#                     dpi=200, bbox_inches="tight")
+#         plt.close(fig)
+
+#         # ---- 寫入 cache ----
+#         cache.update({
+#             "mcmc_distance_used": True,
+#             "mcmc_distance_median_Theta": float(Theta_med),
+#             "mcmc_distance_median_Phi":   float(Phi_med),
+#             "mcmc_distance_median_Incl":  float(Incl_med),
+#             "mcmc_distance_median_T":     float(T_med),
+#             "mcmc_distance_median_Omega": float(Omega_med),
+#             "mcmc_distance_burnin": int(burnin),
+#             "mcmc_distance_thin":   int(thin),
+#             "mcmc_distance_nwalkers": int(nwalkers),
+#             "mcmc_distance_nsteps":   int(nsteps),
+#         })
+#         np.savez(CACHE_PATH_MCMC_DISTANCE, **cache)
+#         print(f"[cache] Saved MCMC distance results to {CACHE_PATH_MCMC_DISTANCE}")
+#     else:
+#         cache["mcmc_distance_used"] = False

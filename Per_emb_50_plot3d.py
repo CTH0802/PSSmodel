@@ -39,7 +39,7 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 
 CUBE_FNAME = "Per-emb-50_H2CO_streamer_cube.fits"
 
-USE_CACHE_SOURCE = "mcmc_shell"
+USE_CACHE_SOURCE = "mcmc_grid"
 cache_path = _resolve_cache_path(USE_CACHE_SOURCE)
 
 # 距離、質量、PA 等物理參數
@@ -401,8 +401,10 @@ def make_fig_model_plus_shell(info):
             symbol='circle',
             line=dict(width=0.5, color='grey'),
             color=info["model_line"]["v_lsr"],
-            colorscale='RdBu',
+            colorscale='RdBu_r',
             opacity=0.9,
+            cmin=5.5,
+            cmax=8.0,
         ),
     ))
 
@@ -467,8 +469,10 @@ def make_fig_model_plus_distance(info):
             symbol='circle',
             line=dict(width=0.5, color='grey'),
             color=info["model_line"]["v_lsr"],
-            colorscale='RdBu',
+            colorscale='RdBu_r',
             opacity=0.9,
+            cmin=5.5,
+            cmax=8.0,
         ),
     ))
 
@@ -480,7 +484,7 @@ def make_fig_model_plus_shell_error(info):
     """
     model + shell error：
     只畫有觀測訊號 (data_cube > 0) 且 被貼上殼層 (shell_cube > 0) 的 voxel，
-    顏色用 shell index（殼層編號）當作 error 大小。
+    顏色用「殼層編號 × 強度」當作加權後的 error 大小。
     """
     data_cube  = info["data_cube"]
     shell_cube = info["shell_cube"]
@@ -502,34 +506,47 @@ def make_fig_model_plus_shell_error(info):
                 symbol='circle',
                 line=dict(width=0.5, color='grey'),
                 color=info["model_line"]["v_lsr"],
-                colorscale='RdBu',
+                colorscale='RdBu_r',
                 opacity=0.9,
             ),
         ))
-        _update_layout_common(fig, "Model + Shell error (RA offset, DEC offset, v_LSR)")
+        _update_layout_common(fig, "Model + Shell error (RA offset, DEC offset, v_LSR)", header)
         return fig
 
     v_e, z_e, x_e = np.where(mask)
+
+    # 原本只有殼層編號：
     shell_k = shell_cube[mask].astype(float)
+
+    intensity = data_cube[mask].astype(float)
+
+    I_norm = intensity / np.nanmax(intensity)
+    shell_norm = shell_k / np.nanmax(shell_k)
+        # shell_err_weighted = shell_k * intensity / np.nansum(intensity)
+    shell_err_weighted = shell_norm * I_norm
+    # 可以選擇做個簡單的 clip，避免極端亮點把 colorbar 拉到爆
+    shell_err_weighted = np.clip(shell_err_weighted,
+                                 0.0,
+                                 np.nanpercentile(shell_err_weighted, 99.5))
 
     ra_e, dec_e, vlsr_e = pixel_to_world_arrays(x_e, z_e, v_e, header)
 
     fig = go.Figure()
 
-    # data voxels 的殼層誤差
+    # data voxels 的殼層誤差（加權後）
     fig.add_trace(go.Scatter3d(
         x=ra_e, y=dec_e, z=vlsr_e,
         mode='markers',
-        name='Shell error (data voxels)',
+        name='Shell error × intensity',
         marker=dict(
             size=2,
-            color=shell_k,
+            color=shell_err_weighted,     # ✨ 用加權後的 error 當顏色
             colorscale='inferno',
             opacity=0.6,
-            cmin=1.0,
-            cmax=float(np.nanmax(shell_k)),
+            cmin=float(np.nanmin(shell_err_weighted)),
+            cmax=float(np.nanmax(shell_err_weighted)),
             colorbar=dict(
-                title="Shell index (error)",
+                title="Shell index × Normalized I",
                 len=0.4,
                 x=1.0,
             ),
@@ -548,12 +565,14 @@ def make_fig_model_plus_shell_error(info):
             symbol='circle',
             line=dict(width=0.5, color='grey'),
             color=info["model_line"]["v_lsr"],
-            colorscale='RdBu',
+            colorscale='RdBu_r_r',
             opacity=0.9,
+            cmin=5.5,
+            cmax=8.0,
         ),
     ))
 
-    _update_layout_common(fig, "Model + Shell error (RA offset, DEC offset, v_LSR)", info["header"])
+    _update_layout_common(fig, "Model + Shell error (weighted by intensity)", header)
     return fig
 
 
@@ -582,7 +601,7 @@ def make_fig_model_plus_distance_error(info):
                 symbol='circle',
                 line=dict(width=0.5, color='grey'),
                 color=info["model_line"]["v_lsr"],
-                colorscale='RdBu',
+                colorscale='RdBu_r',
                 opacity=0.9,
             ),
         ))
@@ -628,8 +647,10 @@ def make_fig_model_plus_distance_error(info):
             symbol='circle',
             line=dict(width=0.5, color='grey'),
             color=info["model_line"]["v_lsr"],
-            colorscale='RdBu',
+            colorscale='RdBu_r',
             opacity=0.9,
+            cmin=5.5,
+            cmax=8.0,
         ),
     ))
 
@@ -637,31 +658,67 @@ def make_fig_model_plus_distance_error(info):
     return fig
 
 
-def make_fig_model_plus_data(info):
-    """model + 原始 data cube (>0 的 voxel)"""
+def make_fig_model_plus_data(info, gamma=0.5):
+    """model + 原始 data cube (>0 的 voxel)，使用 power-law colorbar"""
     data_cube = info["data_cube"]
     header    = info["header"]
 
+    # 取出 data > 0 的 voxel
     mask_data = data_cube > 0
     v_d, z_d, x_d = np.where(mask_data)
-    intensity = data_cube[mask_data]
+    intensity_raw = data_cube[mask_data]   # 原始強度
 
+    # === 1) Power-law normalization ===
+    vmin = float(np.nanmin(intensity_raw))
+    vmax = float(np.nanmax(intensity_raw))
+
+    # 線性 normalize 到 0-1
+    intensity_norm = (intensity_raw - vmin) / (vmax - vmin)
+    intensity_norm = np.clip(intensity_norm, 0, 1)
+
+    # 套用 power-law
+    intensity_pl = intensity_norm ** gamma
+
+    # === 2) world coords ===
     ra_d, dec_d, vlsr_d = pixel_to_world_arrays(x_d, z_d, v_d, header)
 
     fig = go.Figure()
 
+    # === 3) Data points with POWER-LAW coloring ===
     fig.add_trace(go.Scatter3d(
         x=ra_d, y=dec_d, z=vlsr_d,
         mode='markers',
-        name='Original data',
+        name=f'Original data (γ={gamma})',
         marker=dict(
-            size=1,
-            color=vlsr_d,
-            colorscale='RdBu',
-            opacity=0.5,
+            size=2,
+            color=intensity_raw,         # power-law 後的顏色
+            colorscale='inferno',
+            opacity=0.3,
+            colorbar=dict(
+                title="Intensity",
+                len=0.4,
+                x=0.85,
+                # # colorbar 上的 tick 位置是在 0-1 的 power-law 軸上
+                # tickvals=[
+                #     0.0,
+                #     (0.25 ** gamma),
+                #     (0.50 ** gamma),
+                #     (0.75 ** gamma),
+                #     1.0
+                # ],
+                # # ticktext 用回原始 intensity 數值
+                # ticktext=[
+                #     f"{vmin:.2f}",
+                #     f"{vmin + 0.25*(vmax-vmin):.2f}",
+                #     f"{vmin + 0.50*(vmax-vmin):.2f}",
+                #     f"{vmin + 0.75*(vmax-vmin):.2f}",
+                #     f"{vmax:.2f}"
+                # ],
+            ),
         ),
     ))
 
+    # === 4) model line (一樣維持 v_LSR 顏色，不動) ===
     fig.add_trace(go.Scatter3d(
         x=info["model_line"]["ra_off"],
         y=info["model_line"]["dec_off"],
@@ -673,8 +730,10 @@ def make_fig_model_plus_data(info):
             symbol='circle',
             line=dict(width=0.5, color='grey'),
             color=info["model_line"]["v_lsr"],
-            colorscale='RdBu',
+            colorscale='RdBu_r',
             opacity=0.9,
+            cmin=5.5,
+            cmax=8.0,
             colorbar=dict(
                 title="v_LSR (km/s)",
                 len=0.4,
@@ -683,7 +742,12 @@ def make_fig_model_plus_data(info):
         ),
     ))
 
-    _update_layout_common(fig, "Model + Observations (RA offset, DEC offset, v_LSR)", info["header"])
+    # === 5) layout ===
+    _update_layout_common(
+        fig,
+        f"Model + Observations (Power-law intensity, γ={gamma})",
+        header
+    )
     return fig
 
 
@@ -724,7 +788,7 @@ def main():
     figs = [
         ("Per50_model_shell.html",            make_fig_model_plus_shell(info)),
         # ("Per50_model_distance.html",         make_fig_model_plus_distance(info)),
-        ("Per50_model_shell_error.html",      make_fig_model_plus_shell_error(info)),
+        # ("Per50_model_shell_error.html",      make_fig_model_plus_shell_error(info)),
         # ("Per50_model_distance_error.html",   make_fig_model_plus_distance_error(info)),
         ("Per50_model_data.html",             make_fig_model_plus_data(info)),
     ]

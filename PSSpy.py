@@ -420,6 +420,37 @@ def build_ball_offsets(max_r):
     offsets = np.column_stack([dv_sel, dz_sel, dx_sel]).astype(np.int16)
     return offsets, shell_k
 
+@lru_cache(maxsize=None)
+def build_ball_offsets_for_shape(max_r, nv_sub, nz_sub, nx_sub):
+    """
+    根據 subcube 形狀 (nv_sub, nz_sub, nx_sub) 把球裁掉一部分，
+    避免產生一定會超出 subcube 的 offsets。
+    """
+    # 在每個軸上的最大 offset 不需要超過 subcube 尺寸的一半
+    max_dv = min(max_r, nv_sub - 1)
+    max_dz = min(max_r, nz_sub - 1)
+    max_dx = min(max_r, nx_sub - 1)
+
+    dv, dz, dx = np.meshgrid(
+        np.arange(-max_dv, max_dv + 1),
+        np.arange(-max_dz, max_dz + 1),
+        np.arange(-max_dx, max_dx + 1),
+        indexing="ij"
+    )
+    dist = np.sqrt(dv*dv + dz*dz + dx*dx)
+
+    mask = dist <= max_r
+    dv_sel = dv[mask]
+    dz_sel = dz[mask]
+    dx_sel = dx[mask]
+    dist_sel = dist[mask]
+
+    shell_k = np.ceil(dist_sel).astype(np.int16)
+    shell_k[dist_sel == 0.0] = 1
+
+    offsets = np.column_stack([dv_sel, dz_sel, dx_sel]).astype(np.int16)
+    return offsets, shell_k
+
 @njit(parallel=True)
 def stamp_shell_cube_numba(shell_cube, v_line, z_line, x_line,
                            dv_off, dz_off, dx_off, shell_k):
@@ -447,19 +478,48 @@ def stamp_shell_cube_numba(shell_cube, v_line, z_line, x_line,
 
 def apply_shell_ball_to_line(cube_shape, v_line, z_line, x_line, max_r):
     shell_cube = np.full(cube_shape, -1, dtype=np.int16)
+    nv_sub, nz_sub, nx_sub = cube_shape
 
-    offsets, shell_k = build_ball_offsets(max_r)
+    offsets, shell_k = build_ball_offsets_for_shape(max_r, nv_sub, nz_sub, nx_sub)
+
     dv_off = offsets[:, 0]
     dz_off = offsets[:, 1]
     dx_off = offsets[:, 2]
 
-    # 使用 numba JIT 加速 stamping
-    shell_cube = stamp_shell_cube_numba(shell_cube,
-                                        v_line, z_line, x_line,
-                                        dv_off, dz_off, dx_off,
-                                        shell_k)
-
+    shell_cube = stamp_shell_cube_numba(
+        shell_cube,
+        v_line, z_line, x_line,
+        dv_off, dz_off, dx_off,
+        shell_k,
+    )
     return shell_cube
+
+def compute_data_bbox(data_cube, max_r, extra_margin=0):
+    """
+    根據 data_cube>0 的 voxel 算出一個 bounding box，
+    再加上 max_r + extra_margin 的 buffer。
+
+    回傳 (v_min, v_max, z_min, z_max, x_min, x_max)，都是 index（含端點）。
+    """
+    nv, nz, nx = data_cube.shape
+
+    mask = np.isfinite(data_cube) & (data_cube > 0)
+    if not np.any(mask):
+        return 0, nv-1, 0, nz-1, 0, nx-1  # 沒資料就用全域（保險）
+
+    v_idx, z_idx, x_idx = np.nonzero(mask)
+
+    # buffer 給 max_r 再多一點點
+    margin = int(max_r + extra_margin)
+
+    v_min = max(int(v_idx.min()) - margin, 0)
+    v_max = min(int(v_idx.max()) + margin, nv-1)
+    z_min = max(int(z_idx.min()) - margin, 0)
+    z_max = min(int(z_idx.max()) + margin, nz-1)
+    x_min = max(int(x_idx.min()) - margin, 0)
+    x_max = min(int(x_idx.max()) + margin, nx-1)
+
+    return v_min, v_max, z_min, z_max, x_min, x_max
 
 # ===================================================================
 def shell_error_from_cube(
@@ -469,13 +529,12 @@ def shell_error_from_cube(
     max_dist_value,
     M_star, radius_in_au, radius_out_au,
     scale, log_power,
+    data_bbox,
 ):
     """
-    使用 build_shell_distance_cube_sequential 所建立的「殼層距離」cube，
-    搭配對應的 data cube，計算「以資料強度加權的殼層平均距離」作為誤差指標。
-
-    search_bound : None 或 ([v_min,v_max],[z_min,z_max],[x_min,x_max])
-        若非 None，僅在此子區域內建立 / 使用殼層距離。
+    使用「距離殼層 cube」計算 error：
+      - 先在 data 有訊號的區域算一個 bounding box（加上 max_dist_value 的 buffer）
+      - 只在這個 subcube 內 stamp 殼層，避免整個 cube 都 stamp，節省大量時間
     """
     cube_shape = data_cube.shape
     nv, nz, nx = cube_shape
@@ -488,7 +547,7 @@ def shell_error_from_cube(
         Theta_zero, Phi_zero, Inclination, T_Myr, omega,
         M_star,
         radius_in_au, radius_out_au,
-        resolution=100,
+        resolution=80,
         scale=scale,
         log_power=log_power,
     )
@@ -500,16 +559,16 @@ def shell_error_from_cube(
     x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
     z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
 
-    x_pix_line = np.round(x_rot / dx_au + im_cx).astype(int)
-    z_pix_line = np.round(z_rot / dx_au + im_cy).astype(int)
+    x_pix_line = np.round(x_rot / dx_au + im_cx).astype(np.int64)
+    z_pix_line = np.round(z_rot / dx_au + im_cy).astype(np.int64)
 
     if Local_Standard_Velocity is None:
         Local_Standard_Velocity = float(header.get("LSRVEL", 0.0))
     v_lsr = v_m + Local_Standard_Velocity
     v_pix_line = velocity_to_channel_index(v_lsr, header, nz=nv)
-    v_pix_line = np.round(v_pix_line).astype(int)
+    v_pix_line = np.round(v_pix_line).astype(np.int64)
 
-    # 3) 先裁掉落在 cube 之外的 model 點
+    # 3) 剪掉 cube 外的 model 點
     valid_model = (
         (x_pix_line >= 0) & (x_pix_line < nx) &
         (z_pix_line >= 0) & (z_pix_line < nz) &
@@ -522,159 +581,67 @@ def shell_error_from_cube(
     if x_pix_line.size == 0:
         return np.inf
 
-    # 4) 由 model line 建立殼層距離 cube（只在 bound 裡 stamp）
-    shell_cube = apply_shell_ball_to_line(
-        cube_shape,
-        v_pix_line,   # 正確
-        z_pix_line,   # 正確
-        x_pix_line,   # 正確
+    # 4) 只在「data 有訊號的 bounding box」範圍內 stamp 殼層（bbox 已預先算好）
+    v_min, v_max, z_min, z_max, x_min, x_max = data_bbox
+
+    # subcube 的形狀
+    sub_shape = (
+        v_max - v_min + 1,
+        z_max - z_min + 1,
+        x_max - x_min + 1,
+    )
+
+    # shell_cube_sub 初始化為 -1
+    shell_cube_sub = np.full(sub_shape, -1, dtype=np.int16)
+
+    # 將 model 的像素座標 shift 到 subcube 座標系
+    v_line_sub = v_pix_line - v_min
+    z_line_sub = z_pix_line - z_min
+    x_line_sub = x_pix_line - x_min
+
+    # 只保留還落在 subcube 裡的 model 點（理論上前面剪過大 cube，這裡多一道保險）
+    valid_sub = (
+        (v_line_sub >= 0) & (v_line_sub < sub_shape[0]) &
+        (z_line_sub >= 0) & (z_line_sub < sub_shape[1]) &
+        (x_line_sub >= 0) & (x_line_sub < sub_shape[2])
+    )
+    v_line_sub = v_line_sub[valid_sub]
+    z_line_sub = z_line_sub[valid_sub]
+    x_line_sub = x_line_sub[valid_sub]
+
+    if v_line_sub.size == 0:
+        return np.inf
+
+    # --- 建立 subcube 的殼層 cube ---
+    shell_cube_sub = apply_shell_ball_to_line(
+        sub_shape,
+        v_line_sub,
+        z_line_sub,
+        x_line_sub,
         max_dist_value,
     )
-    
-    if shell_cube.shape != data_cube.shape:
-        raise ValueError("shell_cube 與 data_cube 形狀必須一致")
 
+    # 對應到 data 的 subcube
+    data_sub = data_cube[v_min:v_max+1, z_min:z_max+1, x_min:x_max+1]
+
+    # 5) 用 subcube 的 data + shell 計算 weighted mean shell index
     valid = (
-        (shell_cube >= 1) &
-        (shell_cube <= max_dist_value) &
-        (data_cube > 0)
+        (shell_cube_sub >= 1) &
+        (shell_cube_sub <= max_dist_value) &
+        (data_sub > 0)
     )
 
-    s = shell_cube[valid].astype(float)
-    w = data_cube[valid].astype(float)
+    if not np.any(valid):
+        return np.inf
 
-    if w.sum() == 0:
+    s = shell_cube_sub[valid].astype(float)
+    w = data_sub[valid].astype(float)
+
+    if w.sum() <= 0:
         return np.inf
 
     weighted_mean_shell = np.sum(s * w) / np.sum(w)
     return float(weighted_mean_shell)
-
-@njit(parallel=True)
-def fill_distance_cube_core(distance_cube,
-                            model_x, model_z, model_v,
-                            v_weight, max_dist_value,
-                            v_min, v_max, z_min, z_max, x_min, x_max):
-    """
-    在給定的邊界內，對每一個 voxel 計算最近模型點的距離，
-    結果寫到 distance_cube 裡。
-    """
-    for vv in prange(v_min, v_max + 1):
-        for zz in range(z_min, z_max + 1):
-            for xx in range(x_min, x_max + 1):
-                d2 = weighted_distance_numba(
-                    float(xx), float(zz), float(vv),
-                    model_x, model_z, model_v,
-                    v_weight,
-                )
-                d = np.sqrt(d2)
-                if d <= max_dist_value:
-                    distance_cube[vv, zz, xx] = d
-                # 否則保持原本的 -1
-
-def grow_distance_cube_bounded(
-    cube_shape,
-    Theta_zero, Phi_zero, Inclination, T_Myr, omega,
-    pa_rad, dx_au, header, Local_Standard_Velocity,
-    v_weight, max_dist_value,
-    M_star, radius_in_au, radius_out_au,
-    scale, log_power,
-    bound=None,
-):
-    """
-    使用與 nearest_weighted_distance 相同的加權距離：
-        d^2 = dx^2 + dz^2 + v_weight * dv^2
-
-    在 (v, z, x) 的子區域內，對每一個 voxel 找出距離模型線最近的點，
-    把「根號後的距離」存成 distance_cube：
-        distance_cube[v,z,x] = d_min  (若 d_min <= max_dist_value，否則設為 -1)
-
-    參數中的座標一律以 pixel / channel 為單位。
-    """
-
-    nv, nz, nx = cube_shape
-    distance_cube = np.full(cube_shape, -1.0, dtype=np.float32)
-
-    # ---------- 1. 產生模型流線 (物理單位：AU, km/s) ----------
-    x_m, y_m, z_m, u_m, v_m, w_m = PSS_model(
-        Theta_zero, Phi_zero, Inclination, T_Myr, omega,
-        M_star,
-        radius_in_au, radius_out_au,
-        resolution=100,
-        scale=scale,
-        log_power=log_power,
-    )
-
-    # ---------- 2. 轉成 cube 的 pixel / channel 座標 ----------
-    im_center_y = float(header["CRPIX2"]) - 1.0  # 0-based
-    im_center_x = float(header["CRPIX1"]) - 1.0
-
-    # 旋轉到 image frame
-    x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
-    z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
-
-    # 轉成像素座標 (x_pix, z_pix)
-    x_pix = x_rot / dx_au + im_center_x   # 先保留為 float
-    z_pix = z_rot / dx_au + im_center_y
-
-    # 頻道座標 v_pix
-    v_LSR = v_m + Local_Standard_Velocity
-    v_pix = velocity_to_channel_index(v_LSR, header, nz=nv)   # float
-
-    # ---------- 3. 只留下落在 cube 內的 model 點 ----------
-    valid_mask = (
-        (x_pix >= 0) & (x_pix < nx) &
-        (z_pix >= 0) & (z_pix < nz) &
-        (v_pix >= 0) & (v_pix < nv)
-    )
-    x_pix = x_pix[valid_mask]
-    z_pix = z_pix[valid_mask]
-    v_pix = v_pix[valid_mask]
-
-    if x_pix.size == 0:
-        # 沒有任何模型點落在 cube 內，直接回傳全 -1
-        return distance_cube
-
-    # ---------- 4. 決定實際要掃描的 (v,z,x) 邊界 ----------
-    if bound is not None:
-        v_bound, z_bound, x_bound = bound
-        v_min, v_max = int(v_bound[0]), int(v_bound[1])
-        z_min, z_max = int(z_bound[0]), int(z_bound[1])
-        x_min, x_max = int(x_bound[0]), int(x_bound[1])
-    else:
-        v_min, z_min, x_min = 0, 0, 0
-        v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
-
-    # 再跟 model 本身的位置 ± max_dist_value 取交集，避免掃太大
-    pad = 50
-    pad_v = pad / np.sqrt(v_weight)    
-    v_min_model = int(np.floor(v_pix.min())) - pad_v
-    v_max_model = int(np.ceil(v_pix.max())) + pad_v
-    z_min_model = int(np.floor(z_pix.min())) - pad
-    z_max_model = int(np.ceil(z_pix.max())) + pad
-    x_min_model = int(np.floor(x_pix.min())) - pad
-    x_max_model = int(np.ceil(x_pix.max())) + pad
-
-    v_min = max(0,          max(v_min, v_min_model))
-    z_min = max(0,          max(z_min, z_min_model))
-    x_min = max(0,          max(x_min, x_min_model))
-    v_max = min(nv - 1,     min(v_max, v_max_model))
-    z_max = min(nz - 1,     min(z_max, z_max_model))
-    x_max = min(nx - 1,     min(x_max, x_max_model))
-
-    if (v_min > v_max) or (z_min > z_max) or (x_min > x_max):
-        # 邊界完全沒有相交，回傳全 -1
-        return distance_cube
-
-    fill_distance_cube_core(
-        distance_cube,
-        x_pix, z_pix, v_pix,
-        float(v_weight), float(max_dist_value),
-        int(v_min), int(v_max),
-        int(z_min), int(z_max),
-        int(x_min), int(x_max),
-    )
-    return distance_cube
-
 
 # ===================================================================
 # 5. MCMC 框架 (MCMC Framework)
@@ -692,6 +659,7 @@ def log_likelihood_shell(
     radius_out_au,
     scale,
     log_power,
+    data_bbox
 ):
     """
     基於「殼層距離 cube」的 log-likelihood
@@ -711,12 +679,13 @@ def log_likelihood_shell(
         max_dist_value,
         M_star, radius_in_au, radius_out_au,
         scale, log_power,
+        data_bbox,
     )
     if not np.isfinite(E):
         return -np.inf
     if E <= 0:
         return -np.inf
-    logL = -np.log10(E)
+    logL = -0.5 * np.log10(E)
     return logL
 
 def log_prior_shell(params, prior_ranges):
@@ -751,6 +720,7 @@ def log_posterior_shell(
     radius_out_au,
     scale,
     log_power,
+    data_bbox
 ):
     """
     殼層距離版的 posterior：
@@ -775,6 +745,7 @@ def log_posterior_shell(
         radius_out_au,
         scale,
         log_power,
+        data_bbox
     )
     if not np.isfinite(logL):
         return -np.inf
@@ -784,46 +755,6 @@ def log_posterior_shell(
         return -np.inf
 
     return post
-
-def log_likelihood_distance(params, data_cube, search_bound,
-                            pa_rad, dx_au, header, Local_Standard_Velocity,
-                            v_weight_for_cube, max_dist_value,
-                            M_star, radius_in_au, radius_out_au,
-                            scale, log_power):
-    """
-    計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
-    
-    這裡不再手動計算 model 的像素座標，而是把 5 個參數與
-    WCS / 幾何資訊全部丟給 grow_distance_cube_bounded，
-    由它負責：
-      PSS_model → 物理座標 → (x_pix, z_pix, v_pix) → distance cube。
-    """
-    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
-        return -np.inf
-    # 從 data_cube 獲取形狀
-    cube_shape = data_cube.shape
-    
-    Theta_best, Phi_best, Inclination_best, T_best, Omega_best = params
-    # 直接呼叫 grow_distance_cube_bounded 建立距離立方體
-    distance_cube = grow_distance_cube_bounded(
-        cube_shape,
-        Theta_best, Phi_best, Inclination_best, T_best, Omega_best,
-        pa_rad, dx_au, header, Local_Standard_Velocity,
-        v_weight_for_cube, max_dist_value,
-        M_star, radius_in_au, radius_out_au,
-        scale, log_power,
-        bound=search_bound,
-    )
-    
-    valid_mask = distance_cube >= 0
-    numerator = np.nansum(distance_cube[valid_mask] * data_cube[valid_mask])
-    denominator = np.nansum(data_cube[valid_mask])
-    normalized_error = np.sqrt(numerator / denominator)
-    if not np.isfinite(normalized_error):
-        return -np.inf
-    if normalized_error <= 0:
-        return -np.inf
-    return -np.log10(normalized_error)
 
 def in_phi_range(phi, phi_min, phi_max):
     """
@@ -842,54 +773,6 @@ def in_phi_range(phi, phi_min, phi_max):
     else:
         # wrap-around case
         return (phi >= phi_min) or (phi <= phi_max)
-
-def log_prior_distance(params, prior_ranges):
-    """
-    計算對數先驗值。
-    """
-    Theta0, Phi0, Incl, T, Omega = params
-    
-    # 檢查參數是否在先驗範圍內
-    if not (
-        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
-        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
-        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
-        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
-        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
-    ):
-        return -np.inf # 如果超出範圍，對數先驗為負無窮
-    
-    return 0.0 # 均勻先驗，對數值為 0
-
-def log_posterior_distance(params, data_cube, search_bound, parameter_prior_ranges,
-                           pa_rad, dx_au, header, Local_Standard_Velocity,
-                           v_weight_for_cube, max_dist_value,
-                           M_star, radius_in_au, radius_out_au,
-                           scale, log_power):
-    """
-    計算對數後驗值。
-    (註：依賴 log_prior_distance 和 log_likelihood_distance)
-    """
-    lp = log_prior_distance(params, parameter_prior_ranges)
-    if not np.isfinite(lp):
-        return -np.inf
-
-    ll = log_likelihood_distance(
-        params,
-        data_cube,
-        search_bound,
-        pa_rad, dx_au, header, Local_Standard_Velocity,
-        v_weight_for_cube, max_dist_value,
-        M_star, radius_in_au, radius_out_au,
-        scale, log_power,
-    )
-    if not np.isfinite(ll):
-        return -np.inf
-    post = lp + ll
-    if not np.isfinite(post):
-        return -np.inf
-
-    return post
 
 # ===================================================================
 # 1. MCMC 先驗 (Prior)
@@ -1212,4 +1095,211 @@ def build_shell_distance_cube(
                z_min:z_max + 1,
                x_min:x_max + 1] = sub_shell
 
-    return shell_cube"""
+    return shell_cube
+    
+@njit(parallel=True)
+def fill_distance_cube_core(distance_cube,
+                            model_x, model_z, model_v,
+                            v_weight, max_dist_value,
+                            v_min, v_max, z_min, z_max, x_min, x_max):
+
+    在給定的邊界內，對每一個 voxel 計算最近模型點的距離，
+    結果寫到 distance_cube 裡。
+    for vv in prange(v_min, v_max + 1):
+        for zz in range(z_min, z_max + 1):
+            for xx in range(x_min, x_max + 1):
+                d2 = weighted_distance_numba(
+                    float(xx), float(zz), float(vv),
+                    model_x, model_z, model_v,
+                    v_weight,
+                )
+                d = np.sqrt(d2)
+                if d <= max_dist_value:
+                    distance_cube[vv, zz, xx] = d
+                # 否則保持原本的 -1
+
+def grow_distance_cube_bounded(
+    cube_shape,
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+    pa_rad, dx_au, header, Local_Standard_Velocity,
+    v_weight, max_dist_value,
+    M_star, radius_in_au, radius_out_au,
+    scale, log_power,
+    bound=None,
+):
+    
+    使用與 nearest_weighted_distance 相同的加權距離：
+        d^2 = dx^2 + dz^2 + v_weight * dv^2
+
+    在 (v, z, x) 的子區域內，對每一個 voxel 找出距離模型線最近的點，
+    把「根號後的距離」存成 distance_cube：
+        distance_cube[v,z,x] = d_min  (若 d_min <= max_dist_value，否則設為 -1)
+
+    參數中的座標一律以 pixel / channel 為單位。
+    
+
+    nv, nz, nx = cube_shape
+    distance_cube = np.full(cube_shape, -1.0, dtype=np.float32)
+
+    # ---------- 1. 產生模型流線 (物理單位：AU, km/s) ----------
+    x_m, y_m, z_m, u_m, v_m, w_m = PSS_model(
+        Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+        M_star,
+        radius_in_au, radius_out_au,
+        resolution=100,
+        scale=scale,
+        log_power=log_power,
+    )
+
+    # ---------- 2. 轉成 cube 的 pixel / channel 座標 ----------
+    im_center_y = float(header["CRPIX2"]) - 1.0  # 0-based
+    im_center_x = float(header["CRPIX1"]) - 1.0
+
+    # 旋轉到 image frame
+    x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
+    z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
+
+    # 轉成像素座標 (x_pix, z_pix)
+    x_pix = x_rot / dx_au + im_center_x   # 先保留為 float
+    z_pix = z_rot / dx_au + im_center_y
+
+    # 頻道座標 v_pix
+    v_LSR = v_m + Local_Standard_Velocity
+    v_pix = velocity_to_channel_index(v_LSR, header, nz=nv)   # float
+
+    # ---------- 3. 只留下落在 cube 內的 model 點 ----------
+    valid_mask = (
+        (x_pix >= 0) & (x_pix < nx) &
+        (z_pix >= 0) & (z_pix < nz) &
+        (v_pix >= 0) & (v_pix < nv)
+    )
+    x_pix = x_pix[valid_mask]
+    z_pix = z_pix[valid_mask]
+    v_pix = v_pix[valid_mask]
+
+    if x_pix.size == 0:
+        # 沒有任何模型點落在 cube 內，直接回傳全 -1
+        return distance_cube
+
+    # ---------- 4. 決定實際要掃描的 (v,z,x) 邊界 ----------
+    if bound is not None:
+        v_bound, z_bound, x_bound = bound
+        v_min, v_max = int(v_bound[0]), int(v_bound[1])
+        z_min, z_max = int(z_bound[0]), int(z_bound[1])
+        x_min, x_max = int(x_bound[0]), int(x_bound[1])
+    else:
+        v_min, z_min, x_min = 0, 0, 0
+        v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
+
+    # 再跟 model 本身的位置 ± max_dist_value 取交集，避免掃太大
+    pad = 50
+    pad_v = pad / np.sqrt(v_weight)    
+    v_min_model = int(np.floor(v_pix.min())) - pad_v
+    v_max_model = int(np.ceil(v_pix.max())) + pad_v
+    z_min_model = int(np.floor(z_pix.min())) - pad
+    z_max_model = int(np.ceil(z_pix.max())) + pad
+    x_min_model = int(np.floor(x_pix.min())) - pad
+    x_max_model = int(np.ceil(x_pix.max())) + pad
+
+    v_min = max(0,          max(v_min, v_min_model))
+    z_min = max(0,          max(z_min, z_min_model))
+    x_min = max(0,          max(x_min, x_min_model))
+    v_max = min(nv - 1,     min(v_max, v_max_model))
+    z_max = min(nz - 1,     min(z_max, z_max_model))
+    x_max = min(nx - 1,     min(x_max, x_max_model))
+
+    if (v_min > v_max) or (z_min > z_max) or (x_min > x_max):
+        # 邊界完全沒有相交，回傳全 -1
+        return distance_cube
+
+    fill_distance_cube_core(
+        distance_cube,
+        x_pix, z_pix, v_pix,
+        float(v_weight), float(max_dist_value),
+        int(v_min), int(v_max),
+        int(z_min), int(z_max),
+        int(x_min), int(x_max),
+    )
+    return distance_cube
+def log_likelihood_distance(params, data_cube, search_bound,
+                            pa_rad, dx_au, header, Local_Standard_Velocity,
+                            v_weight_for_cube, max_dist_value,
+                            M_star, radius_in_au, radius_out_au,
+                            scale, log_power):
+    計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
+    
+    這裡不再手動計算 model 的像素座標，而是把 5 個參數與
+    WCS / 幾何資訊全部丟給 grow_distance_cube_bounded，
+    由它負責：
+      PSS_model → 物理座標 → (x_pix, z_pix, v_pix) → distance cube。
+    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
+        return -np.inf
+    # 從 data_cube 獲取形狀
+    cube_shape = data_cube.shape
+    
+    Theta_best, Phi_best, Inclination_best, T_best, Omega_best = params
+    # 直接呼叫 grow_distance_cube_bounded 建立距離立方體
+    distance_cube = grow_distance_cube_bounded(
+        cube_shape,
+        Theta_best, Phi_best, Inclination_best, T_best, Omega_best,
+        pa_rad, dx_au, header, Local_Standard_Velocity,
+        v_weight_for_cube, max_dist_value,
+        M_star, radius_in_au, radius_out_au,
+        scale, log_power,
+        bound=search_bound,
+    )
+    
+    valid_mask = distance_cube >= 0
+    numerator = np.nansum(distance_cube[valid_mask] * data_cube[valid_mask])
+    denominator = np.nansum(data_cube[valid_mask])
+    normalized_error = np.sqrt(numerator / denominator)
+    if not np.isfinite(normalized_error):
+        return -np.inf
+    if normalized_error <= 0:
+        return -np.inf
+    return -np.log10(normalized_error)
+
+def log_prior_distance(params, prior_ranges):
+    計算對數先驗值。
+    Theta0, Phi0, Incl, T, Omega = params
+    
+    # 檢查參數是否在先驗範圍內
+    if not (
+        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
+        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
+        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
+        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
+        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
+    ):
+        return -np.inf # 如果超出範圍，對數先驗為負無窮
+    
+    return 0.0 # 均勻先驗，對數值為 0
+
+def log_posterior_distance(params, data_cube, search_bound, parameter_prior_ranges,
+                           pa_rad, dx_au, header, Local_Standard_Velocity,
+                           v_weight_for_cube, max_dist_value,
+                           M_star, radius_in_au, radius_out_au,
+                           scale, log_power):
+    計算對數後驗值。
+    (註：依賴 log_prior_distance 和 log_likelihood_distance)
+    lp = log_prior_distance(params, parameter_prior_ranges)
+    if not np.isfinite(lp):
+        return -np.inf
+
+    ll = log_likelihood_distance(
+        params,
+        data_cube,
+        search_bound,
+        pa_rad, dx_au, header, Local_Standard_Velocity,
+        v_weight_for_cube, max_dist_value,
+        M_star, radius_in_au, radius_out_au,
+        scale, log_power,
+    )
+    if not np.isfinite(ll):
+        return -np.inf
+    post = lp + ll
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
+"""
