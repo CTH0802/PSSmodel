@@ -1,15 +1,3 @@
-# ============================================================
-# 開關變數：是否執行 refinement grid search 階段
-# ============================================================
-RUN_REFINE = False
-
-# ============================================================
-# Cache config for best-fit results
-# ============================================================
-USE_CACHED_FIT = True
-FIT_CACHE = "Per-emb-2_fit_results.npz"
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Per-emb-2 streamer grid fitting (moment map only version)
 Two-stage grid search: coarse + refined
@@ -33,20 +21,17 @@ from astropy.wcs import WCS
 from astropy import units as u
 from tqdm import tqdm
 from spectral_cube import SpectralCube
+import emcee 
 import PSSpy as pss
+import corner 
 
-# ============================================================
-# 2. Basic setup & constants
-# ============================================================
-# 檢查是否從外部傳入 PA_OVERRIDE_DEG
-pa_override = os.environ.get("PA_OVERRIDE_DEG", None)
-if pa_override is not None:
-    pa_deg = float(pa_override)
-    print(f"[Override] Using external PA = {pa_deg:.1f} deg")
-else:
-    pa_deg = 50   # 預設值
-# 檔名標籤：給 PA_scan 用來區分不同 PA 的輸出
-pa_tag = os.environ.get("PA_TAG", f"PA_{int(pa_deg):+03d}")
+
+RUN_REFINE = False
+RUN_MCMC_GRID = False
+USE_CACHED_FIT = True
+FIT_CACHE = "Per-emb-2_fit_results.npz"
+
+pa_deg = 50
 pa_rad = np.deg2rad(pa_deg)
 Local_Standard_Velocity = 7.05  # km/s
 distance_pc = 300
@@ -267,77 +252,77 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         norm=norm
     )
 
-    # # colorbar 貼右側，小一點
-    # divider = make_axes_locatable(ax)
-    # cax = divider.append_axes("right", size="3%", pad=0.04)
-    # cbar = fig.colorbar(im, cax=cax)
-    # cbar.set_label('(Jy/beam km/s)')
-
-    # # model 線黑色外框 + 內層依速度上色
-    # lc_edge = LineCollection(segments, colors="black", linewidth=8, zorder=2)
-    # ax.add_collection(lc_edge)
-
-    # norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
-    # lc = LineCollection(
-    #     segments,
-    #     cmap="coolwarm",
-    #     norm=norm,
-    #     linewidth=6.5,
-    #     zorder=3,
-    # )
-    # lc.set_array(v_m + Local_Standard_Velocity)
-    # ax.add_collection(lc)
-    # ax.add_collection(lc)
-    # ax.add_collection(lc)
-    # ax.add_collection(lc)
-
-    num_element = 5
-    xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
-    weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
-    x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
-    ax.plot(x_means_arc, z_means_arc, color='w', lw=3, zorder=4)
+    # colorbar 貼右側，小一點
     divider = make_axes_locatable(ax)
-    cax     = divider.append_axes('right', size='3%', pad=0.04)
-    cbar = fig.colorbar(weights_im, cax=cax)
-    cbar.set_label('weight value')
+    cax = divider.append_axes("right", size="3%", pad=0.04)
+    cbar = fig.colorbar(im, cax=cax)
+    cbar.set_label('(Jy/beam km/s)')
+
+    # model 線黑色外框 + 內層依速度上色
+    lc_edge = LineCollection(segments, colors="black", linewidth=8, zorder=2)
+    ax.add_collection(lc_edge)
+
+    norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+    lc = LineCollection(
+        segments,
+        cmap="coolwarm",
+        norm=norm,
+        linewidth=6.5,
+        zorder=3,
+    )
+    lc.set_array(v_m + Local_Standard_Velocity)
+    ax.add_collection(lc)
+    ax.add_collection(lc)
+    ax.add_collection(lc)
+    ax.add_collection(lc)
+
+    # num_element = 5
+    # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
+    # weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
+    # x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
+    # ax.plot(x_means_arc, z_means_arc, color='w', lw=3, zorder=4)
+    # divider = make_axes_locatable(ax)
+    # cax     = divider.append_axes('right', size='3%', pad=0.04)
+    # cbar = fig.colorbar(weights_im, cax=cax)
+    # cbar.set_label('weight value')
     
-    # # ---------- 疊加質心點 ----------
-    # if cen_x_AU is not None and cen_z_AU is not None:
-    #     # 這裡改成「直接以像素座標」來畫質心點，不再從 AU 反推
-    #     cen_x_pix = np.asarray(cen_x_AU)
-    #     cen_z_pix = np.asarray(cen_z_AU)
+    # ---------- 疊加質心點 ----------
+    if cen_x_AU is not None and cen_z_AU is not None:
+        # 這裡改成「直接以像素座標」來畫質心點，不再從 AU 反推
+        cen_x_pix = np.asarray(cen_x_AU)
+        cen_z_pix = np.asarray(cen_z_AU)
 
-    #     # 轉成與背景 extent 一致的 RA/Dec offset
-    #     cen_ra  = (cen_x_pix - cx) * dx_arcsec
-    #     cen_dec = (cen_z_pix - cy) * dz_arcsec
+        # 轉成與背景 extent 一致的 RA/Dec offset
+        cen_ra  = (cen_x_pix - cx) * dx_arcsec
+        cen_dec = (cen_z_pix - cy) * dz_arcsec
 
-    #     if cen_v_LS_km is not None:
-    #         cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra,
-    #             cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=vmin,
-    #             vmax=vmax,
-    #             s=10,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.5,
-    #             zorder=5,
-    #             label="Streamer Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra,
-    #             cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=45,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Streamer Centroids",
-    #         )
+        if cen_v_LS_km is not None:
+            cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra,
+                cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=vmin,
+                vmax=vmax,
+                s=10,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.5,
+                zorder=5,
+                label="Streamer Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra,
+                cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=45,
+                marker="o",
+                zorder=5,
+                label="Streamer Centroids",
+            )
 
     # 中心位置
     ax.scatter(0, 0, c="r", s=60, marker="+", zorder=6)
@@ -519,15 +504,15 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     ax.add_collection(lc)
     ax.add_collection(lc)
 
-    num_element = 5
-    xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
-    weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
-    x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
-    ax.plot(x_means_arc, z_means_arc, color='k', lw=3, zorder=4)
-    divider = make_axes_locatable(ax)
-    cax     = divider.append_axes('right', size='3%', pad=0.04)
-    cbar = fig.colorbar(weights_im, cax=cax)
-    cbar.set_label('weight value')
+    # num_element = 5
+    # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
+    # weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
+    # x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
+    # ax.plot(x_means_arc, z_means_arc, color='k', lw=3, zorder=4)
+    # divider = make_axes_locatable(ax)
+    # cax     = divider.append_axes('right', size='3%', pad=0.04)
+    # cbar = fig.colorbar(weights_im, cax=cax)
+    # cbar.set_label('weight value')
 
     # ---------- 疊加質心點 ----------
     if cen_x_AU is not None and cen_z_AU is not None:
@@ -639,6 +624,175 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     fig.savefig(os.path.join(PLOT_DIR, outname), dpi=200, bbox_inches="tight")
     plt.close(fig)
 
+def plot_z_v_imshow(
+    best_theta, best_phi, best_incl, best_T, best_omega,
+    z_means_AU, v_means_LS_km,
+    xx, zz, mom0, mom1,
+    pa_rad, dx_au,
+    label, outname,
+):
+    """
+    用 imshow 畫 z–v 圖（x 方向疊起來）
+    mom0 intensity 作為強度，加總所有 x
+    mom1 velocity 用在 v 軸
+    """
+
+    # ---- 將影像旋轉到 streamer 座標 (x_rot, z_rot) ----
+    x_rot = xx * np.cos(pa_rad) + zz * np.sin(pa_rad)
+    z_rot = -xx * np.sin(pa_rad) + zz * np.cos(pa_rad)
+
+    # ---- 轉成 AU ----
+    z_all_AU = z_rot * dx_au
+    v_all = mom1.copy()
+
+    # ---- 選出 valid pixel ----
+    mask = np.isfinite(v_all) & np.isfinite(mom0) & (mom0 > 0)
+
+    z_flat = z_all_AU[mask]
+    v_flat = v_all[mask]
+    I_flat = mom0[mask]
+
+    # ---- 建立 z–v grid ----
+    Nz = 200
+    Nv = 200
+
+    z_min, z_max = np.min(z_flat), np.max(z_flat)
+    v_min, v_max = np.min(v_flat), np.max(v_flat)
+
+    # 2D 權重圖
+    H, z_edges, v_edges = np.histogram2d(
+        z_flat, v_flat,
+        bins=[Nz, Nv],
+        range=[[z_min, z_max], [v_min, v_max]],
+        weights=I_flat,
+    )
+
+    Zc = 0.5 * (z_edges[:-1] + z_edges[1:])
+    Vc = 0.5 * (v_edges[:-1] + v_edges[1:])
+
+    # ---- PSS model ----
+    theta = np.deg2rad(best_theta)
+    phi   = np.deg2rad(best_phi)
+    inc   = np.deg2rad(best_incl)
+
+    x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
+        theta, phi, inc, best_T, best_omega,
+        M_star,
+        radius_in_au=2e3,
+        radius_out_au=7e3,
+        resolution=200,
+        scale=scale,
+        log_power=log_power,
+    )
+    z_model = z_m
+    v_model = v_m + Local_Standard_Velocity
+
+    # ---- data centroids ----
+    z_obs = z_means_AU
+    v_obs = v_means_LS_km + Local_Standard_Velocity
+
+    # ---- 畫圖 ----
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    im = ax.imshow(
+        H.T,
+        origin="lower",
+        extent=(z_min, z_max, v_min, v_max),
+        cmap="inferno",
+        aspect="auto",
+    )
+
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(r"$\Sigma I_{\rm mom0}$  (Jy beam$^{-1}$ km s$^{-1}$)")
+
+    # 疊上 model
+    ax.plot(z_model, v_model, color="cyan", lw=2.5, label="PSS model")
+
+    # 疊上質心
+    ax.scatter(z_obs, v_obs, c="white", s=30, edgecolors="k", label="Centroids")
+
+    ax.set_xlabel("Z offset (AU)")
+    ax.set_ylabel("Velocity (km/s)")
+    ax.set_title(label)
+    ax.legend()
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOT_DIR, outname), dpi=200)
+    plt.close()
+# ============================================================
+# 4d. MCMC refinement around grid best-fit (fast likelihood)
+# ============================================================
+def run_mcmc_grid(
+    start_params_rad,
+    prior_ranges,
+    x_means_AU,
+    z_means_AU,
+    v_means_LS_km,
+    v_weight_phys,
+    solar_mass,
+    scale,
+    log_power,
+    nwalkers=64,
+    nsteps=3000,
+    burnin=1000,
+    out_chain="Per-emb-2_mcmc_grid_chain.npz",
+):
+    """
+    以 grid-search 的最佳解為起點，對 5D 參數跑一輪 MCMC (fast likelihood)。
+    
+    start_params_rad: array-like, [Theta0, Phi0, Incl, T_Myr, Omega] (Theta/Phi/Incl 用 rad)
+    """
+    ndim = 5
+    start_params_rad = np.asarray(start_params_rad, dtype=float)
+
+    # 初始 walkers：在最佳解附近加一點小亂數
+    # 角度用 ~0.02 rad 的擾動，Time / Omega 用相對 5% 的擾動
+    sigma_theta = 0.02
+    sigma_phi   = 0.02
+    sigma_incl  = 0.02
+    sigma_T     = 0.05 * start_params_rad[3] if start_params_rad[3] > 0 else 0.01
+    sigma_Omega = 0.05 * start_params_rad[4] if start_params_rad[4] > 0 else 0.02
+
+    p0 = np.zeros((nwalkers, ndim), dtype=float)
+    for i in range(nwalkers):
+        trial = start_params_rad.copy()
+        trial[0] += np.random.normal(scale=sigma_theta)
+        trial[1] += np.random.normal(scale=sigma_phi)
+        trial[2] += np.random.normal(scale=sigma_incl)
+        trial[3] += np.random.normal(scale=sigma_T)
+        trial[4] += np.random.normal(scale=sigma_Omega)
+        p0[i] = trial
+
+    # emcee sampler，直接用 PSSpy 裡的 log_posterior_fast
+    sampler = emcee.EnsembleSampler(
+        nwalkers,
+        ndim,
+        pss.log_posterior_fast,
+        args=(prior_ranges, x_means_AU, z_means_AU, v_means_LS_km,
+              v_weight_phys, solar_mass, scale, log_power),
+    )
+
+    print(f"\n[MCMC_grid] Start sampling: nwalkers={nwalkers}, nsteps={nsteps}")
+    _ = sampler.run_mcmc(p0, nsteps, progress=True)
+
+    # 取掉前 burn-in 步
+    flat_samples = sampler.get_chain(discard=burnin, thin=1, flat=True)
+    print(f"[MCMC_grid] Flat samples shape = {flat_samples.shape}")
+
+    # 用 PSSpy 的 helper 印出結果 & 拿回最佳參數 (rad)
+    best_params_rad = pss.report_and_get_best_params(flat_samples, confidence_level=68.3)
+
+    # 存檔 chain
+    np.savez(
+        out_chain,
+        chain=flat_samples,
+        start_params=start_params_rad,
+        best_params=best_params_rad,
+    )
+
+    return best_params_rad, flat_samples
+
 # ============================================================
 # 5. 若已存在 cache 且選擇使用，載入最佳解並跳過 grid search
 # ============================================================
@@ -650,7 +804,7 @@ if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
     best_T     = float(cache["best_T"])       # Myr
     best_incl  = float(cache["best_incl"])    # deg
     best_omega = float(cache["best_omega"])
-    # 如果有存 v_weight_phys、一併載入（沒有就保留上面算好的）
+
     if "v_weight_phys" in cache.files:
         v_weight_phys = float(cache["v_weight_phys"])
     if "r_ref_AU" in cache.files:
@@ -665,6 +819,7 @@ if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
         vel_rmse_kms = float(cache["vel_rmse_kms"])
     if "eq_rmse_kms" in cache.files:
         eq_rmse_kms = float(cache["eq_rmse_kms"])
+
     print("\n==================== Cached Best-fit Parameters ====================")
     print(f"Theta        = {best_theta:.3f} deg")
     print(f"Phi          = {best_phi:.3f} deg")
@@ -676,18 +831,17 @@ if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
 else:
     use_cached = False
 
+# ============================================================
+# 6. 如果沒有 cache：跑 coarse(+refine) grid，得到 grid best-fit
+# ============================================================
 if not use_cached:
-    # ============================================================
-    # 5. 第一階段 coarse grid search
-    # ============================================================
-    v_weight_pix = (dv / dx_arcsec) ** 2
-    # v_weight_phys = (dv / dx_au) ** 2
-    v_weight_phys = (np.std(x_means_AU) / np.std(v_means_LS_km))**2
-    # v_weight_phys = (1e3 / 3e-1) ** 2
+    v_weight_phys = (dx_au / dv) ** 2
+
+    # --- Stage 1: coarse grid ---
     n_theta, n_phi, n_T_Myr, n_Incl, n_Omega = 10, 10, 10, 10, 10
     theta = np.linspace(0, np.pi, n_theta+1)[1:]
     phi   = np.linspace(0, 2*np.pi, n_phi, endpoint=False)
-    T_Myr = np.linspace(1e-1, 5e-1, n_T_Myr)  # `Time` 的範圍 [5e-3, 1e-1]
+    T_Myr = np.linspace(1e-1, 5e-1, n_T_Myr)
     Incl  = np.linspace(-np.pi/2, np.pi/2, n_Incl+2)[1:-1]
     omega = np.linspace(0, 1, n_Omega+1)[1:]
 
@@ -714,7 +868,7 @@ if not use_cached:
     print(f"→ Minimum found at indices {min_idx}")
     print(f"Theta={np.rad2deg(theta[min_theta]):.2f}°, Phi={np.rad2deg(phi[min_phi]):.2f}°, "
           f"T={T_Myr[min_T]:.5f} Myr, Incl={np.rad2deg(Incl[min_I]):.2f}°, Omega={omega[min_O]:.3f}")
-    #
+
     # ============================================================
     # 6. 第二階段 refinement grid search
     # ============================================================
@@ -772,20 +926,20 @@ if not use_cached:
             return lo, hi
 
         theta_lo, theta_hi = padded_range(Theta_good,
-                                          lo_abs=0.0,
-                                          hi_abs=np.pi)
+                                            lo_abs=0.0,
+                                            hi_abs=np.pi)
         phi_lo, phi_hi     = padded_range(Phi_good,
-                                          lo_abs=0.0,
-                                          hi_abs=2.0*np.pi)
+                                            lo_abs=0.0,
+                                            hi_abs=2.0*np.pi)
         T_lo, T_hi         = padded_range(T_good,
-                                          lo_abs=np.min(T_Myr),
-                                          hi_abs=np.max(T_Myr))
+                                            lo_abs=np.min(T_Myr),
+                                            hi_abs=np.max(T_Myr))
         inc_lo, inc_hi     = padded_range(Incl_good,
-                                          lo_abs=-0.5*np.pi,
-                                          hi_abs=0.5*np.pi)
+                                            lo_abs=-0.5*np.pi,
+                                            hi_abs=0.5*np.pi)
         omega_lo, omega_hi = padded_range(Omega_good,
-                                          lo_abs=0.0,
-                                          hi_abs=1.0)
+                                            lo_abs=0.0,
+                                            hi_abs=1.0)
 
         print("\n[Grid Search Stage 2] refined ranges from low-error region:")
         print(f"Theta   : {np.rad2deg(theta_lo):6.2f}–{np.rad2deg(theta_hi):6.2f} deg")
@@ -830,7 +984,6 @@ if not use_cached:
         error_refine = error
         min_theta_r, min_phi_r, min_T_r, min_I_r, min_O_r = min_theta, min_phi, min_T, min_I, min_O
         min_idx_r = (min_theta_r, min_phi_r, min_T_r, min_I_r, min_O_r)
-        
     # ============================================================
     # 7. 最終結果輸出
     # ============================================================
@@ -852,9 +1005,6 @@ if not use_cached:
     print(f"Inclination  = {best_incl:.3f} deg")
     print(f"Omega        = {best_omega:.4f}")
     print(f"r_ref        = {r_ref_AU:.3f} AU")
-    print(f"Position RMSE (spatial mismatch): {pss.error_function.last_pos_rmse:.4f} AU")
-    print(f"Velocity RMSE (line-of-sight mismatch): {pss.error_function.last_vel_rmse:.4f} km/s")
-    print(f"Equivalent combined RMSE (AU-weighted to km/s scale): {pss.error_function.last_eq_vel_rmse:.4f} km/s-equivalent")
     print(f"M_0          = {M_0:.3e} (dimensionless)")
     print(f"Mdot         = {M_dot:.3e} M_sun/yr")
     print("===================================================================")
@@ -873,26 +1023,119 @@ if not use_cached:
         r_ref_AU=r_ref_AU,
         M_0=M_0,
         Mdot=M_dot,
-        pos_rmse_AU=pss.error_function.last_pos_rmse,
-        vel_rmse_kms=pss.error_function.last_vel_rmse,
-        eq_rmse_kms=pss.error_function.last_eq_vel_rmse,
     )
 
     # ============================================================
     # 8. Optional visualization
     # ============================================================
-    plt.figure(figsize=(6,6))
-    plt.imshow(np.nanmin(error_refine, axis=(2,3,4)), origin='lower', cmap='viridis')
-    plt.title("Refined Grid Search: min(error) vs θ–φ")
-    plt.xlabel("φ index"); plt.ylabel("θ index")
-    plt.colorbar(label="Error (AU-weighted)")
-    plt.tight_layout()
-    plt.savefig(os.path.join(PLOT_DIR, "Per-emb-2_error_theta_phi.png"), dpi=180)
-    plt.close()
+    # plt.figure(figsize=(6,6))
+    # plt.imshow(np.nanmin(error_refine, axis=(2,3,4)), origin='lower', cmap='viridis')
+    # plt.title("Refined Grid Search: min(error) vs θ–φ")
+    # plt.xlabel("φ index"); plt.ylabel("θ index")
+    # plt.colorbar(label="Error (AU-weighted)")
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(PLOT_DIR, "Per-emb-2_error_theta_phi.png"), dpi=180)
+    # plt.close()
 
 # ============================================================
-# 9. Model vs Data: Overlay best-fit streamer model on moment1 map
+#  MCMC 使用的參數先驗範圍 (rad / Myr / dimensionless)
 # ============================================================
+parameter_prior_ranges = {
+    "Theta zero": (0.0, np.pi),                 # 0–180 deg
+    "Phi zero":   (0.0, 2.0 * np.pi),           # 0–360 deg
+    "Inclination":(-0.5 * np.pi, 0.5 * np.pi),  # -90–90 deg
+    "Time":       (0.1, 0.5),                   # Myr
+    "Omega":      (0.0, 1.0),                   # dimensionless
+}
+# ============================================================
+# 7. 若開啟 RUN_MCMC_GRID：在「目前」best 上再 refine 一次
+# ============================================================
+if RUN_MCMC_GRID:
+    start_params_rad = np.array([
+        np.deg2rad(best_theta),
+        np.deg2rad(best_phi),
+        np.deg2rad(best_incl),
+        best_T,
+        best_omega,
+    ])
+
+    best_params_mcmc_rad, mcmc_samples = run_mcmc_grid(
+        start_params_rad,
+        parameter_prior_ranges,
+        x_means_AU,
+        z_means_AU,
+        v_means_LS_km,
+        v_weight_phys,
+        M_star,
+        scale,
+        log_power,
+        nwalkers=1000,
+        nsteps=20000,
+        burnin=100,
+        out_chain="Per-emb-2_mcmc_grid_chain.npz",
+    )
+
+    best_theta_rad, best_phi_rad, best_incl_rad, best_T, best_omega = best_params_mcmc_rad
+    best_theta = np.rad2deg(best_theta_rad)
+    best_phi   = np.rad2deg(best_phi_rad)
+    best_incl  = np.rad2deg(best_incl_rad)
+
+    r_ref_AU = 200 * best_T * 1e6 * spc.year / spc.astronomical_unit
+    M_0 = M_star * M_SUN_KG * spc.G / (200**3 * best_T * 1e6 * spc.year)
+    M_dot = M_star / (best_T * 1e6)
+
+    print("\n==================== MCMC-refined Best-fit Parameters ====================")
+    print(f"Theta        = {best_theta:.3f} deg")
+    print(f"Phi          = {best_phi:.3f} deg")
+    print(f"Time (T_Myr) = {best_T:.6f} Myr")
+    print(f"Inclination  = {best_incl:.3f} deg")
+    print(f"Omega        = {best_omega:.4f}")
+    print(f"r_ref        = {r_ref_AU:.3f} AU")
+    print(f"M_0          = {M_0:.3e} (dimensionless)")
+    print(f"Mdot         = {M_dot:.3e} M_sun/yr")
+    print("===================================================================")
+    samples_plot = mcmc_samples.copy()
+    samples_plot[:, 0] = np.rad2deg(samples_plot[:, 0])  # Theta
+    samples_plot[:, 1] = np.rad2deg(samples_plot[:, 1])  # Phi
+    samples_plot[:, 2] = np.rad2deg(samples_plot[:, 2])  # Incl
+
+    labels = [
+        r"$\Theta_0$ (deg)",
+        r"$\Phi_0$ (deg)",
+        r"$i$ (deg)",
+        r"$T$ (Myr)",
+        r"$\omega$",
+    ]
+
+    fig = corner.corner(
+        samples_plot,
+        labels=labels,
+        show_titles=True,
+        title_fmt=".3f",
+        quantiles=[0.16, 0.5, 0.84],
+        truths=[best_theta, best_phi, best_incl, best_T, best_omega],
+        smooth=1.0
+    )
+    fig.savefig(os.path.join(PLOT_DIR, "Per-emb-2_mcmc_corner.png"),
+                dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    # 這邊直接用 MCMC 的結果存 cache（不要再改回 grid 那組）
+    np.savez(
+        FIT_CACHE,
+        best_theta=best_theta,
+        best_phi=best_phi,
+        best_T=best_T,
+        best_incl=best_incl,
+        best_omega=best_omega,
+        v_weight_phys=v_weight_phys,
+        pa_deg=pa_deg,
+        r_ref_AU=r_ref_AU,
+        M_0=M_0,
+        Mdot=M_dot,
+    )
+
+# (前面：cache / grid / refine / MCMC 統統跑完，best_theta 等都已經是「最後版本」)
+
 print("\n[Visualization] Overlaying best-fit streamer model on moment1 map...")
 
 plot_streamer_on_mom1(
@@ -906,13 +1149,14 @@ plot_streamer_on_mom1(
     dx_au,
     im_center,
     data_mom1,
-    label='Per-emb-2 ' + r'$\rm HC_3N$', #+ f"(PA={pa_deg:.1f}°)"
-    outname=f"Per-emb-2_model_vs_mom1_overlay_{pa_tag}.png",
+    label='Per-emb-2 ' + r'$\rm HC_3N$',
+    outname=f"Per-emb-2_model_vs_mom1_overlay_{pa_deg}.png",
     cen_x_AU=im_center[0] + x_means,
     cen_z_AU=im_center[1] + z_means,
     cen_v_LS_km=v_means_LS_km,
     v_range=1.0,
 )
+
 plot_streamer_on_mom0(
     best_theta,
     best_phi,
@@ -924,9 +1168,25 @@ plot_streamer_on_mom0(
     dx_au,
     im_center,
     data_mom0,
-    label='Per-emb-2 ' + r'$\rm HC_3N$', #+ f"(PA={pa_deg:.1f}°)"
-    outname=f"Per-emb-2_model_vs_mom0_overlay_{pa_tag}.png",
+    label='Per-emb-2 ' + r'$\rm HC_3N$',
+    outname=f"Per-emb-2_model_vs_mom0_overlay_{pa_deg}.png",
     cen_x_AU=im_center[0] + x_means,
     cen_z_AU=im_center[1] + z_means,
     cen_v_LS_km=v_means_LS_km,
+)
+print("\n[Visualization] Drawing Z–V diagram...")
+
+plot_z_v_imshow(
+    best_theta,
+    best_phi,
+    best_incl,
+    best_T,
+    best_omega,
+    z_means_AU,
+    v_means_LS_km,
+    xx, zz,
+    data_mom0, data_mom1,
+    pa_rad, dx_au,
+    label='Per-emb-2 HC3N (Z–V diagram)',
+    outname="Per-emb-2_z_v_imshow.png",
 )

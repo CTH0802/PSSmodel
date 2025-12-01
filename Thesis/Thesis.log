@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  29 NOV 2025 20:23
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  1 DEC 2025 17:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1271,15 +1271,15 @@ LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: E2598DE40F7DEF79BE9D3C5C2136FA2E;4421.
+(rerunfilecheck)             Checksum: E830D99DB661C3DADC92AB4C7D8F4D65;4422.
  ) 
 Here is how much of TeX's memory you used:
- 28512 strings out of 473832
- 589722 string characters out of 5729482
- 1007405 words of memory out of 5000000
- 51063 multiletter control sequences out of 15000+600000
- 563795 words of font info for 75 fonts, out of 8000000 for 9000
+ 28465 strings out of 473832
+ 586696 string characters out of 5729482
+ 1007505 words of memory out of 5000000
+ 51017 multiletter control sequences out of 15000+600000
+ 563787 words of font info for 74 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,1586b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (24 pages, 219996 bytes).
+Output written on Thesis.xdv (24 pages, 222408 bytes).

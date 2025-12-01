@@ -194,28 +194,27 @@ def build_streamer_masked_cube(cube, header, rms_channel):
     """
     回傳:
       im_center (y, x),
-      masked_center_cube,
-      masked_cube,
-      new_cube_data (np.ndarray, masked_cube 填 0)
+      masked_cube,      # 手動 mask + grow_region 後的 SpectralCube
+      new_cube_data     # np.ndarray, masked_cube 填 0 之後的資料
     """
     im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
     ny, nx = cube.shape[1], cube.shape[2]
 
-    masked_center_cube = cube
+    # 先從原始 cube 開始，逐步加上手動圓形遮罩
+    masked_cube = cube
 
-    # 手動 mask 核心
     mask_specs = [
-        (4, [108, 67]),
-        (3, [121, 64]),
-        (4, [103, 72]),
+        (4,   [108, 67]),
+        (3,   [121, 64]),
+        (4,   [103, 72]),
         (4.5, [114, 66]),
-        (3, [94, 84]),
-        (6.5, [99, 79]),
+        (3,   [94,  84]),
+        (6.5, [99,  79]),
     ]
     for radius, pos in mask_specs:
-        mask2d = pss.circular_mask((ny, nx), pos, radius)
+        mask2d = pss.circular_mask((ny, nx), pos, radius)       # 2D: True 在圓外
         mask3d = np.repeat(mask2d[np.newaxis, :, :], cube.shape[0], axis=0)
-        masked_center_cube = masked_center_cube.with_mask(mask3d)
+        masked_cube = masked_cube.with_mask(mask3d)
 
     # grow_region 找 streamer
     init_points = [
@@ -227,7 +226,8 @@ def build_streamer_masked_cube(cube, header, rms_channel):
         (34, 93, 66),
         (34, 71, 73),
     ]
-    maskcent_cube_data = masked_center_cube.filled_data[:].value
+
+    maskcent_cube_data = masked_cube.filled_data[:].value
     maskcent_stream_mask = pss.grow_region(
         maskcent_cube_data,
         init_points,
@@ -236,11 +236,11 @@ def build_streamer_masked_cube(cube, header, rms_channel):
         max_iter=1000,
     )
 
-    masked_cube = masked_center_cube.with_mask(maskcent_stream_mask)
+    masked_cube = masked_cube.with_mask(maskcent_stream_mask)
     masked_cube = masked_cube.with_fill_value(0.0)
     new_cube_data = masked_cube.filled_data[:].value
 
-    return im_center, masked_center_cube, masked_cube, new_cube_data
+    return im_center, masked_cube, new_cube_data
 
 def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
                                v_lastch_vel, v_lastch_num):
@@ -1085,7 +1085,7 @@ def prepare_data():
     h1.writeto("Per-emb-50_H2CO_mom1.fits", overwrite=True)
 
     # 做 streamer mask
-    im_center, masked_center_cube, masked_cube, new_cube_data = build_streamer_masked_cube(
+    im_center, masked_cube, new_cube_data = build_streamer_masked_cube(
         subcube, header, rms_channel
     )
     new_cube_data = new_cube_data.astype(np.float32)
@@ -1155,7 +1155,7 @@ def run_grid():
         Omega_init = best_params["Omega"]
 
         parameter_prior_ranges = compute_priors_from_grid(
-            error, grid, best_params["best_val"]
+            error, grid, best_params["best_val"], frac=0.3
         )
 
         print("\n[MCMC priors from grid]")
@@ -1287,8 +1287,13 @@ def run_mcmc_grid_search():
         samples_plot = flat_wrapped.copy()
         for idx in [0, 1, 2]:
             samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-        labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
-                    "Time (Myr)", "Omega"]
+        labels_plot = [
+        r"$\Theta_0$ (deg)",
+        r"$\Phi_0$ (deg)",
+        r"$i$ (deg)",
+        r"$T$ (Myr)",
+        r"$\omega$",
+        ]
         q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
         ranges = []
         for i in range(len(labels_plot)):
@@ -1301,8 +1306,8 @@ def run_mcmc_grid_search():
                             range=ranges,
                             show_titles=True,
                             title_fmt=".3f",
-                            plot_datapoints=False,
-                            fill_contours=True,
+                            quantiles=[0.16, 0.5, 0.84],
+                            truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
                             smooth=1)
         fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid.png"),
                     dpi=200, bbox_inches="tight")
@@ -1370,7 +1375,9 @@ def run_mcmc_shell():
             p0[:, j] = prop
 
         max_dist_value = 30.0
-
+        print("[bbox] computing DATA_BBOX ...")
+        DATA_BBOX = pss.compute_data_bbox(new_cube_data, max_r=max_dist_value, extra_margin=5)
+        print(f"[bbox] DATA_BBOX = {DATA_BBOX}")
         log_args = (
             new_cube_data,
             parameter_prior_ranges,
@@ -1384,6 +1391,7 @@ def run_mcmc_shell():
             radius_out_au,
             scale,
             log_power,
+            DATA_BBOX
         )
 
         moves = get_mcmc_moves(mode="refine")
@@ -1463,9 +1471,9 @@ def run_mcmc_shell():
                             range=ranges,
                             show_titles=True,
                             title_fmt=".3f",
-                            plot_datapoints=False,
-                            fill_contours=True,
-                            smooth=1.0)
+                            quantiles=[0.16, 0.5, 0.84],
+                            truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+                            smooth=1)
         fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell.png"),
                     dpi=200, bbox_inches="tight")
         plt.close(fig)

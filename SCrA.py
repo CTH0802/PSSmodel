@@ -87,7 +87,7 @@ USE_CACHE_SOURCE = "grid"
 # --- 分析開關 ---
 # RUN_GRID = True               # 5D grid search 找初始解
 # RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
-# RUN_MCMC_SHELL = True         # distance_cube MCMC
+# RUN_MCMC_SHELL = False         # distance_cube MCMC
 # RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 RUN_GRID = False               # 5D grid search 找初始解
@@ -1312,7 +1312,7 @@ def run_grid():
             streamercom_x_AU, streamercom_z_AU, streamercom_v_LS_km,
             v_weight_phys, M_star, scale, log_power, radius_ref_au,
             n_grid=10,
-            T_factor_range=(130.0, 300.0),
+            T_factor_range=(65.0, 150.0),
             verbose=True,
         )
         # 利用 coarse grid 的低誤差區自動產生先驗範圍（與 Per-emb-50 一致）
@@ -1495,7 +1495,7 @@ def run_mcmc_grid():
         samples_plot,
         labels=labels_plot,
         range=ranges,
-        show_titles=True,
+        show_titles=False,
         title_fmt=".2f",
         plot_datapoints=False,
         fill_contours=True,
