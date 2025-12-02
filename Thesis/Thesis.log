@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  1 DEC 2025 17:43
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  3 DEC 2025 03:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1088,22 +1088,41 @@ Missing character: There is no ≳ (U+2273) in font [lmroman12-regular]:mapping=
 [1
 
 
-]
+])
 
 [2]
 
-[3])
-
-[4]
+[3]
 Chapter 2.
 (././Methods.tex
+! Undefined control sequence.
+l.4 ...esponding to a synthesized beam of $1\farcs
+                                                  2\times0\farcs7$ \citep{Hs...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
 
-[5
+! Undefined control sequence.
+l.4 ... synthesized beam of $1\farcs2\times0\farcs
+                                                  7$ \citep{Hsieh_2023}.
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+
+[4
 
 ]
 
+[5]
+
 [6]
-Overfull \hbox (19.12483pt too wide) detected at line 68
+Overfull \hbox (20.9861pt too wide) detected at line 89
 []
  []
 
@@ -1113,14 +1132,14 @@ Overfull \hbox (19.12483pt too wide) detected at line 68
 
 [8]
 
+[9]
+
 Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 (xeCJK)                
 (xeCJK)                Try to use `\setCJKmonofont[<...>]{<...>}' to define
 (xeCJK)                it.
 
 
-
-[9]
 
 [10])
 
@@ -1271,15 +1290,15 @@ LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: E830D99DB661C3DADC92AB4C7D8F4D65;4422.
+(rerunfilecheck)             Checksum: 65BAED0F20B39F53BE334901C4FE7EDF;4965.
  ) 
 Here is how much of TeX's memory you used:
- 28465 strings out of 473832
- 586696 string characters out of 5729482
- 1007505 words of memory out of 5000000
- 51017 multiletter control sequences out of 15000+600000
+ 28466 strings out of 473832
+ 586717 string characters out of 5729482
+ 1008126 words of memory out of 5000000
+ 51018 multiletter control sequences out of 15000+600000
  563787 words of font info for 74 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 117i,19n,121p,1586b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,19n,121p,1066b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.xdv (24 pages, 222408 bytes).
+Output written on Thesis.xdv (24 pages, 228292 bytes).

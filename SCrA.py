@@ -82,12 +82,12 @@ CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "SCrA_mcmc_grid_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "SCrA_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "SCrA_fit_results_final.npz")
 
-USE_CACHE_SOURCE = "grid"
+USE_CACHE_SOURCE = "mcmc_shell"
 
 # --- 分析開關 ---
 # RUN_GRID = True               # 5D grid search 找初始解
 # RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
-# RUN_MCMC_SHELL = False         # distance_cube MCMC
+# RUN_MCMC_SHELL = True         # distance_cube MCMC
 # RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 RUN_GRID = False               # 5D grid search 找初始解
@@ -1482,25 +1482,28 @@ def run_mcmc_grid():
     samples_plot = flat_wrapped.copy()
     for idx in [0, 1, 2]:
         samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-    labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
-                   "Time (Myr)", "Omega"]
-    q16_plot, q50_plot, q84_plot = np.percentile(samples_plot, [16, 50, 84], axis=0)
+    labels_plot = [
+    r"$\Theta_0$ (deg)",
+    r"$\Phi_0$ (deg)",
+    r"$i$ (deg)",
+    r"$T$ (Myr)",
+    r"$\omega$",
+    ]
+    q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
     ranges = []
-    for i, _ in enumerate(labels_plot):
-        lo, md, hi = q16_plot[i], q50_plot[i], q84_plot[i]
+    for i in range(len(labels_plot)):
+        lo, md, hi = q16p[i], q50p[i], q84p[i]
         width = hi - lo if hi > lo else 1e-3
-        ranges.append((md - 1.5*width, md + 1.5*width))
-        
-    fig = corner.corner(
-        samples_plot,
-        labels=labels_plot,
-        range=ranges,
-        show_titles=False,
-        title_fmt=".2f",
-        plot_datapoints=False,
-        fill_contours=True,
-        smooth=1.0,
-    )
+        ranges.append((md - 2*width, md + 2*width))
+
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=True,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+                        smooth=1)
 
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid.png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -1540,17 +1543,16 @@ def run_mcmc_shell():
 
     labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
 
-    cache.get("mcmc_grid_used", False)
-    # --- Use MCMC_grid medians as center ---
-    Theta_center = cache["mcmc_grid_median_Theta"]
-    Phi_center   = cache["mcmc_grid_median_Phi"]
-    Incl_center  = cache["mcmc_grid_median_Incl"]
-    T_center     = cache["mcmc_grid_median_T"]
-    Omega_center = cache["mcmc_grid_median_Omega"]
+    cache.get("grid_used", False)
+    Theta_center = cache["grid_best_Theta"]
+    Phi_center   = cache["grid_best_Phi"]
+    Incl_center  = cache["grid_best_Incl"]
+    T_center     = cache["grid_best_T"]
+    Omega_center = cache["grid_best_Omega"]
     center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
 
     ndim = 5
-    nwalkers, nsteps = 20, 200
+    nwalkers, nsteps = 20, 8000
 
     # 跟 Per-emb-50 一樣的 sigma 設定（單位：rad, Myr, dimensionless）
     sigmas = [
@@ -1568,18 +1570,23 @@ def run_mcmc_shell():
         # priors 是有限區間 → 用 clip 壓回範圍內
         prop = np.clip(prop, lo, hi)
         p0[:, j] = prop
-
+    
+    down_factor = 5
+    down_factor_v = 3
+    shifted_cube_data_ds = shifted_cube_data[::down_factor_v, ::down_factor, ::down_factor]
+    print(f"[mask] shifted_cube_data downsampled: {shifted_cube_data.shape} → {shifted_cube_data_ds.shape}")
+    
     max_dist_value = 50.0
     # 在 run_mcmc_shell() 外面或一開始
     DATA_BBOX = pss.compute_data_bbox(
-        shifted_cube_data,   # 或 new_cube_data，反正是你送進 MCMC 的那個 cube
-        max_r=max_dist_value,
-        extra_margin=5,
+            shifted_cube_data_ds,
+            max_r=max_dist_value,
+            extra_margin=5,
     )
     print("[bbox] DATA_BBOX =", DATA_BBOX)
     
     log_args = (
-        shifted_cube_data,
+        shifted_cube_data_ds,
         parameter_prior_ranges,
         pa_rad,
         dx_au,
@@ -1624,12 +1631,11 @@ def run_mcmc_shell():
         burnin, thin = 30, 5
 
     chain = sampler.get_chain()
-    print("[MCMC_shell] chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
-    print("[MCMC_shell] mean acceptance:", np.mean(af))
+    print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+    print("mean acceptance:", np.mean(sampler.acceptance_fraction))
 
     lp = sampler.get_log_prob(flat=True)
-    non_finite_frac = np.mean(~np.isfinite(lp))
-    print("[MCMC_shell] non-finite log_prob fraction =", non_finite_frac)
+    print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
 
     flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
 
@@ -1669,25 +1675,28 @@ def run_mcmc_shell():
     samples_plot = flat_wrapped.copy()
     for idx in [0, 1, 2]:
         samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-    labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
-                   "Time (Myr)", "Omega"]
+    labels_plot = [
+    r"$\Theta_0$ (deg)",
+    r"$\Phi_0$ (deg)",
+    r"$i$ (deg)",
+    r"$T$ (Myr)",
+    r"$\omega$",
+    ]
     q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
     ranges = []
     for i in range(len(labels_plot)):
         lo, md, hi = q16p[i], q50p[i], q84p[i]
         width = hi - lo if hi > lo else 1e-3
-        ranges.append((md - 1.5*width, md + 1.5*width))
+        ranges.append((md - 2*width, md + 2*width))
 
-    fig = corner.corner(
-        samples_plot,
-        labels=labels_plot,
-        range=ranges,
-        show_titles=True,
-        title_fmt=".3f",
-        plot_datapoints=False,
-        fill_contours=True,
-        smooth=1.0,
-    )
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=True,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+                        smooth=1)
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)

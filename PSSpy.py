@@ -458,12 +458,12 @@ def stamp_shell_cube_numba(shell_cube, v_line, z_line, x_line,
     Npts = len(v_line)
     Noff = len(shell_k)
 
-    for i in prange(Npts):   # ← 平行化這層 loop
+    for i in prange(Npts):  
         v0 = v_line[i]
         z0 = z_line[i]
         x0 = x_line[i]
 
-        for j in range(Noff):   # ← 這層也可以平行化，但要注意寫入衝突
+        for j in range(Noff):
             vv = v0 + dv_off[j]
             zz = z0 + dz_off[j]
             xx = x0 + dx_off[j]
@@ -471,13 +471,13 @@ def stamp_shell_cube_numba(shell_cube, v_line, z_line, x_line,
             if (0 <= vv < nv) and (0 <= zz < nz) and (0 <= xx < nx):
                 k = shell_k[j]
                 cur = shell_cube[vv, zz, xx]
-                if cur < 0 or cur > k:
+                if cur < 0 or cur > k: #先確認現在shell cube的值有沒有比新的一輪大，大的話才更新更小的數字進去
                     shell_cube[vv, zz, xx] = k
 
     return shell_cube
 
 def apply_shell_ball_to_line(cube_shape, v_line, z_line, x_line, max_r):
-    shell_cube = np.full(cube_shape, -1, dtype=np.int16)
+    shell_cube = np.full(cube_shape, -1, dtype=np.int16) #用原本的cube 形狀把所有值都填-1
     nv_sub, nz_sub, nx_sub = cube_shape
 
     offsets, shell_k = build_ball_offsets_for_shape(max_r, nv_sub, nz_sub, nx_sub)

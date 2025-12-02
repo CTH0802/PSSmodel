@@ -82,18 +82,18 @@ CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "HLTau_mcmc_grid_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "HLTau_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "HLTau_fit_results_final.npz")
 
-USE_CACHE_SOURCE = "mcmc_grid"
+USE_CACHE_SOURCE = "mcmc_shell"
 
 # --- 分析開關 ---
-RUN_GRID = True               # 5D grid search 找初始解
-RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
-RUN_MCMC_SHELL = False         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+# RUN_GRID = True               # 5D grid search 找初始解
+# RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+# RUN_MCMC_SHELL = True         # distance_cube MCMC
+# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
-# RUN_GRID = False               # 5D grid search 找初始解
-# RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
-# RUN_MCMC_SHELL = False         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_GRID = False               # 5D grid search 找初始解
+RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
+RUN_MCMC_SHELL = False         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -1445,10 +1445,7 @@ def run_mcmc_grid():
         moves=moves,
     )
     sampler.run_mcmc(p0, nsteps, progress=True)
-    print("[MCMC_grid] acceptance_fraction mean=",
-        np.mean(sampler.acceptance_fraction))
-    print("[MCMC_grid] acceptance_fraction per walker=",
-        sampler.acceptance_fraction)
+
     # 自動 burn-in / thin
     try:
         tau = sampler.get_autocorr_time(quiet=True)
@@ -1466,26 +1463,7 @@ def run_mcmc_grid():
     print("[MCMC_grid] flat shape after burn/thin:", flat.shape)
     N_theory = (nsteps - burnin) * nwalkers // thin
     print("[MCMC_grid] expected ~", N_theory, "samples")
-    chain = sampler.get_chain()             # (nsteps, nwalkers, ndim)
-    flat_chain = chain.reshape(-1, chain.shape[-1])
-    uniq, counts = np.unique(flat_chain, axis=0, return_counts=True)
-    print("[MCMC_grid] unique positions:", uniq.shape[0])
-    print("  max count of a single position:", np.max(counts))
-    print("  example position:", uniq[0])
-    print("[DEBUG] testing log_posterior_fast on initial walkers...")
-    for i in range(5):
-        lp = pss.log_posterior_fast(
-            p0[i],
-            parameter_prior_ranges,
-            streamercom_x_AU,
-            streamercom_z_AU,
-            streamercom_v_LS_km,
-            v_weight_phys,
-            M_star,
-            scale,
-            log_power,
-        )
-        print(f"  walker {i} p0 =", p0[i], "logP =", lp)
+
     # --- 對 Phi 做 unwrap，避免 0/2π 斷裂 ---
     phi_ref = Phi_center
     phi_samples = flat[:, 1]
@@ -1519,16 +1497,16 @@ def run_mcmc_grid():
     for idx in [0, 1, 2]:
         samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
     labels_plot = [
-        r"$\Theta_0$ (deg)",
-        r"$\Phi_0$ (deg)",
-        r"$i$ (deg)",
-        r"$T$ (Myr)",
-        r"$\omega$",
+    r"$\Theta_0$ (deg)",
+    r"$\Phi_0$ (deg)",
+    r"$i$ (deg)",
+    r"$T$ (Myr)",
+    r"$\omega$",
     ]
-    q16_plot, q50_plot, q84_plot = np.percentile(samples_plot, [16, 50, 84], axis=0)
+    q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
     ranges = []
-    for i, _ in enumerate(labels_plot):
-        lo, md, hi = q16_plot[i], q50_plot[i], q84_plot[i]
+    for i in range(len(labels_plot)):
+        lo, md, hi = q16p[i], q50p[i], q84p[i]
         width = hi - lo if hi > lo else 1e-3
         ranges.append((md - 2*width, md + 2*width))
 
@@ -1536,9 +1514,9 @@ def run_mcmc_grid():
                         labels=labels_plot,
                         range=ranges,
                         show_titles=True,
-                        title_fmt=".2f",
+                        title_fmt=".3f",
                         quantiles=[0.16, 0.5, 0.84],
-                        truths=[Theta_med, Phi_med, Incl_med, T_med, Omega_med],
+                        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
                         smooth=1)
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid.png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -1582,17 +1560,16 @@ def run_mcmc_shell():
 
     labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
 
-    cache.get("mcmc_grid_used", False)
-    # --- Use MCMC_grid medians as center ---
-    Theta_center = cache["mcmc_grid_median_Theta"]
-    Phi_center   = cache["mcmc_grid_median_Phi"]
-    Incl_center  = cache["mcmc_grid_median_Incl"]
-    T_center     = cache["mcmc_grid_median_T"]
-    Omega_center = cache["mcmc_grid_median_Omega"]
+    cache.get("grid_used", False)
+    Theta_center = cache["grid_best_Theta"]
+    Phi_center   = cache["grid_best_Phi"]
+    Incl_center  = cache["grid_best_Incl"]
+    T_center     = cache["grid_best_T"]
+    Omega_center = cache["grid_best_Omega"]
     center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
 
     ndim = 5
-    nwalkers, nsteps = 20, 2000
+    nwalkers, nsteps = 20, 8000
 
     # 跟 Per-emb-50 一樣的 sigma 設定（單位：rad, Myr, dimensionless）
     sigmas = [
@@ -1610,17 +1587,23 @@ def run_mcmc_shell():
         # priors 是有限區間 → 用 clip 壓回範圍內
         prop = np.clip(prop, lo, hi)
         p0[:, j] = prop
-
+    
+    down_factor = 3
+    down_factor_v = 3
+    shifted_cube_data_ds = new_cube_data[::down_factor_v, ::down_factor, ::down_factor]
+    print(f"[mask] shifted_cube_data downsampled: {new_cube_data.shape} → {shifted_cube_data_ds.shape}")
+    
+    max_dist_value = 50.0
     # 在 run_mcmc_shell() 外面或一開始
     DATA_BBOX = pss.compute_data_bbox(
-        new_cube_data,   # 或 new_cube_data，反正是你送進 MCMC 的那個 cube
+        shifted_cube_data_ds,   # 或 new_cube_data，反正是你送進 MCMC 的那個 cube
         max_r=max_dist_value,
         extra_margin=5,
     )
     print("[bbox] DATA_BBOX =", DATA_BBOX)
     
     log_args = (
-        new_cube_data,
+        shifted_cube_data_ds,
         parameter_prior_ranges,
         pa_rad,
         dx_au,
@@ -1664,14 +1647,6 @@ def run_mcmc_shell():
         print("[MCMC_shell] tau 估計失敗，用預設。", e)
         burnin, thin = 30, 5
 
-    chain = sampler.get_chain()
-    print("[MCMC_shell] chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
-    print("[MCMC_shell] mean acceptance:", np.mean(af))
-
-    lp = sampler.get_log_prob(flat=True)
-    non_finite_frac = np.mean(~np.isfinite(lp))
-    print("[MCMC_shell] non-finite log_prob fraction =", non_finite_frac)
-
     flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
 
     # -----------------------------
@@ -1710,25 +1685,28 @@ def run_mcmc_shell():
     samples_plot = flat_wrapped.copy()
     for idx in [0, 1, 2]:
         samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-    labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
-                   "Time (Myr)", "Omega"]
+    labels_plot = [
+    r"$\Theta_0$ (deg)",
+    r"$\Phi_0$ (deg)",
+    r"$i$ (deg)",
+    r"$T$ (Myr)",
+    r"$\omega$",
+    ]
     q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
     ranges = []
     for i in range(len(labels_plot)):
         lo, md, hi = q16p[i], q50p[i], q84p[i]
         width = hi - lo if hi > lo else 1e-3
-        ranges.append((md - 1.5*width, md + 1.5*width))
+        ranges.append((md - 2*width, md + 2*width))
 
-    fig = corner.corner(
-        samples_plot,
-        labels=labels_plot,
-        range=ranges,
-        show_titles=True,
-        title_fmt=".3f",
-        plot_datapoints=False,
-        fill_contours=True,
-        smooth=1.0,
-    )
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=True,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+                        smooth=1)
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)

@@ -25,7 +25,7 @@ import plotly.graph_objects as go
 from PSSpy import (
     PSS_model,
     apply_shell_ball_to_line,
-    grow_distance_cube_bounded,
+    # grow_distance_cube_bounded,
     velocity_to_channel_index
 )
 from Per_emb_50 import _extract_params_from_cache, _resolve_cache_path
@@ -39,7 +39,7 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 
 CUBE_FNAME = "Per-emb-50_H2CO_streamer_cube.fits"
 
-USE_CACHE_SOURCE = "mcmc_grid"
+USE_CACHE_SOURCE = "mcmc_shell"
 cache_path = _resolve_cache_path(USE_CACHE_SOURCE)
 
 # 距離、質量、PA 等物理參數
@@ -310,22 +310,22 @@ def prepare_cubes_and_model():
         MAX_SHELL_R,
     )
 
-    # 6) distance_cube from model
-    distance_cube = grow_distance_cube_bounded(
-        data_cube.shape,
-        params["Theta"], params["Phi"], params["Incl"],
-        params["T"], params["Omega"],
-        PA_RAD, dx_au, header,
-        Local_Standard_Velocity=LSR_velocity,
-        v_weight=v_weight_phys,
-        max_dist_value=MAX_DIST_VAL,
-        M_star=M_STAR_MSUN,
-        radius_in_au=R_IN_AU,
-        radius_out_au=R_OUT_AU,
-        scale=SCALE,
-        log_power=LOG_POWER,
-        bound=None,
-    )
+    # # 6) distance_cube from model
+    # distance_cube = grow_distance_cube_bounded(
+    #     data_cube.shape,
+    #     params["Theta"], params["Phi"], params["Incl"],
+    #     params["T"], params["Omega"],
+    #     PA_RAD, dx_au, header,
+    #     Local_Standard_Velocity=LSR_velocity,
+    #     v_weight=v_weight_phys,
+    #     max_dist_value=MAX_DIST_VAL,
+    #     M_star=M_STAR_MSUN,
+    #     radius_in_au=R_IN_AU,
+    #     radius_out_au=R_OUT_AU,
+    #     scale=SCALE,
+    #     log_power=LOG_POWER,
+    #     bound=None,
+    # )
 
     return dict(
         data_cube=data_cube,
@@ -333,7 +333,7 @@ def prepare_cubes_and_model():
         params=params,
         model_line=model_line,
         shell_cube=shell_cube,
-        distance_cube=distance_cube,
+        # distance_cube=distance_cube,
     )
 
 # ================== 建立各種 3D 圖 ==================

@@ -75,17 +75,17 @@ CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
 
 # ---------- 僅畫圖時要使用哪一個 cache 來源 ----------
 # 可選： "final"（預設）、"mcmc_distance", "mcmc_grid", "grid"
-USE_CACHE_SOURCE = "mcmc_grid"
+USE_CACHE_SOURCE = "mcmc_shell"
 # ---------- 開關 ----------
-RUN_GRID = True               # 5D grid search 找初始解
-RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
-RUN_MCMC_SHELL = True         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+# RUN_GRID = True               # 5D grid search 找初始解
+# RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+# RUN_MCMC_SHELL = True         # distance_cube MCMC
+# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
-# RUN_GRID = False               # 5D grid search 找初始解
-# RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
-# RUN_MCMC_SHELL = False         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_GRID = False               # 5D grid search 找初始解
+RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
+RUN_MCMC_SHELL = False         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -1299,7 +1299,7 @@ def run_mcmc_grid_search():
         for i in range(len(labels_plot)):
             lo, md, hi = q16p[i], q50p[i], q84p[i]
             width = hi - lo if hi > lo else 1e-3
-            ranges.append((md - 1.5*width, md + 1.5*width))
+            ranges.append((md - 2*width, md + 2*width))
 
         fig = corner.corner(samples_plot,
                             labels=labels_plot,
@@ -1345,13 +1345,12 @@ def run_mcmc_shell():
     if RUN_MCMC_SHELL:
         print("\n[MCMC_shell] start")
 
-        cache.get("mcmc_grid_used", False)
-        # --- Use MCMC_grid medians as center ---
-        Theta_center = cache["mcmc_grid_median_Theta"]
-        Phi_center   = cache["mcmc_grid_median_Phi"]
-        Incl_center  = cache["mcmc_grid_median_Incl"]
-        T_center     = cache["mcmc_grid_median_T"]
-        Omega_center = cache["mcmc_grid_median_Omega"]
+        cache.get("grid_used", False)
+        Theta_center = cache["grid_best_Theta"]
+        Phi_center   = cache["grid_best_Phi"]
+        Incl_center  = cache["grid_best_Incl"]
+        T_center     = cache["grid_best_T"]
+        Omega_center = cache["grid_best_Omega"]
 
         center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
 
@@ -1464,7 +1463,7 @@ def run_mcmc_shell():
         for i in range(len(labels_plot)):
             lo, md, hi = q16p[i], q50p[i], q84p[i]
             width = hi - lo if hi > lo else 1e-3
-            ranges.append((md - 1.5*width, md + 1.5*width))
+            ranges.append((md - 2*width, md + 2*width))
 
         fig = corner.corner(samples_plot,
                             labels=labels_plot,
