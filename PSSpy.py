@@ -659,7 +659,8 @@ def log_likelihood_shell(
     radius_out_au,
     scale,
     log_power,
-    data_bbox
+    data_bbox,
+    sigma_like
 ):
     """
     基於「殼層距離 cube」的 log-likelihood
@@ -685,8 +686,9 @@ def log_likelihood_shell(
         return -np.inf
     if E <= 0:
         return -np.inf
-    logL = -0.5 * np.log10(E)
-    return logL
+    alpha_like = 20.0
+    chi = E / (sigma_like / 2.0)
+    return -alpha_like * chi**2
 
 def log_prior_shell(params, prior_ranges):
     """
@@ -697,7 +699,7 @@ def log_prior_shell(params, prior_ranges):
     # 檢查參數是否在先驗範圍內
     if not (
         prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
-        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
+        and prior_ranges["Phi zero"][0] < Phi0 < prior_ranges["Phi zero"][1]
         and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
         and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
         and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
@@ -720,7 +722,8 @@ def log_posterior_shell(
     radius_out_au,
     scale,
     log_power,
-    data_bbox
+    data_bbox,
+    sigma_like
 ):
     """
     殼層距離版的 posterior：
@@ -745,7 +748,8 @@ def log_posterior_shell(
         radius_out_au,
         scale,
         log_power,
-        data_bbox
+        data_bbox,
+        sigma_like
     )
     if not np.isfinite(logL):
         return -np.inf
@@ -788,7 +792,7 @@ def log_prior_fast(params, prior_ranges):
     # 與這裡的 "Theta zero", "Phi zero" 等字串完全匹配。
     if not (
         prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
-        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
+        and prior_ranges["Phi zero"][0] < Phi0 < prior_ranges["Phi zero"][1]
         and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
         and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
         and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
@@ -801,7 +805,7 @@ def log_prior_fast(params, prior_ranges):
 # 2. MCMC 似然 (Likelihood) - [核心函數]
 # ===================================================================
 def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
-                        weight_v, solar_mass, scale, log_power):
+                        weight_v, solar_mass, scale, log_power, sigma_like):
     """
     這是一個「快速」的對數似然函數。
     它只擬合 11 個質心點，而不是整個 3D 立方體。
@@ -811,12 +815,21 @@ def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v,
                            [Theta0, Phi0, Incl, T_Myr, Omega]
     - (其他...): 您的觀測數據和固定參數
     """
-    if not np.any(np.isfinite(streamercom_v) & (streamercom_v != 0.0)):
+    # ---- 修改 1：先只保留真正有效的質心點 ----
+    valid = (
+        np.isfinite(streamercom_x) &
+        np.isfinite(streamercom_z) &
+        np.isfinite(streamercom_v) &
+        (streamercom_v != 0.0)
+    )
+
+    # 如果有效點太少（例如 < 3 個），直接放棄
+    if np.sum(valid) < 3:
         return -np.inf
-    elif not np.any(np.isfinite(streamercom_z) & (streamercom_z != 0.0)):
-        return -np.inf
-    elif not np.any(np.isfinite(streamercom_x) & (streamercom_x != 0.0)):
-        return -np.inf
+
+    sx = streamercom_x[valid]
+    sz = streamercom_z[valid]
+    sv = streamercom_v[valid]
     # 1. 解包 MCMC 傳入的 5 個參數
     Theta_zero, Phi_zero, Inclination, T_Myr, omega = params
     
@@ -828,9 +841,9 @@ def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v,
     #    (它會回傳 RMSE)
     rmse_error = error_function(
         params_for_error_func,
-        streamercom_x, 
-        streamercom_z, 
-        streamercom_v, 
+        sx, 
+        sz, 
+        sv, 
         weight_v, 
         T_Myr,          # T_Myr 作為獨立參數傳入
         omega,          # omega 作為獨立參數傳入
@@ -844,14 +857,15 @@ def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v,
         return -np.inf
     if rmse_error <= 0:
         return -np.inf
-        
-    return -np.log10(rmse_error)
+    alpha_like = 20.0 
+    chi = rmse_error / (sigma_like / 2.0) 
+    return -alpha_like * chi**2
 
 # ===================================================================
 # 3. MCMC 後驗 (Posterior)
 # ===================================================================
 def log_posterior_fast(params, prior_ranges, streamercom_x, streamercom_z, streamercom_v, 
-                       weight_v, solar_mass, scale, log_power):
+                       weight_v, solar_mass, scale, log_power, sigma_like):
     """
     這是 MCMC 採樣器 (sampler) 真正會呼叫的函數。
     它結合了 Prior 和 Likelihood。
@@ -864,7 +878,7 @@ def log_posterior_fast(params, prior_ranges, streamercom_x, streamercom_z, strea
     
     # 2. 計算快速的似然 (Likelihood)
     ll = log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
-                             weight_v, solar_mass, scale, log_power)
+                             weight_v, solar_mass, scale, log_power, sigma_like)
     
     if not np.isfinite(ll):
         return -np.inf

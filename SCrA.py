@@ -5,9 +5,9 @@
 #   1) 參數宣告 / Imports / 開關
 #   2) 定義函數 (helpers & MCMC moves)
 #   3) 資料前處理：mask streamer、平移至中心、抽質心
-#   4) Grid fitting：用 11 點 error_function 找初始解
+#   4) Grid fitting：用 32 點 error_function 找初始解
 #   5) 用 grid 結果自動決定 MCMC 先驗範圍
-#   6) MCMC_grid   ：11 點 + fast likelihood（選配）
+#   6) MCMC_grid   ：32 點 + fast likelihood（選配）
 #   7) MCMC_3D     ：(Theta, Phi, Incl) wide prior（選配）
 #   8) MCMC_distance：distance_cube + log_posterior（cube，選配）
 #   9) 多峰 refinement（選配）
@@ -82,16 +82,16 @@ CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "SCrA_mcmc_grid_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "SCrA_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "SCrA_fit_results_final.npz")
 
-USE_CACHE_SOURCE = "mcmc_shell"
+USE_CACHE_SOURCE = "grid"
 
 # --- 分析開關 ---
 # RUN_GRID = True               # 5D grid search 找初始解
-# RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+# RUN_MCMC_GRID = True          # 32 個質心點 fast likelihood
 # RUN_MCMC_SHELL = True         # distance_cube MCMC
 # RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 RUN_GRID = False               # 5D grid search 找初始解
-RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
+RUN_MCMC_GRID = False          # 32 個質心點 fast likelihood
 RUN_MCMC_SHELL = False         # distance_cube MCMC
 RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
@@ -297,7 +297,7 @@ def build_streamer_masked_cube_scra(subcube, rms_channel, im_center):
     return shifted_cube_data, shifted_mom0, shifted_mom1
 
 
-def extract_streamer_centroids(new_cube_data, spec_kms, header, pa_rad, dx_au):
+def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au):
     """
     從 masked S CrA cube 抽出 streamer 質心點，並且：
       - 在 image frame 中，以 protostar (CRPIX) 為原點定義 (x_rel, z_rel)
@@ -313,121 +313,127 @@ def extract_streamer_centroids(new_cube_data, spec_kms, header, pa_rad, dx_au):
     """
 
     cube_shape = new_cube_data.shape  # (nv, ny, nx)
-    # 影像中心 (protostar) 以 CRPIX 為準 → image frame 原點
     im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))  # (y, x)
 
-    # --- 基本座標：以 protostar 為原點的 image-frame 像素座標 ---
-    v_idx, y_idx, x_idx = np.indices(cube_shape)
-    x_rel = x_idx - im_center[1]   # x: increasing to the right
-    z_rel = y_idx - im_center[0]   # z: increasing upward (Dec 方向)
+    # 建立 voxel 座標
+    v, z, x = np.indices(cube_shape)
+    x_rel = x - im_center[1]
+    z_rel = z - im_center[0]
     r, theta = pss.spherical_coords(x_rel, z_rel)
-
-    # 只用有訊號的 voxel
-    mask_valid = np.isfinite(new_cube_data) & (new_cube_data > 0)
-    N = 15
+    
+    stream_points_abs = np.array([
+    [396, 396],
+    [355, 371],
+    [355, 340],
+    [369, 309],
+    [389, 279],
+    [463, 257],
+    ])
+    stream_points = stream_points_abs - np.array([im_center[1], im_center[0]])
+    find_r, find_theta = pss.spherical_coords(stream_points[:, 0],
+                                              stream_points[:, 1])
+    find_streaml = interp1d(
+        find_r,
+        find_theta,
+        fill_value=(find_theta[0], find_theta[-1]),
+        bounds_error=False,
+    )
+    
+    N = 32
     pars = np.linspace(40, 200, N + 1)
 
-    x_means = np.full(N, np.nan)
-    z_means = np.full(N, np.nan)
-    v_means = np.full(N, np.nan)
-    xzstd   = np.full(N, np.nan)
+    x_means = np.zeros(N)
+    z_means = np.zeros(N)
+    v_means = np.zeros(N)   # 先暫存 channel index
+    xzstd   = np.zeros(N)
 
     x_array_list = []
     z_array_list = []
     v_array_list = []
     weights_list = []
-
-    # ------------------------------------------------------------
-    # 3) 第一步：幾何質心（只用 flux 權重，不壓制方向）
-    # ------------------------------------------------------------
+    
     for i in tqdm(range(N), desc="[SCrA] centroid step1 (pos.)", ncols=80, leave=False):
-        shell_mask = (r > pars[i]) & (r <= pars[i+1]) & mask_valid
-        if not np.any(shell_mask):
-            continue
+        r_mid = 0.5 * (pars[i] + pars[i+1])
+        theta0 = find_streaml(r_mid)
 
-        w = new_cube_data[shell_mask].copy()
-        w[~np.isfinite(w)] = 0.0
-        if np.sum(w) <= 0:
-            continue
+        # 沿著 streamer 方向的 cos(angle) 當作權重
+        weight_theta = (x_rel * np.cos(theta0) + z_rel * np.sin(theta0)) / r
+        weight_theta[~np.isfinite(weight_theta)] = 0.0
+        weight_theta[weight_theta < 0.9] = 0.0
 
-        x_means[i] = np.average(x_rel[shell_mask], weights=w)
-        z_means[i] = np.average(z_rel[shell_mask], weights=w)
-        xzstd[i] = np.sqrt(np.average(
-            (x_rel[shell_mask] - x_means[i])**2 +
-            (z_rel[shell_mask] - z_means[i])**2,
-            weights=w
-        ))
+        shell = (r > pars[i]) & (r <= pars[i+1]) & (new_cube_data > 0) & np.isfinite(new_cube_data)
+        if np.sum(shell) > 0:
+            w = new_cube_data[shell] * weight_theta[shell]
+            if np.sum(w) <= 0:
+                x_means[i] = z_means[i] = xzstd[i] = np.nan
+            else:
+                x_means[i] = np.average(x_rel[shell], weights=w)
+                z_means[i] = np.average(z_rel[shell], weights=w)
+                xzstd[i] = np.sqrt(np.average(
+                    (x_rel[shell] - x_means[i])**2 +
+                    (z_rel[shell] - z_means[i])**2,
+                    weights=w
+                ))
+        else:
+            x_means[i] = z_means[i] = xzstd[i] = np.nan
 
-    valid = np.isfinite(x_means)
+    # ------------------------------------------------------------
+    # Step 2: 用 xzstd 決定 angular Gaussian，重新算位置+速度
+    # ------------------------------------------------------------
+    valid = np.isfinite(x_means) & np.isfinite(z_means) & np.isfinite(xzstd)
     if np.sum(valid) < 2:
         raise RuntimeError("質心點太少，無法建立內插。")
 
-    # r(theta) & std(r) 的內插：幫助下一步 refine
     r_m, theta_m = pss.spherical_coords(x_means[valid], z_means[valid])
     theta_r = interp1d(
         r_m, theta_m,
         fill_value=(theta_m[0], theta_m[-1]),
-        bounds_error=False
+        bounds_error=False,
     )
     std_r = interp1d(
         r_m, xzstd[valid],
         fill_value=(xzstd[0], xzstd[-1]),
-        bounds_error=False
+        bounds_error=False,
     )
-
-    THETA_SIGMA_SCALE = 0.2  # <1 → 更窄的角度偏好
-
-    x_means_ref = np.full(N, np.nan)
-    z_means_ref = np.full(N, np.nan)
-    v_means     = np.full(N, np.nan)
-
+    
+    x_means_ref = np.zeros(N)
+    z_means_ref = np.zeros(N)
+    
     for i in tqdm(range(N), desc="[SCrA] centroid step2 (vel.)", ncols=80, leave=False):
-        if not np.isfinite(x_means[i]):
-            continue
-
         r_mid = 0.5 * (pars[i] + pars[i+1])
+
+        if not np.isfinite(x_means[i]):
+            x_means_ref[i] = z_means_ref[i] = v_means[i] = np.nan
+            x_array_list.append(np.array([]))
+            z_array_list.append(np.array([]))
+            v_array_list.append(np.array([]))
+            weights_list.append(np.array([]))
+            continue
+
         theta_ref = theta_r(r_mid)
+        std_ref   = std_r(r_mid) / max(r_mid, 1.0)
 
-        sigma_base = std_r(r_mid) / max(r_mid, 1.0)
-        sigma_theta = THETA_SIGMA_SCALE * sigma_base
-        if (not np.isfinite(sigma_theta)) or (sigma_theta <= 0):
-            sigma_theta = np.deg2rad(10.0) * THETA_SIGMA_SCALE
-
-        # 角度距離（考慮 0/2π 週期）
+        # 角距離 + Gaussian
         delta_theta = np.pi - np.abs(np.pi - np.abs(theta - theta_ref))
-        gauss_w = np.exp(-0.5 * (delta_theta / sigma_theta)**2)
+        weights = new_cube_data * pss.gaussian(delta_theta, 0, std_ref)
 
-        shell_mask = (r > pars[i]) & (r <= pars[i+1]) & mask_valid
-        if not np.any(shell_mask):
-            continue
+        d = (r > pars[i]) & (r <= pars[i+1]) & (new_cube_data > 0) & (np.isfinite(new_cube_data))
+        if np.sum(d) > 0 and np.sum(weights[d]) > 0:
+            x_means_ref[i] = np.average(x_rel[d], weights=weights[d])
+            z_means_ref[i] = np.average(z_rel[d], weights=weights[d])
+            v_means[i]     = np.average(v[d],    weights=weights[d])
+        else:
+            x_means_ref[i] = z_means_ref[i] = v_means[i] = np.nan
 
-        w = new_cube_data * gauss_w
-        w = w[shell_mask]
-        w[~np.isfinite(w)] = 0.0
-        if np.sum(w) <= 0:
-            continue
+        # 存這個 shell 裡所有 voxel 的資訊（之後畫圖用）
+        x_array_list.append(x_rel[d])
+        z_array_list.append(z_rel[d])
+        v_array_list.append(v[d])
+        weights_list.append(weights[d] / np.nanmax(weights[d]))
 
-        # 更新 refined 質心（image frame, protostar 為原點的 pixel）
-        x_means_ref[i] = np.average(x_rel[shell_mask], weights=w)
-        z_means_ref[i] = np.average(z_rel[shell_mask], weights=w)
-
-        # velocity：直接用 spec_kms[v_idx]
-        v_vals = spec_kms[v_idx[shell_mask]]
-        v_means[i] = np.average(v_vals, weights=w)
-
-        # 紀錄該 shell 所有 voxel 的資訊
-        x_array_list.append(x_rel[shell_mask])
-        z_array_list.append(z_rel[shell_mask])
-        v_array_list.append(v_idx[shell_mask])
-        # 正規化權重方便之後畫圖
-        weights_list.append(w / np.nanmax(w))
 
     # ------------------------------------------------------------
-    # 5) frame 轉換：image frame (x_rel,z_rel, pixel) → model frame (x,z, AU)
-    #    完全比照 Per-emb-50：
-    #       [x_model]   [ cos  sin] [x_img]
-    #       [z_model] = [-sin  cos] [z_img]
-    #    然後再乘上 dx_au 變成 AU
+    # Step 3: 轉成 model frame + AU + km/s
     # ------------------------------------------------------------
     x_img_pix = x_means_ref
     z_img_pix = z_means_ref
@@ -438,13 +444,14 @@ def extract_streamer_centroids(new_cube_data, spec_kms, header, pa_rad, dx_au):
     streamer_x_AU = x_model_pix * dx_au
     streamer_z_AU = z_model_pix * dx_au
 
-    # ------------------------------------------------------------
-    # 6) velocity：轉為相對 LSR
-    # ------------------------------------------------------------
-    streamer_v_km = v_means
+    dv     = float(header["CDELT3"])
+    v0     = float(header["CRVAL3"])
+    crpix3 = float(header["CRPIX3"])
+
+    streamer_v_km = v0 + (v_means + 1 - crpix3) * dv
     streamer_v_LS = streamer_v_km - Local_Standard_Velocity
 
-    print(f"[Extracted] {np.sum(np.isfinite(streamer_x_AU))} valid centroids")
+    print(f"[Extracted] {np.sum(np.isfinite(streamer_x_AU))} valid centroids (3D cube)")
 
     x_array = np.array(x_array_list, dtype=object)
     z_array = np.array(z_array_list, dtype=object)
@@ -463,6 +470,62 @@ def extract_streamer_centroids(new_cube_data, spec_kms, header, pa_rad, dx_au):
         z_means_ref,
         v_means,
     )
+
+def plot_r_theta_weights_from_output(x_array, z_array, weights_array,
+                                     outname):
+    """
+    用 extract_streamer_centroids 回傳的
+    x_array, z_array, weights_array
+    畫出 (r, theta) 的權重分布。
+    theta_offset_deg: 畫圖時在角度上加的偏移量（單位：deg）
+                      例如 SCrA 想要 0 度在左邊，可以用 180.
+    """
+    all_r = []
+    all_theta = []
+    all_w = []
+
+    N = len(x_array)
+    for i in range(N):
+        x_bin = x_array[i]
+        z_bin = z_array[i]
+        w_bin = weights_array[i]
+
+        if x_bin.size == 0:
+            continue
+
+        r_bin, theta_bin = pss.spherical_coords(x_bin, z_bin)
+
+        all_r.append(r_bin)
+        all_theta.append(theta_bin)
+        all_w.append(w_bin)
+
+    # 串成一條長向量
+    all_r = np.concatenate(all_r)
+    theta_all = np.concatenate(all_theta)
+
+    # --- 這裡加角度偏移 ---
+    theta_all = theta_all + np.pi
+    # wrap 回 [-pi, pi] 比較好看
+    theta_all = (theta_all + np.pi) % (2 * np.pi) - np.pi
+
+    all_theta_deg = np.rad2deg(theta_all)
+    all_w = np.concatenate(all_w)
+
+    mask = all_w > 0
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sc = ax.scatter(all_r[mask], all_theta_deg[mask],
+                    c=all_w[mask], s=5, cmap="inferno")
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label("Directional weight")
+
+    ax.set_xlabel("r (pixel)")
+    ax.set_ylabel(r"$\theta$ (deg)")
+    ax.set_title(r"Streamer weight in $(r,\theta)$ space")
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(PLOT_DIR, outname), dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
 def summarize_1d_posterior(samples, name, bins=30):
     samples = np.asarray(samples)
@@ -562,6 +625,8 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         cmap="inferno",
         extent=extent,
         norm=norm,
+        # vmin=np.nanmin(mom0),
+        # vmax=np.nanmax(mom0)
     )
 
     # colorbar（固定在右側，不撐壞主圖）
@@ -570,21 +635,21 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     cbar = fig.colorbar(im, cax=cax)
     cbar.set_label("(Jy/beam km/s)")
 
-    # 黑色外框線（提升可見度）
-    lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
-    ax.add_collection(lc_edge)
+    # # 黑色外框線（提升可見度）
+    # lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
+    # ax.add_collection(lc_edge)
 
-    # 依 model LOS 速度上色的主線
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-    lc = LineCollection(
-        segments,
-        cmap="coolwarm",
-        norm=norm,
-        linewidth=2.5,
-        zorder=3,
-    )
-    lc.set_array(v_m + Local_Standard_Velocity)
-    ax.add_collection(lc)
+    # # 依 model LOS 速度上色的主線
+    # norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    # lc = LineCollection(
+    #     segments,
+    #     cmap="coolwarm",
+    #     norm=norm,
+    #     linewidth=2.5,
+    #     zorder=3,
+    # )
+    # lc.set_array(v_m + Local_Standard_Velocity)
+    # ax.add_collection(lc)
 
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
@@ -1025,9 +1090,9 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         ax.scatter(
             z_cent_img_AU[good],
             v_cent[good],
-            c="k",
+            c="tab:blue",
             s=30,
-            edgecolors="white",
+            edgecolors="k",
             linewidths=0.6,
             label="Centroids",
             zorder=4,
@@ -1075,11 +1140,14 @@ def run_quick_mode_scra():
         Theta_best_deg = np.rad2deg(Theta_best)
         Phi_best_deg   = np.rad2deg(Phi_best)
         Incl_best_deg  = np.rad2deg(Incl_best)
+        rms_channel = 0.026211100061251217
 
         # 2) 讀取 S CrA streamer 專用 moment map
         try:
             str_mom0 = fits.getdata("S_CrA_13CO_streamer_mom0.fits")
             str_mom1 = fits.getdata("S_CrA_13CO_streamer_mom1.fits")
+            mom0 = fits.getdata("S_CrA_13CO_mom0.fits")
+            mom1 = np.where(fits.getdata("S_CrA_13CO_mom0.fits") > 3 * rms_channel, fits.getdata("S_CrA_13CO_mom1.fits"), np.nan)
             header   = fits.getheader("S_CrA_13CO_streamer_mom1.fits")
         except Exception:
             cube = SpectralCube.read(cube_fname)
@@ -1141,8 +1209,8 @@ def run_quick_mode_scra():
             header=header,
             pa_rad=pa_rad,
             dx_au=dx_au,
-            z_means_pix=None,
-            streamer_v_LS_km=None,
+            z_means_pix=z_means,
+            streamer_v_LS_km=cen_v_LS,
             outname="SCrA_z_v_data_overlay.png",
             label="S CrA $^{13}$CO z–v"
         )
@@ -1157,6 +1225,8 @@ def run_quick_mode_scra():
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
+            # vmax=np.nanmax(mom1),
+            # vmin=np.nanmin(mom1)
         )
 
         plot_streamer_on_mom0(
@@ -1170,6 +1240,8 @@ def run_quick_mode_scra():
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
         )
+        
+        plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="SCrA_weights_cacheonly.png")
 
         # 8) Print physical values
         r_ref_AU = 280 * T_best * 1e6 * spc.year / spc.astronomical_unit  # radius_ref_au=280
@@ -1274,7 +1346,6 @@ def prepare_data():
          z_means,
          v_means) = extract_streamer_centroids(
             shifted_cube_data,
-            spec_kms,
             header,
             pa_rad,
             dx_au,

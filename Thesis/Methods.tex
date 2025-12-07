@@ -1,19 +1,146 @@
 \section{Observational Data}
-To test our model against sources where streamers have been detected, we use five observational datasets: Per-emb-2, Per-emb-50, S~CrA, HL~Tau, and SVS~13A. Per-emb-2, Per-emb-50, and SVS~13A were observed with the Northern Extended Millimeter Array (NOEMA), while S~CrA and HL~Tau were observed with the Atacama Large Millimeter/submillimeter Array (ALMA).
+To test our model against protostellar systems in which streamer-like structures have been reported, we use five observational datasets shown in Figure~\ref{fig:per2} $\sim$ \ref{fig:SVS13A}: Per-emb-2, Per-emb-50, S~CrA, HL~Tau, and SVS~13A. Per-emb-2 and Per-emb-50 were observed with the Northern Extended Millimeter Array (NOEMA), whereas S~CrA, HL~Tau, and SVS~13A were observed with the Atacama Large Millimeter/submillimeter Array (ALMA). For Per-emb-50, S~CrA, HL~Tau, and SVS~13A, we extract the position-position-velocity (PPV) information of the streamer directly from the calibrated data cubes, while for Per-emb-2 we work with the moment maps. A summary of the observational properties of all datasets is provided in Table~\ref{table:obs_summary}.
 
-Per-emb-2 was observed in D-configuration on June 22, July 27-28, and August 19, 2018, and in C-configuration on October 9, 10, 17, and 18, 2018 (project S18AG; \citealt{Pineda_2020}). The baselines ranged from 16.4 to 287.8~m. Per-emb-50 was observed in C-configuration on December 29, 2019, and January 5, 2021, and in D-configuration on August 6, September 7, and 8, 2020 \citep{Valdivia-Mena_2022}. SVS~13A was also observed in two configurations: C-configuration on December 29, 2019, and January 5, 2020, and D-configuration on August 6 and September 7, 2020, with baselines between 15.6 and 368~m, corresponding to a synthesized beam of $1\farcs2\times0\farcs7$ \citep{Hsieh_2023}.
+Per-emb-2 was observed in D-configuration on June 22, July 27--28, and August 19, 2018, and in C-configuration on October 9, 10, 17, and 18, 2018 (project S18AG; \citep{Pineda_2020}). The baselines ranged from 16.4 to 287.8~m.
 
-The S~CrA dataset was obtained from the ALMA Science Archive and was observed on November 6, 2019 (project 2019.1.01792.S; \citealt{Gupta_2023}). HL~Tau was observed with the C40-7 configuration on August 22, 28, and September 1, 2017, with a maximum projected baseline of $\sim$3.3~km \citep{Yen_2019}. For each source, we extract the position-position-velocity (PPV) data of the streamer as described in Section~\ref{sec:fitting_procedure}.
+Per-emb-50 was observed in C-configuration on December 29, 2019, and January 5, 2021, and in D-configuration on August 6, September 7, and 8, 2020 \citep{Valdivia-Mena_2022}. The synthesized beam of the cube used in this work is $1\farcs24\times0\farcs72$.
 
+SVS~13A was observed with ALMA in Band~6, producing the DCN ($J=3$--2) data cube used in this study. The cube data has a synthesized beam of $0\farcs15\times0\farcs11$.
+
+The S~CrA dataset was obtained from the ALMA Science Archive and was observed on November 6, 2019 (project 2019.1.01792.S; \citep{Gupta_2023}). The data cube has a spatial sampling of $0\farcs05$ per pixel.
+
+HL~Tau was observed with ALMA in the C40-7 configuration on August 22, 28, and September 1, 2017, with a maximum projected baseline of $\sim$3.3~km \citep{Yen_2019}. The restoring beam of the HCO$^+$ data cube used in this work is $0\farcs10\times0\farcs09$.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \caption{Moment 0 map}
+        \label{fig:per2_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per2_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of Per-emb-2.}
+    \label{fig:per2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&mom1/Per-emb-50_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:per50_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&mom1/Per-emb-50_mom1_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per50_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of Per-emb-50.}
+    \label{fig:per50}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&mom1/SCrA_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:SCrA_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&mom1/SCrA_mom1_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:SCrA_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of S~CrA.}
+    \label{fig:SCrA}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&mom1/HLTau_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:HLTau_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:HLTau_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of HL~Tau.}
+    \label{fig:HLTau}
+\end{figure}
+
+% \begin{figure}[htbp]
+%     \centering
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/SVS13A/mom0&mom1/SVS13A_mom0_cacheonly.png}
+%         \caption{Moment 0 map}
+%         \label{fig:SVS13A_mom0}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/SVS13A/mom0&mom1/SVS13A_mom1_cacheonly.png}
+%         \caption{$r$--$\theta$ distribution}
+%         \label{fig:SVS13A_mom1}
+%     \end{subfigure}
+
+%     \caption{Moment map of SVS13A.}
+%     \label{fig:SVS13A}
+% \end{figure}
 \subsection{Per-emb-2}
+Per-emb-2 (IRAS 03292+3039) is a protostellar object in the Perseus molecular cloud at a distance of 300 pc \citep{Zucker_2018}. The source contains a close binary with a separation below 20 au and show a clear outflow in CO (2-1) \citep{Stephens_2019}. NOEMA imaging has revealed a streamer structure connecting scales of more than 10,000 au to within a few hundred au of the protostar \citep{Pineda_2020}.
 
 \subsection{Per-emb-50}
+Per-emb-50 is a Class~I protostar in the NGC~1333 region at a distance of $\sim$293~pc \citep{Ortiz_2018}. It is relatively luminous among sources of similar evolutionary stage and hosts a compact disk with a characteristic radius of $\sim$30~au \citep{Segura_2016}. Molecular outflow activity is observed roughly east--west \citep{Stephens_2019}. The velocity structure along the streamer shows a gradual increase in blueshift toward smaller radii.
+
+\subsection{S~CrA}
+S~CrA is a binary system (two Class~II saperated $\sim$200~au \citep{Gupta_2023}) within the Corona Australis molecular cloud at a distance of 160~pc \citep{GaiaCollaboration_2023}. ALMA observations reveal complex circumbinary gas structures, including filamentary features extending from the envelope toward the central region \citep{Gupta_2023}. The $^{13}CO$ (2-1) data cube provide sufficient spatial and spectral resolution to trace these asymmetric accretion flows, making S~CrA an important case for testing dynamical streamer models.
+
+\subsection{HL~Tau}
+HL~Tau is a Class~I protostellar system located in the Taurus star-forming region at a distance of 147~pc \citep{Galli_2018}. High-resolution ALMA observations have revealed a compact protoplanetary disk exhibiting multiple concentric gaps and rings \citep{Yen_2019}. The HCO$^{+}$\,(3--2) cube used in this work resolves the morphology and velocity pattern of the streamer structure connecting envelope material to the disk.
 
 \subsection{SVS 13A}
 
-\subsection{S CrA}
 
-\subsection{HL Tau}
+\begin{table}[h]
+\centering
+\caption{Summary of the observational datasets used in this work.}
+\label{table:obs_summary}
+\begin{tabular}{lccccc}
+\hline\hline
+Target & Telescope & RA (J2000) & DEC (J2000) & Line & Beam (\arcsec) \\
+\hline
+Per-emb-2  & NOEMA & 03:32:17.932 & +30:49:47.705 & HC$_3$N (10--9) & 3\farcs73\times3\farcs02 \\
+Per-emb-50 & NOEMA & 03:29:07.768 & +31:21:57.128 & C$^{18}$O (2--1) & 1\farcs24\times0\farcs72 \\
+SVS~13A    & ALMA  & 03:29:03.740 & +31:16:03.800 & DCN (3--2) & 0\farcs15\times0\farcs11 \\
+S~CrA      & ALMA  & 19:01:08.600 & --36:57:20.000 & $^{13}$CO (2--1) & --\\
+HL~Tau     & ALMA  & 04:31:38.428 & +18:13:57.190 & HCO$^{+}$ (3--2) & 0\farcs10\times0\farcs09 \\
+\hline
+\end{tabular}
+\end{table}
 
 \section{Build up a model}
 We build a model that can reproduce the observed streamer by considering a self-collapse density enhancement structure with a rotation velocity and evolve with time in 3D space. 
@@ -42,7 +169,7 @@ Position
          x = r\sin{\theta} \cos{\phi}\\
          y = r\sin{\theta} \sin{\phi}\\
          z = r\cos{\theta}\\
-    \end{array}    
+    \end{array}
     \right.
 \end{align}
 Infall velocity
@@ -96,31 +223,166 @@ The fitting procedure described below is applied to each dataset to constrain th
 \subsection{Position angle}
 \YN{This step can be neglected if the disk PA on the sky is known. Otherwise, the previous step needs to be repeated until the optimal is found.}
 
-\subsection{Extracting the position and velocity from observations}
-To characterize the observed streamer structure, we extract position and velocity centroids as a function of projected radius from the data cube. 
-Starting from the masked streamer cube, we define a sequence of radial bins extending along the approximate direction of the streamer. The radial coordinate ($r$) and polar angle ($\theta$) of each pixel relative to the protostar are computed in the image plane, and an initial reference $\theta(r)$ profile is obtained from a smoothed interpolation of visually identified streamer pixels.
+\subsection{Centroid Extraction and Observed Streamer Morphology}
 
-For each radial bin, we compute the centroid position using an intensity-weighted average that favors pixels aligned with the local streamer direction. Specifically, we calculate a directional weight
-\[
-w_\theta = \exp\left[-\frac{(\theta - \theta_{\rm ref}(r))^2}{2\sigma_\theta(r)^2}\right],
-\]
-where $\theta_{\rm ref}(r)$ is the interpolated streamer direction and $\sigma_\theta(r)$ is derived from the local spatial dispersion of the preliminary centroids. The position centroid ($\bar{x}$, $\bar{z}$) within each radial bin is then computed from
-\[
-\bar{x} = \frac{\sum I\,w_\theta\,x}{\sum I\,w_\theta}, \qquad
-\bar{z} = \frac{\sum I\,w_\theta\,z}{\sum I\,w_\theta},
-\]
-where $I$ is the data cube intensity at each pixel.
+To characterize the observed streamer morphology, we extract a sequence of position--velocity centroids from moment map. Using the protostar position as the origin, we compute pixel offsets $(x_{\rm rel},z_{\rm rel})$ and convert them into polar coordinates $(r,\theta)$. A set of manually selected streamer points defines an interpolated main direction $\theta_{\rm stream}(r)$.
 
-The velocity centroid for each radial bin is computed in the same region using
+The emission is divided into radial shells. Within each shell, we assign a directional weight
 \[
-\bar{v} = \frac{\sum I\,w_\theta\,v}{\sum I\,w_\theta},
+w_\theta = \max\!\left[0,\frac{x_{\rm rel}\cos\theta_0 + z_{\rm rel}\sin\theta_0}{r}\right],
 \]
-where $v$ is the channel velocity converted to the LSR frame. This procedure yields a set of position-velocity centroids that trace the observed streamer morphology. 
-These centroids represent a compact, noise-suppressed summary of the streamer trajectory and are used both in the grid search and in the fast-likelihood MCMC analysis. The number of extracted centroids used for each target is summarized in Table~\ref{table:MCMC_configuration}.
+where $\theta_0=\theta_{\rm stream}(r)$. The preliminary centroid is the intensity-weighted mean position,
+\[
+\langle x\rangle = \frac{\sum(Iw_\theta x_{\rm rel})}{\sum(Iw_\theta)},\qquad
+\langle z\rangle = \frac{\sum(Iw_\theta z_{\rm rel})}{\sum(Iw_\theta)}.
+\]
+The transverse dispersion within the shell provides an estimate of the local lateral width $\sigma_r$.
+
+To obtain the final centroid and velocity, we apply an angular Gaussian weight
+\[
+w(\theta)=I\exp\!\left[-\tfrac12\left(\frac{\Delta\theta}{\sigma_\theta}\right)^2\right],\qquad \Delta\theta=\pi-\big|\pi-|\theta-\theta_{\rm stream}(r)|\big|,
+\]
+where
+\[
+\sigma_\theta=\frac{\sigma_r}{\max(r,\epsilon)},\qquad \epsilon=10^{-3}
+\]
+so that a fixed physical width corresponds to a smaller angular dispersion at larger radii. The refined position and line-of-sight velocity are computed as weighted averages and converted to physical units using the observational header information.
+
+These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the streamer direction, providing a noise-suppressed representation for comparison with the kinematic model. The number of centroids extracted for each target is summarized in Table~\ref{table:MCMC_configuration}.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per2_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \caption{Moment 0 map}
+        \label{fig:per2_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \caption{Moment 0 map}
+        \label{fig:per2_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in Per-emb-2.}
+    \label{fig:per2_streamer}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per50_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:per50_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom1_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:per50_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in Per-emb-50.}
+    \label{fig:per50_streamer}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&1_centroid/SCrA_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:SCrA_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&1_centroid/SCrA_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:SCrA_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&1_centroid/SCrA_mom1_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:SCrA_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in S~CrA.}
+    \label{fig:SCrA_streamer}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&1_centroid/HLTau_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:HLTau_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&1_centroid/HLTau_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:HLTau_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:HLTau_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in HL~Tau.}
+    \label{fig:HLTau_streamer}
+\end{figure}
+
+% \begin{figure}[htbp]
+%     \centering
+%     \begin{subfigure}{0.8\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_weights_cacheonly.png}
+%         \caption{$r$--$\theta$ distribution}
+%         \label{fig:SVS13A_rtheta}
+%     \end{subfigure}
+%     \vspace{0.4cm} % 上下間距
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom0_cacheonly.png}
+%         \caption{Moment 0 map}
+%         \label{fig:SVS13A_mom0_cent}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom1_cacheonly.png}
+%         \caption{Moment 0 map}
+%         \label{fig:SVS13A_mom1_cent}
+%     \end{subfigure}
+%     \caption{Streamers in SVS~13A.}
+%     \label{fig:SVS13A_streamer}
+% \end{figure}
 
 \subsection{Grid search parameter estimation}
 We model the streamer kinematics using five parameters ($\theta$, $\phi_0$, $i$, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamer, the inclination of the system, the characteristic collapse time, and the ratio of rotation velocity. 
-For each target, we first perform a coarse five-dimensional grid search to identify reasonable regions of parameter space. The grid covers $\theta \in (0, \pi/2)$, $\phi \in (0, 2\pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ t is the characteristic time after the central mass singularity formation, and $\omega$ is sampled linearly between 0 and 1.
+For each target, we first perform a coarse five-dimensional grid search to identify reasonable regions of parameter space. The grid covers $\theta \in (0, \pi/2)$, $\phi \in (-\pi, \pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ t is the characteristic time after the central mass singularity formation, and $\omega$ is sampled linearly between 0 and 1.
 
 The grid search uses the extracted position-velocity centroids to evaluate the model performance. At each grid point, we compute the misfit between the model streamer and the observed centroids using the error metric
 \[
@@ -134,7 +396,7 @@ w_v = \left(\frac{\Delta x_{\rm AU}}{\Delta v_{\rm km\,s^{-1}}}\right)^2
 is chosen such that spatial and velocity deviations contribute in comparable physical units.
 
 \subsection{Markov Chain Monte Carlo exploration}
-After constructing data-driven prior ranges from the grid search, we perform Markov Chain Monte Carlo (MCMC) exploration of the five parameters. The MCMC sampling is carried out using the \texttt{emcee} package, which implements an affine-invariant ensemble sampler that efficiently explores correlated and multi-modal parameter distributions.
+After constructing data-driven prior ranges from the grid search, we perform Markov Chain Monte Carlo (MCMC) exploration of the five parameters. The MCMC sampling is carried out using the \texttt{emcee} package \citep{Daniel_2013}, which implements an affine-invariant ensemble sampler that efficiently explores correlated and multi-modal parameter distributions.
 
 We use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and $f$ is typically 0.05-0.10 (relaxed, if necessary, to include at least several tens of models). For each parameter, we take the 5th-95th percentile range of these "good" models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data-driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
 
@@ -152,17 +414,19 @@ Convergence of the chains is evaluated using the autocorrelation time of each pa
 Target & Method & $N_{\rm cent}$ & $N_{\rm walkers}$ & $N_{\rm steps}$ \\
 \hline
 \multirow{1}{*}{Per-emb-2}
-& Centroid-based & 11 & 20 & $2\times10^{4}$ \\
+& Centroid-based & 10 & 32 & $6\times10^{3}$ \\
 \hline
 \multirow{2}{*}{Per-emb-50}
-& Centroid-based & 11 & 20 & $2\times10^{4}$ \\
+& Centroid-based & 11 & 32 & $1\times10^{4}$ \\
+& Shell-based    & -- & 32 & $4\times10^{3}$ \\
+\hline
+\multirow{2}{*}{S~CrA}
+& Centroid-based & 32 & 20 & $8\times10^{4}$ \\
 & Shell-based    & -- & 20 & $8\times10^{3}$ \\
 \hline
-\multirow{1}{*}{S~CrA}
-& Centroid-based & 15 & 20 & $8\times10^{4}$ \\
-\hline
-\multirow{1}{*}{HL~Tau}
-& Centroid-based & 11 & 20 & $8\times10^{4}$ \\
+\multirow{2}{*}{HL~Tau}
+& Centroid-based & 29 & 20 & $8\times10^{4}$ \\
+& Shell-based    & -- & 32 & $4\times10^{3}$ \\
 \hline
 \end{tabular}
 \end{table}

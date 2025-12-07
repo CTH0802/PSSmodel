@@ -59,7 +59,7 @@ radius_ref_au = 240.0
 scale = "log"
 log_power = 1.5
 
-radius_in_au, radius_out_au = 2.2e2, 3.8e3
+radius_in_au, radius_out_au = 1e2, 3.8e3
 cube_fname = "Per-emb-50_CD_l021l060_uvsub_H2CO_multi_small_fitcube.fits"
 
 CACHE_DIR = "Per50_results/cache"
@@ -76,16 +76,17 @@ CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
 # ---------- 僅畫圖時要使用哪一個 cache 來源 ----------
 # 可選： "final"（預設）、"mcmc_distance", "mcmc_grid", "grid"
 USE_CACHE_SOURCE = "mcmc_shell"
+sample_from = "Median"
 # ---------- 開關 ----------
 # RUN_GRID = True               # 5D grid search 找初始解
-# RUN_MCMC_GRID = True          # 11 個質心點 fast likelihood
+# RUN_MCMC_GRID = True          # 14 個質心點 fast likelihood
 # RUN_MCMC_SHELL = True         # distance_cube MCMC
 # RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
 RUN_GRID = False               # 5D grid search 找初始解
-RUN_MCMC_GRID = False          # 11 個質心點 fast likelihood
+RUN_MCMC_GRID = False          # 14 個質心點 fast likelihood
 RUN_MCMC_SHELL = False         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -120,32 +121,40 @@ def _extract_params_from_cache(c: dict, source: str):
     #         ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
     #         ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
     #     ]
-    if s == "mcmc_shell":
-        order = [
-            ("mcmc_shell_median_Theta","mcmc_shell_median_Phi","mcmc_shell_median_Incl","mcmc_shell_median_T","mcmc_shell_median_Omega"),
-            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
-            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
-            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
-        ]
-    elif s == "mcmc_grid":
-        order = [
-            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
-            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
-            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
-        ]
-    elif s == "grid":
-        order = [
-            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
-            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
-            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
-        ]
-    else:
-        order = [
-            ("best_Theta","best_Phi","best_Incl","best_T","best_Omega"),
-            ("mcmc_distance_median_Theta","mcmc_distance_median_Phi","mcmc_distance_median_Incl","mcmc_distance_median_T","mcmc_distance_median_Omega"),
-            ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
-            ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
-        ]
+    if sample_from == "Median":
+        if s == "mcmc_shell":
+            order = [
+                ("mcmc_shell_median_Theta","mcmc_shell_median_Phi","mcmc_shell_median_Incl","mcmc_shell_median_T","mcmc_shell_median_Omega"),
+                ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+                ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+                ("best_Theta_median","best_Phi_median","best_Incl_median","best_T_median","best_Omega_median"),
+            ]
+        elif s == "mcmc_grid":
+            order = [
+                ("mcmc_grid_median_Theta","mcmc_grid_median_Phi","mcmc_grid_median_Incl","mcmc_grid_median_T","mcmc_grid_median_Omega"),
+                ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ]
+        elif s == "grid":
+            order = [
+                ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ]
+    if sample_from == "MAP":
+        if s == "mcmc_shell":
+            order = [
+                ("mcmc_shell_map_Theta","mcmc_shell_map_Phi","mcmc_shell_map_Incl","mcmc_shell_map_T","mcmc_shell_map_Omega"),
+                ("mcmc_grid_map_Theta","mcmc_grid_map_Phi","mcmc_grid_map_Incl","mcmc_grid_map_T","mcmc_grid_map_Omega"),
+                ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+                ("best_Theta_map","best_Phi_map","best_Incl_map","best_T_map","best_Omega_map"),
+            ]
+        elif s == "mcmc_grid":
+            order = [
+                ("mcmc_grid_map_Theta","mcmc_grid_map_Phi","mcmc_grid_map_Incl","mcmc_grid_map_T","mcmc_grid_map_Omega"),
+                ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ]
+        elif s == "grid":
+            order = [
+                ("grid_best_Theta","grid_best_Phi","grid_best_Incl","grid_best_T","grid_best_Omega"),
+            ]
     for keys in order:
         out = _try(*keys)
         if out: return out
@@ -189,6 +198,49 @@ def get_mcmc_moves(mode="explore"):
             (emcee.moves.DESnookerMove(),    0.2),
         ]
 
+def plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname):
+    """
+    用 extract_streamer_centroids 回傳的
+    x_array, z_array, weights_array
+    畫出 (r, theta) 的權重分布。
+    """
+    all_r = []
+    all_theta = []
+    all_w = []
+
+    N = len(x_array)  # 應該是 14 個 bin
+    for i in range(N):
+        x_bin = x_array[i]
+        z_bin = z_array[i]
+        w_bin = weights_array[i]
+
+        if x_bin.size == 0:
+            continue
+
+        # 用你原本的 spherical_coords 算每個 pixel 的 (r, theta)
+        r_bin, theta_bin = pss.spherical_coords(x_bin, z_bin)
+
+        all_r.append(r_bin)
+        all_theta.append(theta_bin)
+        all_w.append(w_bin)
+
+    # 串成一條長向量
+    all_r = np.concatenate(all_r)
+    all_theta = np.rad2deg(np.concatenate(all_theta))
+    all_w = np.concatenate(all_w)
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sc = ax.scatter(all_r, all_theta, c=all_w, s=5, cmap="inferno")
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label("Directional weight")
+
+    ax.set_xlabel("r (pixel)")
+    ax.set_ylabel(r"$\theta$ (deg)")
+    ax.set_title(r"Streamer weight in $(r,\theta)$ space")
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(PLOT_DIR, outname), dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
 def build_streamer_masked_cube(cube, header, rms_channel):
     """
@@ -245,7 +297,7 @@ def build_streamer_masked_cube(cube, header, rms_channel):
 def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
                                v_lastch_vel, v_lastch_num):
     """
-    從 masked cube 抽出 11 個 streamer 質心點。
+    從 masked cube 抽出 14 個 streamer 質心點。
     回傳:
       streamer_x_AU, streamer_z_AU, streamer_v_LS_km
     """
@@ -263,7 +315,7 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
     find_r, find_theta = pss.spherical_coords(find_x, find_y)
     find_streaml = interp1d(find_r, find_theta, fill_value="extrapolate")
 
-    N = 11
+    N = 14
     pars = np.linspace(0.07, 67, N + 1)
 
     x_means = np.zeros(N)
@@ -354,7 +406,6 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au,
     print(f"[Extracted] {np.sum(np.isfinite(streamer_x_AU))} valid centroids")
     return streamer_x_AU, streamer_z_AU, streamer_v_LS, x_array, z_array, v_array, weights_array, x_means, z_means, v_means
 
-
 def summarize_1d_posterior(samples, name, bins=30):
     samples = np.asarray(samples)
     samples = samples[np.isfinite(samples)]
@@ -436,7 +487,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     fig, ax = plt.subplots(figsize=(6.2, 6))
     norm = PowerNorm(gamma=0.5,
-                     vmin=np.nanmin(mom0),
+                     vmin=0,
                      vmax=np.nanmax(mom0))
 
     im = ax.imshow(
@@ -445,6 +496,8 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         cmap="inferno",
         extent=extent,
         norm=norm,
+        # vmin=np.nanmin(mom0),
+        # vmax=np.nanmax(mom0)
     )
 
     divider = make_axes_locatable(ax)
@@ -479,36 +532,36 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # cbar = fig.colorbar(weights_im, cax=cax)
     # cbar.set_label('weight value')
 
-    # 質心點（若提供）
-    if cen_x_pix is not None and cen_z_pix is not None:
-        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-        if cen_v_LS_km is not None:
-            cen_v = cen_v_LS_km + Local_Standard_Velocity
-            ax.scatter(
-                cen_ra, cen_dec,
-                c=cen_v,
-                cmap="coolwarm",
-                vmin=5.5, vmax=8.0,
-                s=20,
-                marker="o",
-                edgecolors="black",
-                linewidths=0.6,
-                zorder=5,
-                label="Centroids",
-            )
-        else:
-            ax.scatter(
-                cen_ra, cen_dec,
-                facecolors="none",
-                edgecolors="black",
-                s=36,
-                marker="o",
-                zorder=5,
-                label="Centroids",
-            )
+    # # 質心點（若提供）
+    # if cen_x_pix is not None and cen_z_pix is not None:
+    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+    #     if cen_v_LS_km is not None:
+    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             c=cen_v,
+    #             cmap="coolwarm",
+    #             vmin=5.5, vmax=8.0,
+    #             s=20,
+    #             marker="o",
+    #             edgecolors="black",
+    #             linewidths=0.6,
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
+    #     else:
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             facecolors="none",
+    #             edgecolors="black",
+    #             s=36,
+    #             marker="o",
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
 
-    ax.scatter(0, 0, c="r", s=50, marker="+", zorder=6)
+    ax.scatter(0, 0, c="w", s=50, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -542,11 +595,11 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    ax.quiver(
-        -0.4,  -0.4 * np.tan(np.deg2rad(10)),
-        -1.4, -1.4 * np.tan(np.deg2rad(10)),
-        color='lightgrey', scale=12, zorder=10
-    )
+    # ax.quiver(
+    #     0.4, 0.4 * np.tan(np.deg2rad(10)),
+    #     1.4, 1.4 * np.tan(np.deg2rad(10)),
+    #     color='lightgrey', scale=12, zorder=10
+    # )
     # beam（若有）
     try:
         bmaj = header.get("BMAJ", None)
@@ -559,15 +612,15 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             y0, y1 = ax.get_ylim()
             beam_x = x0 + 0.15 * (x1 - x0)
             beam_y = y0 + 0.15 * (y1 - y0)
+            beam_angle = 90 - bpa   #把天文定義轉成 mpl 角度
             beam = mpl.patches.Ellipse(
                 (beam_x, beam_y),
-                width=bmin_arcsec,
-                height=bmaj_arcsec,
-                angle=bpa,
-                facecolor="none",
-                edgecolor="k",
-                lw=1.2,
-                zorder=15,
+                width=bmaj_arcsec,   # 長軸
+                height=bmin_arcsec,  # 短軸
+                angle=beam_angle,    
+                facecolor='none',
+                edgecolor='k', lw=1,
+                zorder=10
             )
             ax.add_patch(beam)
             ax.text(
@@ -580,7 +633,6 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     fig.tight_layout()
     fig.savefig(os.path.join(PLOT_DIR, outname), dpi=200, bbox_inches="tight")
     plt.close(fig)
-
 
 def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           header, pa_rad, dx_au, im_center,
@@ -666,36 +718,36 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # cbar = fig.colorbar(weights_im, cax=cax)
     # cbar.set_label('weight value')
     
-    # 質心
-    if cen_x_pix is not None and cen_z_pix is not None:
-        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-        if cen_v_LS_km is not None:
-            cen_v = cen_v_LS_km + Local_Standard_Velocity
-            ax.scatter(
-                cen_ra, cen_dec,
-                c=cen_v,
-                cmap="coolwarm",
-                vmin=vmin, vmax=vmax,
-                s=20,
-                marker="o",
-                edgecolors="black",
-                linewidths=0.6,
-                zorder=5,
-                label="Centroids",
-            )
-        else:
-            ax.scatter(
-                cen_ra, cen_dec,
-                facecolors="none",
-                edgecolors="black",
-                s=36,
-                marker="o",
-                zorder=5,
-                label="Centroids",
-            )
+    # # 質心
+    # if cen_x_pix is not None and cen_z_pix is not None:
+    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+    #     if cen_v_LS_km is not None:
+    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             c=cen_v,
+    #             cmap="coolwarm",
+    #             vmin=vmin, vmax=vmax,
+    #             s=20,
+    #             marker="o",
+    #             edgecolors="black",
+    #             linewidths=0.6,
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
+    #     else:
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             facecolors="none",
+    #             edgecolors="black",
+    #             s=36,
+    #             marker="o",
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
 
-    ax.scatter(0, 0, c="r", s=50, marker="+", zorder=6)
+    ax.scatter(0, 0, c="b", s=50, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -729,11 +781,11 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    ax.quiver(
-        -0.4,  -0.4 * np.tan(np.deg2rad(10)),
-        -1.4, -1.4 * np.tan(np.deg2rad(10)),
-        color='grey', scale=12, zorder=10
-    )
+    # ax.quiver(
+    #     0.4, 0.4 * np.tan(np.deg2rad(10)),
+    #     1.4, 1.4 * np.tan(np.deg2rad(10)),
+    #     color='grey', scale=12, zorder=10
+    # )
     # beam（若有）
     try:
         bmaj = header.get("BMAJ", None)
@@ -746,15 +798,15 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             y0, y1 = ax.get_ylim()
             beam_x = x0 + 0.15 * (x1 - x0)
             beam_y = y0 + 0.15 * (y1 - y0)
+            beam_angle = 90 - bpa   #把天文定義轉成 mpl 角度
             beam = mpl.patches.Ellipse(
                 (beam_x, beam_y),
-                width=bmin_arcsec,
-                height=bmaj_arcsec,
-                angle=bpa,
-                facecolor="none",
-                edgecolor="k",
-                lw=1.2,
-                zorder=15,
+                width=bmaj_arcsec,   # 長軸
+                height=bmin_arcsec,  # 短軸
+                angle=beam_angle,    
+                facecolor='none',
+                edgecolor='k', lw=1,
+                zorder=10
             )
             ax.add_patch(beam)
             ax.text(
@@ -869,32 +921,32 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         v_m + Local_Standard_Velocity,
         color="tab:blue",
         lw=2.0,
-        label="Model (image-frame)",
+        label="Model",
         zorder=3,
     )
 
-    # ---------- 6) 疊上質心 ----------
-    if z_means_pix is not None and streamer_v_LS_km is not None:
-        # z_means_pix 已經是相對 protostar 的影像座標像素位移，直接乘上 dx_au 變成 AU
-        z_cent_img_AU = np.asarray(z_means_pix) * dx_au
-        v_cent = np.asarray(streamer_v_LS_km) + Local_Standard_Velocity
-        good = np.isfinite(z_cent_img_AU) & np.isfinite(v_cent)
-        ax.scatter(
-            z_cent_img_AU[good],
-            v_cent[good],
-            c="k",
-            s=30,
-            edgecolors="white",
-            linewidths=0.6,
-            label="Centroids",
-            zorder=4,
-        )
+    # # ---------- 6) 疊上質心 ----------
+    # if z_means_pix is not None and streamer_v_LS_km is not None:
+    #     # z_means_pix 已經是相對 protostar 的影像座標像素位移，直接乘上 dx_au 變成 AU
+    #     z_cent_img_AU = np.asarray(z_means_pix) * dx_au
+    #     v_cent = np.asarray(streamer_v_LS_km) + Local_Standard_Velocity
+    #     good = np.isfinite(z_cent_img_AU) & np.isfinite(v_cent)
+    #     ax.scatter(
+    #         z_cent_img_AU[good],
+    #         v_cent[good],
+    #         c="w",
+    #         s=30,
+    #         edgecolors="white",
+    #         linewidths=0.6,
+    #         label="Centroids",
+    #         zorder=4,
+    #     )
 
     # ---------- 7) 裝飾 ----------
     ax.set_xlabel("z (AU, image frame)")
     ax.set_ylabel("Velocity (km/s, LSR)")
     ax.set_title(label)
-    ax.set_ylim(6, 8)
+    ax.set_ylim(5.2, 8.2)
     ax.set_xlim(1000, -4000)
     leg = ax.legend(frameon=False, fontsize=9)
     for txt in leg.get_texts():
@@ -927,6 +979,8 @@ if RUN_FROM_CACHE_ONLY:
         try:
             str_mom0 = fits.getdata("Per-emb-50_H2CO_streamer_mom0.fits")
             str_mom1 = fits.getdata("Per-emb-50_H2CO_streamer_mom1.fits")
+            mom0 = fits.getdata("Per-emb-50_CD_l021l060_uvsub_H2CO_multi_small_fitcube_total_mom0.fits")
+            mom1 = fits.getdata("Per-emb-50_CD_l021l060_uvsub_H2CO_multi_small_fitcube_1G_Vc.fits")
             cube = fits.getdata("Per-emb-50_CD_l021l060_uvsub_H2CO_multi_small_fitcube.fits")
             header = fits.getheader("Per-emb-50_H2CO_streamer_mom1.fits")
         except Exception:
@@ -941,6 +995,9 @@ if RUN_FROM_CACHE_ONLY:
         dx_arcsec = abs(header["CDELT2"]) * 3600.0
         dv = abs(float(header["CDELT3"]))
         dx_au = dx_arcsec * distance_pc
+        # vmin, vmax = 4.0984, 10.0236   # 自己設定的正常速度範圍
+        # rms_moment0 = 3.572246569348e-1
+        # mom1_clean = np.where((mom1 >= vmin) & (mom1 <= vmax) & (mom0 >= 2.5 *rms_moment0), mom1, np.nan) 
         # --- Load masked cube (if exists) ---
         new_cube_data = None
         try:
@@ -993,8 +1050,8 @@ if RUN_FROM_CACHE_ONLY:
             header=header,
             pa_rad=pa_rad,
             dx_au=dx_au,
-            z_means_pix=None,
-            streamer_v_LS_km=None,
+            z_means_pix=z_means,
+            streamer_v_LS_km=cen_v_LS,
             outname="Per-emb-50_z_v_data_overlay.png",
         )
 
@@ -1022,6 +1079,8 @@ if RUN_FROM_CACHE_ONLY:
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
         )
+        
+        plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="Per-emb-50_weights_cacheonly.png")
         
         r_ref_AU = 200 * T_best * 1e6 * spc.year / spc.astronomical_unit
 
@@ -1070,7 +1129,6 @@ def prepare_data():
     v_lastch_vel = 4.0984
     v_lastch_num = 70
     velocity_range = [10.0236, 4.0984] * u.km / u.s
-
     subcube = cube.spectral_slab(velocity_range[0], velocity_range[1])
     moment0 = subcube.moment(order=0).value
     moment1 = subcube.moment(order=1).value
@@ -1133,7 +1191,7 @@ def prepare_data():
 # ============================================================
 def run_grid():
     global Theta_init, Phi_init, Incl_init, T_init, Omega_init
-    global parameter_prior_ranges
+    global parameter_prior_ranges, sigma_like
     if RUN_GRID:
         best_params, grid, error = run_grid_search(
             streamercom_x_AU,
@@ -1145,7 +1203,7 @@ def run_grid():
             log_power,
             radius_ref_au,
             n_grid=10,
-            T_factor_range=(40.0, 50.0),
+            T_factor_range=(14.744, 678), #14.744, 678
             verbose=True,
         )
         Theta_init = best_params["Theta"]
@@ -1154,7 +1212,8 @@ def run_grid():
         T_init     = best_params["T"]
         Omega_init = best_params["Omega"]
 
-        parameter_prior_ranges = compute_priors_from_grid(
+        sigma_like = None
+        parameter_prior_ranges, sigma_like = compute_priors_from_grid(
             error, grid, best_params["best_val"], frac=0.3
         )
 
@@ -1174,6 +1233,7 @@ def run_grid():
             "grid_best_T":     float(T_init),
             "grid_best_Omega": float(Omega_init),
             "grid_best_error": float(best_params["best_val"]),
+            "sigma_like_fast": float(sigma_like)
         })
         for key, (lo, hi) in parameter_prior_ranges.items():
             cache[f"prior_{key}_lo"] = float(lo)
@@ -1185,42 +1245,51 @@ def run_grid():
 
 
 # ============================================================
-# 6. MCMC_grid（選配, 用 11 質心）
+# 6. MCMC_grid（選配, 用 14 質心）
 # ============================================================
 def run_mcmc_grid_search():
-    if RUN_MCMC_GRID:
-        print("\n[MCMC_grid] start (11 質心 fast likelihood)")
+    if not RUN_MCMC_GRID:
+        print("[MCMC_grid] Skipped (RUN_MCMC_GRID = False)")
+        return
+    print("\n[MCMC_grid] start (14 質心 fast likelihood)")
 
-        cache.get("grid_used", False)
-        # --- Use MCMC_grid medians as center ---
-        Theta_center = cache["grid_best_Theta"]
-        Phi_center   = cache["grid_best_Phi"]
-        Incl_center  = cache["grid_best_Incl"]
-        T_center     = cache["grid_best_T"]
-        Omega_center = cache["grid_best_Omega"]
+    cache.get("grid_used", False)
+    # --- Use MCMC_grid medians as center ---
+    Theta_center = cache["grid_best_Theta"]
+    Phi_center   = cache["grid_best_Phi"]
+    Incl_center  = cache["grid_best_Incl"]
+    T_center     = cache["grid_best_T"]
+    Omega_center = cache["grid_best_Omega"]
 
-        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
-        
-        ndim = 5
-        labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
-        nwalkers, nsteps = 20, 20000
-        
-        sigma_vals  = [
-            np.deg2rad(5.0),
-            np.deg2rad(18.0),
-            np.deg2rad(9.0),
-            0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
-            0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
-        ]
+    print("Grid best:")
+    print(f"Theta = {np.rad2deg(Theta_center):.3f} deg")
+    print(f"Phi   = {np.rad2deg(Phi_center):.3f} deg")
+    print(f"Incl  = {np.rad2deg(Incl_center):.3f} deg")
+    print(f"T     = {T_center:.6f} Myr")
+    print(f"Omega = {Omega_center:.4f}")
+    center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+    
+    ndim = 5
+    labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
+    nwalkers, nsteps = 32, 10000
+            
+    sigma_vals  = [
+    np.deg2rad(4.5),
+    np.deg2rad(18.0),
+    np.deg2rad(9.0),
+    0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
+    0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
+    ]
 
-        p0 = np.zeros((nwalkers, ndim))
-        for j, key in enumerate(labels_5d):
-            lo, hi = parameter_prior_ranges[key]
-            prop = center_vals[j] + sigma_vals[j] * np.random.randn(nwalkers)
-            prop = np.clip(prop, lo, hi)
-            p0[:, j] = prop
+    p0 = np.zeros((nwalkers, ndim))
+    for j, key in enumerate(labels_5d):
+        lo, hi = parameter_prior_ranges[key]
+        prop = center_vals[j] + sigma_vals[j] * np.random.randn(nwalkers)
+        prop = np.clip(prop, lo, hi)
+        p0[:, j] = prop
 
-        moves = get_mcmc_moves(mode="refine")
+    moves = get_mcmc_moves(mode="refine")
+    with Pool(processes=8) as pool:
         sampler = emcee.EnsembleSampler(
             nwalkers, ndim,
             pss.log_posterior_fast,
@@ -1233,279 +1302,374 @@ def run_mcmc_grid_search():
                 M_star,
                 scale,
                 log_power,
+                sigma_like,
             ),
+            pool=pool,
             moves=moves,
         )
         sampler.run_mcmc(p0, nsteps, progress=True)
 
-        try:
-            tau = sampler.get_autocorr_time(quiet=True)
-            if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
-                raise RuntimeError(f"tau invalid: {tau}")
-            burnin = int(2 * np.nanmax(tau))
-            thin   = max(1, int(0.1 * np.nanmin(tau)))
-            print(f"[MCMC_grid] tau: {tau}, burnin={burnin}, thin={thin}")
-        except Exception as e:
-            print("[MCMC_grid] tau failed, use default.", e)
-            burnin, thin = 1000, 50
-            
-        chain = sampler.get_chain()
-        print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
-        print("mean acceptance:", np.mean(sampler.acceptance_fraction))
-
-        lp = sampler.get_log_prob(flat=True)
-        print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
+    try:
+        tau = sampler.get_autocorr_time(quiet=True)
+        if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+            raise RuntimeError(f"tau invalid: {tau}")
+        burnin = int(2 * np.nanmax(tau))
+        thin   = max(1, int(1 * np.nanmin(tau)))
+        print(f"[MCMC_grid] tau: {tau}, burnin={burnin}, thin={thin}")
+    except Exception as e:
+        print("[MCMC_grid] tau failed, use default.", e)
+        burnin, thin = 100, 50
         
-        flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+    chain = sampler.get_chain()
+    print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+    print("mean acceptance:", np.mean(sampler.acceptance_fraction))
 
-        # unwrap Phi
-        phi_samples = flat[:, 1]
-        phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2*np.pi)) - np.pi + Phi_center
-        flat_wrapped = flat.copy()
-        flat_wrapped[:, 1] = phi_wrapped
+    lp_chain = sampler.get_log_prob()
+    print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp_chain)))
+    print(parameter_prior_ranges)
 
-        q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
-        Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+    flat    = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+    lp_flat = sampler.get_log_prob(discard=burnin, thin=thin, flat=True)
 
-        print("\n[MCMC_grid] median ±68%:")
-        for i, name in enumerate(labels_5d):
-            lo, md, hi = q16[i], q50[i], q84[i]
-            if i in [0, 1, 2]:
-                lo, md, hi = np.rad2deg([lo, md, hi])
-                unit = "deg"
-            elif name == "Time":
-                unit = "Myr"
-            else:
-                unit = ""
-            print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
+    idx = np.argmax(lp_flat)
+    map_params = flat[idx]   # 這就是 MAP / 最大 log-posterior 那點
 
-        print("\n[MCMC_grid] 1D posterior shape:")
-        for i, name in enumerate(labels_5d):
-            summarize_1d_posterior(flat_wrapped[:, i], name)
+    phi_samples = flat[:, 1]
+    phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2*np.pi)) - np.pi + Phi_center
+    flat_wrapped = flat.copy()
+    flat_wrapped[:, 1] = phi_wrapped
 
-        # corner plot（角度轉度）
-        samples_plot = flat_wrapped.copy()
-        for idx in [0, 1, 2]:
-            samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-        labels_plot = [
-        r"$\Theta_0$ (deg)",
-        r"$\Phi_0$ (deg)",
-        r"$i$ (deg)",
-        r"$T$ (Myr)",
-        r"$\omega$",
-        ]
-        q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
-        ranges = []
-        for i in range(len(labels_plot)):
-            lo, md, hi = q16p[i], q50p[i], q84p[i]
-            width = hi - lo if hi > lo else 1e-3
-            ranges.append((md - 2*width, md + 2*width))
+    q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
+    Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+    Theta_map, Phi_map, Incl_map, T_map, Omega_map = map_params
+    
+    print("\n[MCMC_grid] median ±68%:")
+    for i, name in enumerate(labels_5d):
+        lo, md, hi = q16[i], q50[i], q84[i]
+        if i in [0, 1, 2]:
+            lo, md, hi = np.rad2deg([lo, md, hi])
+            unit = "deg"
+        elif name == "Time":
+            unit = "Myr"
+        else:
+            unit = ""
+        print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
 
-        fig = corner.corner(samples_plot,
-                            labels=labels_plot,
-                            range=ranges,
-                            show_titles=True,
-                            title_fmt=".3f",
-                            quantiles=[0.16, 0.5, 0.84],
-                            truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
-                            smooth=1)
-        fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid.png"),
-                    dpi=200, bbox_inches="tight")
-        plt.close(fig)
+    print("\n[MCMC_grid] 1D posterior shape:")
+    for i, name in enumerate(labels_5d):
+        summarize_1d_posterior(flat_wrapped[:, i], name)
 
-        cache.update({
-            "mcmc_grid_used": True,
-            "mcmc_grid_median_Theta": float(Theta_med),
-            "mcmc_grid_median_Phi":   float(Phi_med),
-            "mcmc_grid_median_Incl":  float(Incl_med),
-            "mcmc_grid_median_T":     float(T_med),
-            "mcmc_grid_median_Omega": float(Omega_med),
-        })
-        np.savez(CACHE_PATH_MCMC_GRID, **cache)
-        print(f"[cache] Saved MCMC grid results to {CACHE_PATH_MCMC_GRID}")
-        # ---- 寫入 FINAL cache ----
-        cache.update({
-            "best_Theta": float(Theta_med),
-            "best_Phi":   float(Phi_med),
-            "best_Incl":  float(Incl_med),
-            "best_T":     float(T_med),
-            "best_Omega": float(Omega_med),
-            "best_source": "mcmc_shell",   # optional
-        })
+    # corner plot（角度轉度）
+    samples_plot = flat_wrapped.copy()
+    for idx in [0, 1, 2]:
+        samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
+    labels_plot = [
+    r"$\Theta_0$ (deg)",
+    r"$\Phi_0$ (deg)",
+    r"$i$ (deg)",
+    r"$T$ (Myr)",
+    r"$\omega$",
+    ]
+    q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
+    ranges = []
+    for i in range(len(labels_plot)):
+        lo, md, hi = q16p[i], q50p[i], q84p[i]
+        width = hi - lo if hi > lo else 1e-3
+        ranges.append((md - 1.2*width, md + 1.2*width))
 
-        np.savez(CACHE_PATH_FINAL, **cache)
-        print(f"[cache] Saved FINAL best-fit to {CACHE_PATH_FINAL}")
-    else:
-        cache["mcmc_grid_used"] = False
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=True,
+                        plot_contours=False,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+                        smooth=0)
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid_median.png"),
+                dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=False,
+                        plot_contours=False,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_map), np.rad2deg(Phi_map), np.rad2deg(Incl_map), T_map, Omega_map],
+                        smooth=0)
+    axes = np.array(fig.axes).reshape((ndim, ndim))
+    titles = [
+        rf"$\Theta_0$ (deg) = {np.rad2deg(Theta_map):.3f}",
+        rf"$\Phi_0$ (deg) = {np.rad2deg(Phi_map):.3f}",
+        rf"$i$ (deg) = {np.rad2deg(Incl_map):.3f}",
+        rf"$T$ (Myr) = {T_map:.3f}",
+        rf"$\omega$ = {Omega_map:.3f}",
+    ]
+    for i in range(ndim):
+        ax = axes[i, i]   # 對角線上的 1D histogram
+        ax.set_title(titles[i], fontsize=16)
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid_map.png"),
+                dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    cache.update({
+        "mcmc_grid_median_Theta": float(Theta_med),
+        "mcmc_grid_median_Phi":   float(Phi_med),
+        "mcmc_grid_median_Incl":  float(Incl_med),
+        "mcmc_grid_median_T":     float(T_med),
+        "mcmc_grid_median_Omega": float(Omega_med),
+    })
+
+    cache.update({
+        "mcmc_grid_map_Theta": float(Theta_map),
+        "mcmc_grid_map_Phi":   float(Phi_map),
+        "mcmc_grid_map_Incl":  float(Incl_map),
+        "mcmc_grid_map_T":     float(T_map),
+        "mcmc_grid_map_Omega": float(Omega_map),
+    })
+
+    # 👉 多存一份 flat samples（第 2 段會用到）
+    cache["mcmc_grid_flat_samples"] = flat
+
+    np.savez(CACHE_PATH_MCMC_GRID, **cache)
+    print(f"[cache] Saved MCMC grid results to {CACHE_PATH_MCMC_GRID}")       
+
 
 # ============================================================
 # 8. MCMC_shell / MCMC_3D
 # ============================================================
 def run_mcmc_shell():
-    if RUN_MCMC_SHELL:
-        print("\n[MCMC_shell] start")
+    if not RUN_MCMC_SHELL:
+        print("[MCMC_shell] Skipped (RUN_MCMC_SHELL = False)")
+        return
+    print("\n[MCMC_shell] start")
 
-        cache.get("grid_used", False)
+    ndim = 5
+    labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
+    nwalkers, nsteps = 32, 5000  
+
+    # 優先選擇 shell 自己以前的結果，再來是 MCMC_grid，再來才是 grid_best
+    if cache.get("mcmc_grid_used", False):
+        # 推薦：用 posterior 中位數當中心
+        Theta_center = cache["mcmc_grid_median_Theta"]
+        Phi_center   = cache["mcmc_grid_median_Phi"]
+        Incl_center  = cache["mcmc_grid_median_Incl"]
+        T_center     = cache["mcmc_grid_median_T"]
+        Omega_center = cache["mcmc_grid_median_Omega"]
+        print("[MCMC_shell] init center from MCMC_grid medians")
+    else:
         Theta_center = cache["grid_best_Theta"]
         Phi_center   = cache["grid_best_Phi"]
         Incl_center  = cache["grid_best_Incl"]
         T_center     = cache["grid_best_T"]
         Omega_center = cache["grid_best_Omega"]
+        print("[MCMC_shell] init center from grid_best")
+    
+    center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+    sigma_vals  =  [
+    np.deg2rad(4.5),
+    np.deg2rad(18.0),
+    np.deg2rad(9.0),
+    0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
+    0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
+    ]
+    
+    p0 = np.zeros((nwalkers, ndim))
+    for j, key in enumerate(labels_5d):
+        lo, hi = parameter_prior_ranges[key]
+        prop = center_vals[j] + sigma_vals[j] * np.random.randn(nwalkers)
+        prop = np.clip(prop, lo, hi)
+        p0[:, j] = prop
 
-        center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+    max_dist_value = 30.0
+    print("[bbox] computing DATA_BBOX ...")
+    DATA_BBOX = pss.compute_data_bbox(new_cube_data, max_r=max_dist_value, extra_margin=5)
+    print(f"[bbox] DATA_BBOX = {DATA_BBOX}")
+    E_center = pss.shell_error_from_cube(
+        new_cube_data,
+        Theta_center, Phi_center, Incl_center, T_center, Omega_center,
+        pa_rad, dx_au, header, Local_Standard_Velocity,
+        max_dist_value,
+        M_star, radius_in_au, radius_out_au,
+        scale, log_power,
+        DATA_BBOX,
+    )
+    print("[MCMC_shell] reference shell error E_center =", E_center)
+    SIGMA_LIKE_SHELL = 2 * E_center
+    
+    log_args = (
+        new_cube_data,
+        parameter_prior_ranges,
+        pa_rad,
+        dx_au,
+        header,
+        Local_Standard_Velocity,
+        max_dist_value,
+        M_star,
+        radius_in_au,
+        radius_out_au,
+        scale,
+        log_power,
+        DATA_BBOX,
+        SIGMA_LIKE_SHELL,
+    )
 
-        ndim = 5
-        labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
-        nwalkers, nsteps = 20, 8000
+    moves = get_mcmc_moves(mode="refine")
 
-        sigmas  = [
-            np.deg2rad(5.0),
-            np.deg2rad(18.0),
-            np.deg2rad(9.0),
-            0.05 * (parameter_prior_ranges["Time"][1] - parameter_prior_ranges["Time"][0]),
-            0.05 * (parameter_prior_ranges["Omega"][1] - parameter_prior_ranges["Omega"][0]),
-        ]
-
-        p0 = np.zeros((nwalkers, ndim))
-        for j, key in enumerate(labels_5d):
-            lo, hi = parameter_prior_ranges[key]
-            prop = center_vals[j] + sigmas[j] * np.random.randn(nwalkers)
-            prop = np.clip(prop, lo, hi)
-            p0[:, j] = prop
-
-        max_dist_value = 30.0
-        print("[bbox] computing DATA_BBOX ...")
-        DATA_BBOX = pss.compute_data_bbox(new_cube_data, max_r=max_dist_value, extra_margin=5)
-        print(f"[bbox] DATA_BBOX = {DATA_BBOX}")
-        log_args = (
-            new_cube_data,
-            parameter_prior_ranges,
-            pa_rad,
-            dx_au,
-            header,
-            Local_Standard_Velocity,
-            max_dist_value,
-            M_star,
-            radius_in_au,
-            radius_out_au,
-            scale,
-            log_power,
-            DATA_BBOX
+    with Pool(processes=8) as pool:
+        sampler = emcee.EnsembleSampler(
+            nwalkers,
+            ndim,
+            pss.log_posterior_shell,
+            args=log_args,
+            pool=pool,
+            moves=moves
         )
+        sampler.run_mcmc(p0, nsteps, progress=True)
 
-        moves = get_mcmc_moves(mode="refine")
-
-        with Pool(processes=8) as pool:
-            sampler = emcee.EnsembleSampler(
-                nwalkers,
-                ndim,
-                pss.log_posterior_shell,
-                args=log_args,
-                pool=pool,
-                moves=moves
-            )
-            sampler.run_mcmc(p0, nsteps, progress=True)
-
-        # ---- Burn-in / thin ----
-        try:
-            tau = sampler.get_autocorr_time(quiet=True)
-            if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
-                raise RuntimeError(f"tau invalid: {tau}")
-            burnin = int(2 * np.nanmax(tau))
-            thin   = max(1, int(0.1 * np.nanmin(tau)))
-            print(f"[MCMC_shell] tau: {tau}, burnin={burnin}, thin={thin}")
-        except Exception as e:
-            print("[MCMC_shell] tau 估計失敗，用預設。", e)
-            burnin, thin = 30, 5
-            
-        chain = sampler.get_chain()
-        print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
-        print("mean acceptance:", np.mean(sampler.acceptance_fraction))
-
-        lp = sampler.get_log_prob(flat=True)
-        print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp)))
+    # ---- Burn-in / thin ----
+    try:
+        tau = sampler.get_autocorr_time(quiet=True)
+        if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+            raise RuntimeError(f"tau invalid: {tau}")
+        burnin = int(2 * np.nanmax(tau))
+        thin   = max(1, int(1 * np.nanmin(tau)))
+        print(f"[MCMC_shell] tau: {tau}, burnin={burnin}, thin={thin}")
+    except Exception as e:
+        print("[MCMC_shell] tau 估計失敗，用預設。", e)
+        burnin, thin = 50, 25
         
-        flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+    chain = sampler.get_chain()
+    print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+    print("mean acceptance:", np.mean(sampler.acceptance_fraction))
 
-        # unwrap Phi (same as MCMC_grid)
-        phi_samples = flat[:, 1]
-        phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2*np.pi)) - np.pi + Phi_center
-        flat_wrapped = flat.copy()
-        flat_wrapped[:, 1] = phi_wrapped
+    lp_chain = sampler.get_log_prob()
+    print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp_chain)))
+    print(parameter_prior_ranges)
 
-        q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
-        Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+    flat    = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+    lp_flat = sampler.get_log_prob(discard=burnin, thin=thin, flat=True)
 
-        print("\n[MCMC_shell] median ±68%:")
-        for i, name in enumerate(labels_5d):
-            lo, md, hi = q16[i], q50[i], q84[i]
-            if i in [0, 1, 2]:
-                lo, md, hi = np.rad2deg([lo, md, hi])
-                unit = "deg"
-            elif name == "Time":
-                unit = "Myr"
-            else:
-                unit = ""
-            print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
+    idx = np.argmax(lp_flat)
+    map_params = flat[idx]   # 這就是 MAP / 最大 log-posterior 那點
 
-        print("\n[MCMC_shell] 1D posterior 形狀判斷：")
-        for i, name in enumerate(labels_5d):
-            summarize_1d_posterior(flat_wrapped[:, i], name)
+    phi_samples = flat[:, 1]
+    phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2*np.pi)) - np.pi + Phi_center
+    flat_wrapped = flat.copy()
+    flat_wrapped[:, 1] = phi_wrapped
 
-        # corner plot（角度轉度）
-        samples_plot = flat_wrapped.copy()
-        for idx in [0, 1, 2]:
-            samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
-        labels_plot = ["Theta zero (°)", "Phi zero (°)", "Inclination (°)",
-                    "Time (Myr)", "Omega"]
-        q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
-        ranges = []
-        for i in range(len(labels_plot)):
-            lo, md, hi = q16p[i], q50p[i], q84p[i]
-            width = hi - lo if hi > lo else 1e-3
-            ranges.append((md - 2*width, md + 2*width))
+    q16, q50, q84 = np.percentile(flat_wrapped, [16, 50, 84], axis=0)
+    Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+    Theta_map, Phi_map, Incl_map, T_map, Omega_map = map_params
+    
+    print("\n[MCMC_shell] median ±68%:")
+    for i, name in enumerate(labels_5d):
+        lo, md, hi = q16[i], q50[i], q84[i]
+        if i in [0, 1, 2]:
+            lo, md, hi = np.rad2deg([lo, md, hi])
+            unit = "deg"
+        elif name == "Time":
+            unit = "Myr"
+        else:
+            unit = ""
+        print(f"{name:12s}: {md:.6f} (+{hi-md:.6f}/-{md-lo:.6f}) {unit}")
 
-        fig = corner.corner(samples_plot,
-                            labels=labels_plot,
-                            range=ranges,
-                            show_titles=True,
-                            title_fmt=".3f",
-                            quantiles=[0.16, 0.5, 0.84],
-                            truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
-                            smooth=1)
-        fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell.png"),
-                    dpi=200, bbox_inches="tight")
-        plt.close(fig)
+    print("\n[MCMC_shell] 1D posterior shape:")
+    for i, name in enumerate(labels_5d):
+        summarize_1d_posterior(flat_wrapped[:, i], name)
 
-        # ---- 寫入 cache ----
-        cache.update({
-            "mcmc_shell_used": True,
-            "mcmc_shell_median_Theta": float(Theta_med),
-            "mcmc_shell_median_Phi":   float(Phi_med),
-            "mcmc_shell_median_Incl":  float(Incl_med),
-            "mcmc_shell_median_T":     float(T_med),
-            "mcmc_shell_median_Omega": float(Omega_med),
-            "mcmc_shell_burnin": int(burnin),
-            "mcmc_shell_thin":   int(thin),
-            "mcmc_shell_nwalkers": int(nwalkers),
-            "mcmc_shell_nsteps":   int(nsteps),
-        })
-        np.savez(CACHE_PATH_MCMC_SHELL, **cache)
-        print(f"[cache] Saved MCMC distance results to {CACHE_PATH_MCMC_SHELL}")
-        # ---- 寫入 FINAL cache ----
-        cache.update({
-            "best_Theta": float(Theta_med),
-            "best_Phi":   float(Phi_med),
-            "best_Incl":  float(Incl_med),
-            "best_T":     float(T_med),
-            "best_Omega": float(Omega_med),
-            "best_source": "mcmc_shell",   # optional
-        })
+    # corner plot（角度轉度）
+    samples_plot = flat_wrapped.copy()
+    for idx in [0, 1, 2]:
+        samples_plot[:, idx] = np.rad2deg(samples_plot[:, idx])
+    labels_plot = [
+    r"$\Theta_0$ (deg)",
+    r"$\Phi_0$ (deg)",
+    r"$i$ (deg)",
+    r"$T$ (Myr)",
+    r"$\omega$",
+    ]
+    q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
+    ranges = []
+    for i in range(len(labels_plot)):
+        lo, md, hi = q16p[i], q50p[i], q84p[i]
+        width = hi - lo if hi > lo else 1e-3
+        ranges.append((md - 1.2*width, md + 1.2*width))
 
-        np.savez(CACHE_PATH_FINAL, **cache)
-        print(f"[cache] Saved FINAL best-fit to {CACHE_PATH_FINAL}")
-    else:
-        cache["mcmc_shell_used"] = False
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=True,
+                        plot_contours=False,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+                        smooth=0)
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell_median.png"),
+                dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    
+    fig = corner.corner(samples_plot,
+                        labels=labels_plot,
+                        range=ranges,
+                        show_titles=False,
+                        plot_contours=False,
+                        title_fmt=".3f",
+                        quantiles=[0.16, 0.5, 0.84],
+                        truths=[np.rad2deg(Theta_map), np.rad2deg(Phi_map), np.rad2deg(Incl_map), T_map, Omega_map],
+                        smooth=0)
+    axes = np.array(fig.axes).reshape((ndim, ndim))
+    titles = [
+        rf"$\Theta_0$ (deg) = {np.rad2deg(Theta_map):.3f}",
+        rf"$\Phi_0$ (deg) = {np.rad2deg(Phi_map):.3f}",
+        rf"$i$ (deg) = {np.rad2deg(Incl_map):.3f}",
+        rf"$T$ (Myr) = {T_map:.3f}",
+        rf"$\omega$ = {Omega_map:.3f}",
+    ]
+    for i in range(ndim):
+        ax = axes[i, i]   # 對角線上的 1D histogram
+        ax.set_title(titles[i], fontsize=16)
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell_map.png"),
+                dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    cache.update({
+        "mcmc_grid_median_Theta": float(Theta_med),
+        "mcmc_grid_median_Phi":   float(Phi_med),
+        "mcmc_grid_median_Incl":  float(Incl_med),
+        "mcmc_grid_median_T":     float(T_med),
+        "mcmc_grid_median_Omega": float(Omega_med),
+    })
+
+    cache.update({
+        "mcmc_grid_map_Theta": float(Theta_map),
+        "mcmc_grid_map_Phi":   float(Phi_map),
+        "mcmc_grid_map_Incl":  float(Incl_map),
+        "mcmc_grid_map_T":     float(T_map),
+        "mcmc_grid_map_Omega": float(Omega_map),
+    })
+    np.savez(CACHE_PATH_MCMC_SHELL, **cache)
+    print(f"[cache] Saved MCMC shell results to {CACHE_PATH_MCMC_SHELL}")
+    # ---- 寫入 FINAL cache ----
+    cache.update({
+        "best_Theta_median": float(Theta_med),
+        "best_Phi_median":   float(Phi_med),
+        "best_Incl_median":  float(Incl_med),
+        "best_T_median":     float(T_med),
+        "best_Omega_median": float(Omega_med),
+    })
+    cache.update({
+        "best_Theta_map": float(Theta_map),
+        "best_Phi_map":   float(Phi_map),
+        "best_Incl_map":  float(Incl_map),
+        "best_T_map":     float(T_map),
+        "best_Omega_map": float(Omega_map),
+    })
+    np.savez(CACHE_PATH_FINAL, **cache)
+    print(f"[cache] Saved FINAL best-fit to {CACHE_PATH_FINAL}")
+
 
 # ============================================================
 # 9. 決定最終 best-fit + 計算 RMSE + 寫 cache
@@ -1515,11 +1679,11 @@ def run_final_best_fit_and_overlay():
         c = np.load(CACHE_PATH_FINAL, allow_pickle=True)
         print(f"[cache] Loaded for overlay (final): {CACHE_PATH_FINAL}")
 
-        Theta_best = c["best_Theta"]
-        Phi_best   = c["best_Phi"]
-        Incl_best  = c["best_Incl"]
-        T_best     = c["best_T"]
-        Omega_best = c["best_Omega"]
+        Theta_best = c["best_Theta_median"]
+        Phi_best   = c["best_Phi_median"]
+        Incl_best  = c["best_Incl_median"]
+        T_best     = c["best_T_median"]
+        Omega_best = c["best_Omega_median"]
 
         Theta_best_deg = np.rad2deg(Theta_best)
         Phi_best_deg   = np.rad2deg(Phi_best)

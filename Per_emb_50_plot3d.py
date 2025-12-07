@@ -44,7 +44,7 @@ cache_path = _resolve_cache_path(USE_CACHE_SOURCE)
 
 # 距離、質量、PA 等物理參數
 LSR_velocity  = 7.5  # km/s
-DISTANCE_PC   = 300.0        
+DISTANCE_PC   = 300.0 
 M_STAR_MSUN   = 2.58         
 M_SUN_KG      = 1.98847e30
 R_IN_AU       = 2.2e2

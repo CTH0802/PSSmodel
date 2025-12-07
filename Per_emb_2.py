@@ -29,7 +29,8 @@ import corner
 RUN_REFINE = False
 RUN_MCMC_GRID = False
 USE_CACHED_FIT = True
-FIT_CACHE = "Per-emb-2_fit_results.npz"
+FIT_CACHE = "Per-emb-2_fit_gird_results.npz"
+# FIT_CACHE = "Per-emb-2_fit_results.npz" #mcmc result
 
 pa_deg = 50
 pa_rad = np.deg2rad(pa_deg)
@@ -174,6 +175,15 @@ plt.tight_layout()
 plt.savefig(os.path.join(PLOT_DIR, 'Per-emb-2_centroids_mom1.png'), dpi=200)
 plt.close(fig)
 
+def _compute_extent(header, im_center, ny, nx):
+    dx_arcsec = header["CDELT1"] * 3600.0
+    dz_arcsec = header["CDELT2"] * 3600.0
+    ra_min = (0   - im_center[1]) * dx_arcsec
+    ra_max = (nx  - im_center[1]) * dx_arcsec
+    dec_min= (0   - im_center[0]) * dz_arcsec
+    dec_max= (ny  - im_center[0]) * dz_arcsec
+    return (ra_min, ra_max, dec_min, dec_max), dx_arcsec, dz_arcsec
+
 def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           header, pa_rad, dx_au, im_center,
                           mom0, label, outname,
@@ -191,11 +201,8 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     phi   = np.deg2rad(phi_deg)
     inc   = np.deg2rad(inc_deg)
 
-    # 影像 & 像素刻度
-    dx_arcsec = abs(header["CDELT1"]) * 3600.0
-    dz_arcsec = abs(header["CDELT2"]) * 3600.0
     ny, nx = mom0.shape
-    cx, cy = im_center  # (x, y)
+    extent, dx_arcsec, dz_arcsec = _compute_extent(header, im_center, ny, nx)
 
     # ---------- PSS model ----------
     x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
@@ -208,30 +215,14 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         log_power=log_power,
     )
 
-    # AU -> pixel
     x_pix = x_m / dx_au
     z_pix = z_m / dx_au
 
-    # 旋轉到影像座標，再移回以 im_center 為中心
-    x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad) + cx
-    z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad) + cy
+    x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad) + im_center[1]
+    z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad) + im_center[0]
 
-    # 轉成 RA/Dec offset (arcsec)，以影像中心為 (0,0)
-    ra_off  = (x_pix_rot - cx) * dx_arcsec
-    dec_off = (z_pix_rot - cy) * dz_arcsec
-
-    # ---------- 圖的 extent（真正視場，不手動加負號翻軸） ----------
-    ra_min_offset  = (0   - cx) * dx_arcsec
-    ra_max_offset  = (nx  - cx) * dx_arcsec
-    dec_min_offset = (0   - cy) * dz_arcsec
-    dec_max_offset = (ny  - cy) * dz_arcsec
-
-    extent = (
-        min(ra_min_offset, ra_max_offset),
-        max(ra_min_offset, ra_max_offset),
-        min(dec_min_offset, dec_max_offset),
-        max(dec_min_offset, dec_max_offset),
-    )
+    ra_off  = (x_pix_rot - im_center[1]) * dx_arcsec
+    dec_off = (z_pix_rot - im_center[0]) * dz_arcsec
 
     # ---------- 建 model 線 segments ----------
     pts = np.column_stack([ra_off, dec_off])
@@ -241,7 +232,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     segments = np.stack([pts[:-1], pts[1:]], axis=1)
 
     fig, ax = plt.subplots(figsize=(6.2, 6))
-    norm = PowerNorm(gamma=1.5, vmin=-0.05, vmax=np.nanmax(mom0))
+    norm = PowerNorm(gamma=0.5, vmin=0, vmax=np.nanmax(mom0))
 
     # 背景：moment-1 map
     im = ax.imshow(
@@ -249,7 +240,8 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         origin="lower",
         cmap='inferno',
         extent=extent,
-        norm=norm
+        # norm=norm,
+        vmin=0,
     )
 
     # colorbar 貼右側，小一點
@@ -293,8 +285,8 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         cen_z_pix = np.asarray(cen_z_AU)
 
         # 轉成與背景 extent 一致的 RA/Dec offset
-        cen_ra  = (cen_x_pix - cx) * dx_arcsec
-        cen_dec = (cen_z_pix - cy) * dz_arcsec
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
 
         if cen_v_LS_km is not None:
             cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
@@ -325,7 +317,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             )
 
     # 中心位置
-    ax.scatter(0, 0, c="r", s=60, marker="+", zorder=6)
+    ax.scatter(0, 0, c="b", s=60, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -336,7 +328,7 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     # --- 比例尺與方向標示 ---
     # 定義比例尺位置（以 arcsec 為單位）
-    text_pos_x = extent[1] - 0.22 * (extent[1] - extent[0])
+    text_pos_x = extent[1] - 0.25 * (extent[1] - extent[0])
     text_pos_y = extent[2] + 0.2 * (extent[3] - extent[2])
     scale_length = 3000  # AU
 
@@ -358,13 +350,13 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    ax.quiver(
-        -2, -2,  # 起點 (RA, Dec offset)
-        -1, -1,  # 指向左下：代表 N 與 E 的方向
-        color='lightgrey', scale=12, zorder=10
-    )
+    # ax.quiver(
+    #     -2, -2,  # 起點 (RA, Dec offset)
+    #     -1, -1,  # 指向左下：代表 N 與 E 的方向
+    #     color='lightgrey', scale=12, zorder=10
+    # )
 
-    ax.set_xlim(-45, 45)
+    ax.set_xlim(45, -45)
     ax.set_ylim(-45, 45)
 
     # --- Beam 標示 ---
@@ -377,18 +369,21 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             bmin_arcsec = bmin * 3600.0
             beam_x = extent[0] + 0.22 * (extent[1] - extent[0])
             beam_y = extent[2] + 0.2 * (extent[3] - extent[2])
+            beam_angle = 90 - bpa   #把天文定義轉成 mpl 角度
             beam = Ellipse(
                 (beam_x, beam_y),
-                width=bmin_arcsec, height=bmaj_arcsec,
-                angle=bpa, facecolor='none',
-                edgecolor='white', lw=1, zorder=15
+                width=bmaj_arcsec,   # 長軸
+                height=bmin_arcsec,  # 短軸
+                angle=beam_angle,    
+                facecolor='none',
+                edgecolor='white', lw=1
             )
             ax.add_patch(beam)
             ax.text(
                 beam_x, beam_y - 0.6 * bmaj_arcsec,
                 f"{bmaj_arcsec:.2f}″ × {bmin_arcsec:.2f}″",
                 color='white', fontsize=10, ha='center', va='top',
-                bbox=dict(facecolor='black', alpha=0.3, lw=0)
+                bbox=dict(facecolor='black', alpha=0, lw=0)
             )
     except Exception as e:
         print(f"[Warning] Beam info not found or invalid: {e}")
@@ -415,11 +410,8 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     phi   = np.deg2rad(phi_deg)
     inc   = np.deg2rad(inc_deg)
 
-    # 影像 & 像素刻度
-    dx_arcsec = abs(header["CDELT1"]) * 3600.0
-    dz_arcsec = abs(header["CDELT2"]) * 3600.0
     ny, nx = mom1.shape
-    cx, cy = im_center  # (x, y)
+    extent, dx_arcsec, dz_arcsec = _compute_extent(header, im_center, ny, nx)
 
     # ---------- PSS model ----------
     x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
@@ -432,30 +424,14 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         log_power=log_power,
     )
 
-    # AU -> pixel
     x_pix = x_m / dx_au
     z_pix = z_m / dx_au
 
-    # 旋轉到影像座標，再移回以 im_center 為中心
-    x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad) + cx
-    z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad) + cy
+    x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad) + im_center[1]
+    z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad) + im_center[0]
 
-    # 轉成 RA/Dec offset (arcsec)，以影像中心為 (0,0)
-    ra_off  = (x_pix_rot - cx) * dx_arcsec
-    dec_off = (z_pix_rot - cy) * dz_arcsec
-
-    # ---------- 圖的 extent（真正視場，不手動加負號翻軸） ----------
-    ra_min_offset  = (0   - cx) * dx_arcsec
-    ra_max_offset  = (nx  - cx) * dx_arcsec
-    dec_min_offset = (0   - cy) * dz_arcsec
-    dec_max_offset = (ny  - cy) * dz_arcsec
-
-    extent = (
-        min(ra_min_offset, ra_max_offset),
-        max(ra_min_offset, ra_max_offset),
-        min(dec_min_offset, dec_max_offset),
-        max(dec_min_offset, dec_max_offset),
-    )
+    ra_off  = (x_pix_rot - im_center[1]) * dx_arcsec
+    dec_off = (z_pix_rot - im_center[0]) * dz_arcsec
 
     # ---------- 建 model 線 segments ----------
     pts = np.column_stack([ra_off, dec_off])
@@ -521,8 +497,8 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         cen_z_pix = np.asarray(cen_z_AU)
 
         # 轉成與背景 extent 一致的 RA/Dec offset
-        cen_ra  = (cen_x_pix - cx) * dx_arcsec
-        cen_dec = (cen_z_pix - cy) * dz_arcsec
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
 
         if cen_v_LS_km is not None:
             cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
@@ -553,7 +529,7 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             )
 
     # 中心位置
-    ax.scatter(0, 0, c="r", s=60, marker="+", zorder=6)
+    ax.scatter(0, 0, c="b", s=60, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -564,7 +540,7 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     
     # --- 比例尺與方向標示 ---
     # 定義比例尺位置（以 arcsec 為單位）
-    text_pos_x = extent[1] - 0.22 * (extent[1] - extent[0])
+    text_pos_x = extent[1] - 0.25 * (extent[1] - extent[0])
     text_pos_y = extent[2] + 0.2 * (extent[3] - extent[2])
     scale_length = 3000  # AU
 
@@ -585,14 +561,14 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         fontsize=14, family='Times New Roman', color='k'
     )
 
-    # --- 加上方向箭頭 (NE arrow) ---
-    ax.quiver(
-        -2, -2,  # 起點 (RA, Dec offset)
-        -1, -1,  # 指向左下：代表 N 與 E 的方向
-        color='grey', scale=12, zorder=10
-    )
+    # # --- 加上方向箭頭 (NE arrow) ---
+    # ax.quiver(
+    #     -2, -2,  # 起點 (RA, Dec offset)
+    #     -1, -1,  # 指向左下：代表 N 與 E 的方向
+    #     color='grey', scale=12, zorder=10
+    # )
     
-    ax.set_xlim(-45, 45)
+    ax.set_xlim(45, -45)
     ax.set_ylim(-45, 45)
 
     # --- Beam 標示 ---
@@ -605,11 +581,14 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
             bmin_arcsec = bmin * 3600.0
             beam_x = extent[0] + 0.22 * (extent[1] - extent[0])
             beam_y = extent[2] + 0.2 * (extent[3] - extent[2])
+            beam_angle = 90 -bpa   #把天文定義轉成 mpl 角度
             beam = Ellipse(
                 (beam_x, beam_y),
-                width=bmin_arcsec, height=bmaj_arcsec,
-                angle=bpa, facecolor='none',
-                edgecolor='k', lw=1, zorder=15
+                width=bmaj_arcsec,   # 長軸
+                height=bmin_arcsec,  # 短軸
+                angle=beam_angle,    
+                facecolor='none',
+                edgecolor='k', lw=1
             )
             ax.add_patch(beam)
             ax.text(
@@ -624,6 +603,62 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     fig.savefig(os.path.join(PLOT_DIR, outname), dpi=200, bbox_inches="tight")
     plt.close(fig)
 
+def plot_r_theta_weights_from_output(x_array, z_array, weights_array,
+                                     outname):
+    """
+    用 extract_streamer_centroids 回傳的
+    x_array, z_array, weights_array
+    畫出 (r, theta) 的權重分布。
+    theta_offset_deg: 畫圖時在角度上加的偏移量（單位：deg）
+                      例如 SCrA 想要 0 度在左邊，可以用 180.
+    """
+    all_r = []
+    all_theta = []
+    all_w = []
+
+    N = len(x_array)
+    for i in range(N):
+        x_bin = x_array[i]
+        z_bin = z_array[i]
+        w_bin = weights_array[i]
+
+        if x_bin.size == 0:
+            continue
+
+        r_bin, theta_bin = pss.spherical_coords(x_bin, z_bin)
+
+        all_r.append(r_bin)
+        all_theta.append(theta_bin)
+        all_w.append(w_bin)
+
+    # 串成一條長向量
+    all_r = np.concatenate(all_r)
+    theta_all = np.concatenate(all_theta)
+
+    # --- 這裡加角度偏移 ---
+    theta_all = theta_all + np.pi
+    # wrap 回 [-pi, pi] 比較好看
+    theta_all = (theta_all + np.pi) % (2 * np.pi) - np.pi
+
+    all_theta_deg = np.rad2deg(theta_all)
+    all_w = np.concatenate(all_w)
+
+    mask = all_w > 0
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sc = ax.scatter(all_r[mask], all_theta_deg[mask],
+                    c=all_w[mask], s=5, cmap="inferno")
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label("Directional weight")
+
+    ax.set_xlabel("r (pixel)")
+    ax.set_ylabel(r"$\theta$ (deg)")
+    ax.set_title(r"Streamer weight in $(r,\theta)$ space")
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(PLOT_DIR, outname), dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    
 def plot_z_v_imshow(
     best_theta, best_phi, best_incl, best_T, best_omega,
     z_means_AU, v_means_LS_km,
@@ -1190,3 +1225,5 @@ plot_z_v_imshow(
     label='Per-emb-2 HC3N (Z–V diagram)',
     outname="Per-emb-2_z_v_imshow.png",
 )
+
+plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="Per-emb-2_weights_cacheonly.png")
