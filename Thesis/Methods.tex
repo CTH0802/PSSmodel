@@ -1,14 +1,14 @@
 \section{Build up a model}
 We build a model that can reproduce the observed streamer by considering a self-collapse density enhancement structure with a rotation velocity and evolve with time in 3D space. 
-\section{Formalism} \label{Sub-sec: Formalism}
-In the formalism, including the density enhancement along the polar angle ($\theta$), infall velocity ($v_{\rm inf}$), rotation velocity ($v_{\rm rot}$), accumulated rotation ($\phi$), and inclination (i).
+\section{Formalism} \label{Sub-sec:Formalism}
+In this section, we summarize the formalism of the model, including the density enhancement along the polar angle ($\theta$), the infall velocity ($v_{\rm inf}$), the rotation velocity ($v_{\rm rot}$), the accumulated rotation ($\phi$), and the inclination ($i$).
 The sonic length.
 \begin{align}
     r_{\rm s} = c_{\rm s} T
 \end{align}
 Infall velocity
 \begin{align}
-    \displaystyle {v_{\rm inf}=-\sqrt{\frac{2GM_*}{r}}-3.3c_s}~~(c_s=200 m/s)
+    v_{\rm inf}=-\sqrt{\frac{2GM_*}{r}}-3.3c_{\rm s} \qquad (c_{\rm s}=200~\mathrm{m\,s^{-1}})
 \end{align}
 The rotation velocity.
 \begin{align}
@@ -25,7 +25,7 @@ Position
          x = r\sin{\theta} \cos{\phi}\\
          y = r\sin{\theta} \sin{\phi}\\
          z = r\cos{\theta}\\
-    \end{array}    
+    \end{array}
     \right.
 \end{align}
 Infall velocity
@@ -56,26 +56,238 @@ Inclination(i): backward (+), forward (-).
     \end{array} \right.
 \end{align}
 
-
 Velocity rotates by inclination
 \begin{align}
-    \left\{ \begin{array}{l}
-         v_x' = v_x\\
-         v_y' = v_y\cos{i}+v_z\sin{i}=v_{rot}\sin{\theta} \cos{\phi} \cos{i}+v_{\rm inf}(\sin{\theta} \sin{\phi} \cos{i}+\cos{\theta} \sin{i})\\
-         v_z' = -v_y \sin i + v_z \cos i = - v_{\rm rot}\sin{\theta}\cos{\phi}\sin i + v_{\rm inf}(-\sin{\theta} \sin{\phi}\sin i + \cos{\theta}\cos i)\\
+    \left\{
+    \begin{array}{l}
+        v_x' = v_x \\[4pt]
+        v_y' = v_y\cos i + v_z\sin i
+             = v_{\rm rot}\sin\theta \cos\phi \cos i
+             + v_{\rm inf}\bigl(\sin\theta \sin\phi \cos i + \cos\theta \sin i\bigr) \\[4pt]
+        v_z' = -v_y \sin i + v_z \cos i
+             = - v_{\rm rot}\sin\theta\cos\phi\sin i
+             + v_{\rm inf}\bigl(-\sin\theta \sin\phi\sin i + \cos\theta\cos i\bigr)
     \end{array}
     \right.
 \end{align}
 
-$\theta$ corresponds to the initial polar angle of the streamer, $\phi$ is the initial azimuth angle, $i$ is the inclination angle (zero inclination corresponds to an edge-on disk), $\omega$ is the ratio of Keplerian rotation velocity, and $t_{\rm s}$ is the collapsing time of the particle within the streamer.
+$\theta$ corresponds to the initial polar angle of the streamer, $\phi_0$ is the initial azimuth angle, $i$ is the inclination angle (zero inclination corresponds to an edge-on disk), $\omega$ is the ratio of Keplerian rotation velocity, and $t_{\rm s}$ is the collapsing time of the particle within the streamer.
 
-\section{Fitting procedure}
+\section{Fitting procedure}\label{sec:fitting_procedure}
 The fitting procedure described below is applied to each dataset to constrain the model parameters. The results are compared to the observed streamer morphology and kinematics to assess the validity of the model.
 
 \subsection{Position angle}
 \YN{This step can be neglected if the disk PA on the sky is known. Otherwise, the previous step needs to be repeated until the optimal is found.}
 
-\subsection{Global fitting of the full model}
+\subsection{Centroid Extraction and Observed Streamer Morphology}
+
+To characterize the observed streamer morphology, we extract a sequence of position--velocity centroids from moment map. Using the protostar position as the origin, we compute pixel offsets $(x_{\rm rel},z_{\rm rel})$ and convert them into polar coordinates $(r,\theta)$. A set of manually selected streamer points defines an interpolated main direction $\theta_{\rm stream}(r)$.
+
+The emission is divided into radial shells. Within each shell, we assign a directional weight
+\[
+w_\theta = \max\!\left[0,\frac{x_{\rm rel}\cos\theta_0 + z_{\rm rel}\sin\theta_0}{r}\right],
+\]
+where $\theta_0=\theta_{\rm stream}(r)$. The preliminary centroid is the intensity-weighted mean position,
+\[
+\langle x\rangle = \frac{\sum(Iw_\theta x_{\rm rel})}{\sum(Iw_\theta)},\qquad
+\langle z\rangle = \frac{\sum(Iw_\theta z_{\rm rel})}{\sum(Iw_\theta)}.
+\]
+The transverse dispersion within the shell provides an estimate of the local lateral width $\sigma_r$.
+
+To obtain the final centroid and velocity, we apply an angular Gaussian weight
+\[
+w(\theta)=I\exp\!\left[-\tfrac12\left(\frac{\Delta\theta}{\sigma_\theta}\right)^2\right],\qquad \Delta\theta=\pi-\big|\pi-|\theta-\theta_{\rm stream}(r)|\big|,
+\]
+where
+\[
+\sigma_\theta=\frac{\sigma_r}{\max(r,\epsilon)},\qquad \epsilon=10^{-3}
+\]
+so that a fixed physical width corresponds to a smaller angular dispersion at larger radii. The refined position and line-of-sight velocity are computed as weighted averages and converted to physical units using the observational header information.
+
+These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the streamer direction, providing a noise-suppressed representation for comparison with the kinematic model. The number of centroids extracted for each target is summarized in Table~\ref{table:MCMC_configuration}.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per2_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \caption{Moment 0 map}
+        \label{fig:per2_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \caption{Moment 0 map}
+        \label{fig:per2_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in Per-emb-2.}
+    \label{fig:per2_streamer}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per50_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:per50_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom1_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:per50_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in Per-emb-50.}
+    \label{fig:per50_streamer}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&1_centroid/SCrA_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:SCrA_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&1_centroid/SCrA_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:SCrA_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&1_centroid/SCrA_mom1_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:SCrA_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in S~CrA.}
+    \label{fig:SCrA_streamer}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&1_centroid/HLTau_weights_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:HLTau_rtheta}
+    \end{subfigure}
+    \vspace{0.4cm} % 上下間距
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&1_centroid/HLTau_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:HLTau_mom0_cent}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:HLTau_mom1_cent}
+    \end{subfigure}
+    \caption{Streamers in HL~Tau.}
+    \label{fig:HLTau_streamer}
+\end{figure}
+
+% \begin{figure}[htbp]
+%     \centering
+%     \begin{subfigure}{0.8\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_weights_cacheonly.png}
+%         \caption{$r$--$\theta$ distribution}
+%         \label{fig:SVS13A_rtheta}
+%     \end{subfigure}
+%     \vspace{0.4cm} % 上下間距
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom0_cacheonly.png}
+%         \caption{Moment 0 map}
+%         \label{fig:SVS13A_mom0_cent}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&1_centroid/Per-emb-50_mom1_cacheonly.png}
+%         \caption{Moment 0 map}
+%         \label{fig:SVS13A_mom1_cent}
+%     \end{subfigure}
+%     \caption{Streamers in SVS~13A.}
+%     \label{fig:SVS13A_streamer}
+% \end{figure}
+
+\subsection{Grid search parameter estimation}
+We model the streamer kinematics using five parameters ($\theta$, $\phi_0$, $i$, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamer, the inclination of the system, the characteristic collapse time, and the ratio of rotation velocity. 
+For each target, we first perform a coarse five-dimensional grid search to identify reasonable regions of parameter space. The grid covers $\theta \in (0, \pi/2)$, $\phi \in (-\pi, \pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ t is the characteristic time after the central mass singularity formation, and $\omega$ is sampled linearly between 0 and 1.
+
+The grid search uses the extracted position-velocity centroids to evaluate the model performance. At each grid point, we compute the misfit between the model streamer and the observed centroids using the error metric
+\[
+E = \sqrt{\left\langle \Delta x^2 + \Delta z^2 + w_v\,\Delta v^2 \right\rangle},
+\]
+where $\Delta x$ and $\Delta z$ are the projected position differences (in AU), and $\Delta v$ is the line-of-sight velocity residual (in $\rm km\,s^{-1}$). 
+The weight
+\[
+w_v = \left(\frac{\Delta x_{\rm AU}}{\Delta v_{\rm km\,s^{-1}}}\right)^2
+\]
+is chosen such that spatial and velocity deviations contribute in comparable physical units.
+
+\subsection{Markov Chain Monte Carlo exploration}
+After constructing data-driven prior ranges from the grid search, we perform Markov Chain Monte Carlo (MCMC) exploration of the five parameters. The MCMC sampling is carried out using the \texttt{emcee} package \citep{Daniel_2013}, which implements an affine-invariant ensemble sampler that efficiently explores correlated and multi-modal parameter distributions.
+
+We use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and $f$ is typically 0.05-0.10 (relaxed, if necessary, to include at least several tens of models). For each parameter, we take the 5th-95th percentile range of these "good" models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data-driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
+
+Each MCMC run begins by initializing an ensemble of walkers within the prior intervals, distributed in a narrow region around the best-performing grid-search solution. For the centroid-based likelihood, which evaluates the misfit using the extracted position-velocity centroids, this "fast-likelihood" stage enables efficient refinement of the parameter space and helps to identify the dominant modes of the posterior distribution. The adopted numbers of walkers and steps for each target are summarized in Table~\ref{table:MCMC_configuration}.
+
+For the full datacube fitting, we evaluate the agreement between the model and the observed position-position-velocity structure using a shell-based distance metric. Instead of computing distances for every voxel, we construct a shell-distance cube around the model streamer and compare it with the observed cube through intensity-weighted shell distances. This shell-based likelihood allows the MCMC to probe the full three-dimensional structure while remaining computationally tractable. The corresponding MCMC configurations (walkers, steps, and whether the shell-based likelihood is used) are also listed in Table~\ref{table:MCMC_configuration}.
+
+Convergence of the chains is evaluated using the autocorrelation time of each parameter, as well as visual inspection of walker trajectories. An initial burn-in phase is discarded, and the remaining samples are used to compute posterior medians and credible intervals as the final estimates of the five parameters.
+
+\begin{table}[h]
+\centering
+\caption{Overview of centroid extraction and MCMC configurations adopted for each target.}\label{table:MCMC_configuration}
+\begin{tabular}{lccccc}
+\hline\hline
+Target & Method & $N_{\rm cent}$ & $N_{\rm walkers}$ & $N_{\rm steps}$ \\
+\hline
+\multirow{1}{*}{Per-emb-2}
+& Centroid-based & 10 & 32 & $6\times10^{3}$ \\
+\hline
+\multirow{2}{*}{Per-emb-50}
+& Centroid-based & 11 & 32 & $1\times10^{4}$ \\
+& Shell-based    & -- & 32 & $4\times10^{3}$ \\
+\hline
+\multirow{2}{*}{S~CrA}
+& Centroid-based & 32 & 20 & $8\times10^{4}$ \\
+& Shell-based    & -- & 20 & $8\times10^{3}$ \\
+\hline
+\multirow{2}{*}{HL~Tau}
+& Centroid-based & 29 & 20 & $8\times10^{4}$ \\
+& Shell-based    & -- & 32 & $4\times10^{3}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Fitting with partially known parameters}
 
 
 % \YN{Re-include the infall term. Perform full model fitting around the optimal parameters found in the first step. }
@@ -185,6 +397,3 @@ The fitting procedure described below is applied to each dataset to constrain th
 % \YN{The external part of the streamer where the infall term cannot be safely neglected should be truncated. The procedure should be repeated until convergence is obtained.}
 
 % \YN{If the inclination is known, fitting could be simplified. $B=-A\sin{i}$. Re-write the equations for the regression model: only 4 equations to be solved.}
-\section{Fitting with observations}
-
-\subsection{Fitting with partially known parameters}

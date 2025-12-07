@@ -2,80 +2,51 @@ import sys
 import os
 import numpy as np
 import scipy.constants as spc
+import astropy.constants as astroc
+from scipy.ndimage import distance_transform_edt
+from functools import lru_cache
+from numba import njit, prange
 
-# def pixel_scale_AU(distance_pc, pc_to_AU, pixel_scale_arcsec, arcsec_per_degree):
-#     # 計算 1 pixel 的 AU 長度
-#     pixel_scale_AU = (distance_pc * 2 * np.pi * pc_to_AU * pixel_scale_arcsec) / (360 * arcsec_per_degree)
-#     return pixel_scale_AU
+# ===================================================================
+# 1. 基礎工具 (Utilities)
+# ===================================================================
+M_SUN_KG = 1.98847e30  # kg
+
+def gaussian(x, mu, sig):
+    return np.exp(-np.power((x - mu) / sig, 2.0) / 2)
 
 def time_to_deg(ra_time):
     """將 'HH:MM:SS.SSS' 轉成度數"""
     h, m, s = [float(i) for i in ra_time.split(':')]
     return (h + m/60 + s/3600) * 15 # RA 1小時 = 15度
 
-def calc_ra_arcsec(ra_start, ra_end, dec_deg, distance_pc, n_pixels):
-    """
-    計算 RA 方向的範圍（單位：arcsec，四捨五入後）
-    並轉換成每個 pixel 的 AU 大小。
-
-    參數：
-    - ra_start, ra_end: RA起點和終點 (字串, 'HH:MM:SS.SSS'格式)
-    - dec_deg: DEC赤緯，單位是度
-    - distance_pc: 距離（單位pc）
-    - n_pixels: 圖片的pixels數量
-
-    輸出：
-    - arcsec_range: 四捨五入後的總arcsec範圍
-    - AU_per_pixel: 每個pixel代表多少AU
-    """
-
-    # 1. 轉成度
-    ra_start_deg = time_to_deg(ra_start)
-    ra_end_deg = time_to_deg(ra_end)
-    
-    # 2. RA範圍，單位 degree
-    delta_ra_deg = ra_end_deg - ra_start_deg
-    
-    # 3. 轉 arcsec 並考慮 cos(DEC)
-    dec_rad = np.deg2rad(dec_deg)
-    delta_ra_arcsec = delta_ra_deg * 3600 * np.cos(dec_rad)
-
-    # 5. 換成 AU
-    AU_per_arcsec = 2 * np.pi * distance_pc * 206265 / 360 / 3600 # 1pc = 206265 arcsec
-    total_AU = delta_ra_arcsec * AU_per_arcsec
-    AU_per_pixel = total_AU / n_pixels
-
-    return delta_ra_arcsec, AU_per_pixel
-
 def pixel_to_arcsec(xpix, ypix, xcenpix, ycenpix, im):
+    """
+    (註：此函數在您提供的腳本中未被使用，但作為基礎工具保留)
+    """
     delx, dely = im.delx*3600., im.dely*3600.
     x_arcsec = (xpix - xcenpix) * delx
     y_arcsec = (ypix - ycenpix) * dely
     return x_arcsec, y_arcsec
 
-def circular_mask(shape, center, radius):
-    """
-    建立一個圓形 mask。
-    
-    Parameters:
-    - shape: (ny, nx) 影像大小
-    - center: (y, x)，圓心位置（像素座標）
-    - radius: 半徑（pixel）
-
-    Returns:
-    - mask: 2D boolean array，圓形區域為 True，其餘為 False
-    """
-    Y, X = np.ogrid[:shape[0], :shape[1]]
-    dist_from_center = np.sqrt((X - center[1])**2 + (Y - center[0])**2)
-    mask = dist_from_center >= radius
-    return mask
+def spherical_coords(x,y):
+    ''' Converts cartesian coordinates (x,y) to polar coordinates.'''
+    r = np.sqrt((x**2)+(y**2)) # total distance from center
+    theta = np.arctan2(y,x)  # Angle wrt x-axis, in radians
+    return(r,theta)
 
 def radius_sn(singal_noise, mim_singal=3, r_0=1.2):
+    """
+    (註：此函數是 grow_region 的輔助函數)
+    """
     radius = r_0 * (1 - np.exp(mim_singal - singal_noise))
     return np.max(radius, 0)
 
 def spheres(max_radius):
-    """預先建立半徑從1到max_radius的所有球形座標"""
+    """
+    預先建立半徑從1到max_radius的所有球形座標。
+    (註：此函數是 grow_region 的輔助函數)
+    """
     sphere_dict = {}
     for r in range(1, max_radius + 1):
         x, y, z = np.meshgrid(np.arange(-r, r + 1),
@@ -85,365 +56,130 @@ def spheres(max_radius):
         sphere_dict[r] = (x[mask], y[mask], z[mask])
     return sphere_dict
 
-# def grow_region(data, init_points, sigma_value, upperlimit_data=None, bound=None, r_0=4, sigma_thresh=3, max_iter=1000):
-#     """
-#     依據初始點與像素強度，圈出擴展區域。
-    
-#     data: 3D array, 觀測影像資料
-#     init_points: list of (z, y, x) or (y, x), 初始點
-#     sigma_thresh: 門檻，像素強度需高於 mean + sigma_thresh * std
-#     return: 3D or 2D boolean mask of selected region
-#     """
-#     data_rms = data / sigma_value
-#     region_mask = np.zeros_like(data, dtype=bool)
-    
-#     threshold = sigma_thresh
-#     if upperlimit_data is None:
-#         maxthreshold = np.max(data_rms)
-#     else:
-#         maxthreshold = upperlimit_data / sigma_value
-
-#     to_check = set(init_points)
-#     visited = set(init_points)
-#     sphere_dict = spheres(max_radius=r_0)
-
-#     for _ in range(max_iter):
-#         new_points = set()
-#         if data.ndim == 3:
-#             height, width, depth = data.shape
-#             if bound == None:
-#                 continue
-#             else:
-#                 bound_z, bound_y, bound_x = bound
-            
-#             for z, y, x in to_check:
-#                 if (0 <= y < width) and (0 <= x < height) and (0 <= z < depth) and (bound_z[0] <= z <= bound_z[1]) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
-#                     if data_rms[z, y, x] > threshold and data_rms[z, y, x] < maxthreshold and not region_mask[z, y, x]:
-#                         region_mask[z, y, x] = True
-
-#                         radius = radius_sn(data_rms[z, y, x], mim_singal=sigma_thresh, r_0=4)
-#                         int_radius = int(np.ceil(radius))
-                        
-#                         if int_radius not in sphere_dict:
-#                             continue  # 如果超過預設最大半徑就跳過
-#                         # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
-#                         dx_array, dy_array, dz_array = sphere_dict[int_radius]
-                        
-#                         for i in range(len(dx_array)):
-#                             nx, ny, nz = x + dx_array[i], y + dy_array[i], z + dz_array[i]
-#                             if (0 <= ny < width) and (0 <= nx < height) and (0 <= nz < depth):
-#                                 if (nx, ny, nz) not in visited:
-#                                     new_points.add((nx, ny, nz))
-#                                     visited.add((nx, ny, nz))
-#         elif data.ndim == 2:
-#             height, width = data.shape
-#             if bound == None:
-#                 continue
-#             else:
-#                 bound_y, bound_x = bound
-            
-#             for y, x in to_check:
-#                 if (0 <= y < width) and (0 <= x < height) and (bound_y[0] <= y <= bound_y[1]) and (bound_x[0] <= x <= bound_x[1]):
-#                     # print(f"{(y,x)} val={data_rms[y,x]:.2f}, thr={threshold:.2f}, maxthr={maxthreshold:.2f}")
-#                     if data_rms[y, x] > threshold and data_rms[y, x] <= maxthreshold and not region_mask[y, x]:
-#                         region_mask[y, x] = True
-
-#                         radius = radius_sn(data_rms[y, x], mim_singal=sigma_thresh, r_0=4)
-#                         int_radius = int(np.ceil(radius))
-                        
-#                         if int_radius not in sphere_dict:
-#                             continue  # 如果超過預設最大半徑就跳過
-#                         # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
-#                         dx_array, dy_array, dz_array = sphere_dict[int_radius]
-                        
-#                         for i in range(len(dx_array)):
-#                             nx, ny = x + dx_array[i], y + dy_array[i]
-#                             if (0 <= nx < width) and (0 <= ny < height):
-#                                 if (ny, nx) not in visited:
-#                                     new_points.add((ny, nx))
-#                                     visited.add((ny, nx))
-#         if not new_points:
-#             break
-#         to_check = new_points
-
-#     return region_mask
-def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=1000):
+def velocity_to_channel_index(v_lsr, header, nz=None):
     """
-    依據初始點與像素強度，圈出擴展區域。
-    
-    data: 3D array, 觀測影像資料
-    init_points: list of (z, y, x), 初始點
-    sigma_thresh: 門檻，像素強度需高於 mean + sigma_thresh * std
-    return: 3D boolean mask of selected region
+    將 LSR 速度 (km/s) 轉成 cube 的 channel index (0-based).
+    streamercom_v 是相對 V_sys 的速度，所以先加回 Local_Standard_Velocity
+    為了避免循環 import，這裡直接定義 velocity_to_channel_index
+    ----
+    v_lsr : float or array-like
+        LSR velocity [km/s]，可以是 scalar 或陣列。
+    header : astropy.io.fits.Header
+        含有 CRVAL3 / CRPIX3 / CDELT3 的 header。
+    nz : int, optional
+        頻道數 (cube.shape[0])，若提供會將 index clip 在 [0, nz-1]。
+    ----
+    根據 FITS WCS：
+        v = CRVAL3 + (i + 1 - CRPIX3) * CDELT3
+    反解得到 0-based index：
+        i = (v - CRVAL3) / CDELT3 + CRPIX3 - 1
     """
-    data = data / sigma_value
-    region_mask = np.zeros_like(data, dtype=bool)
-    depth, height, width = data.shape
-    threshold = sigma_thresh
+    CRVAL3 = float(header["CRVAL3"])
+    CRPIX3 = float(header["CRPIX3"])
+    CDELT3 = float(header["CDELT3"])
+    v_pix = (v_lsr - CRVAL3) / CDELT3 + CRPIX3 - 1.0  # 0-based index
+    if nz is not None:
+        v_pix = np.clip(v_pix, 0, nz - 1)
+    return v_pix
 
-    to_check = set(init_points)
-    visited = set(init_points)
-    sphere_dict = spheres(max_radius=r_0)
-    # for pt in init_points:
-    #     print(f"Init {pt}: {data[pt[0], pt[1]]:.2f} > {threshold:.2f}?")
-
-    for _ in range(max_iter):
-        new_points = set()
-        for z, y, x in to_check:
-            if (0 <= z < depth) and (0 <= y < width) and (0 <= x < height):
-                if data[z, y, x] > threshold and not region_mask[z, y, x]:
-                    region_mask[z, y, x] = True
-                    
-                    # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
-                    radius = radius_sn(data[z, y, x], mim_singal=sigma_thresh, r_0=4)
-                    int_radius = int(np.ceil(radius))
-                    
-                    if int_radius not in sphere_dict:
-                        continue  # 如果超過預設最大半徑就跳過
-                    # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
-                    dz_array, dy_array, dx_array = sphere_dict[int_radius]
-                    
-                    for i in range(len(dx_array)):
-                        nz, ny, nx = z + dz_array[i], y + dy_array[i], x + dx_array[i]
-                        if (0 <= nz < depth) and (0 <= ny < width) and (0 <= nx < height):
-                            if (nz, ny, nx) not in visited:
-                                new_points.add((nz, ny, nx))
-                                visited.add((nz, ny, nx))
-        if not new_points:
-            break
-        to_check = new_points
-
-    return region_mask
-def get_bounding_box(x_pix, z_pix, v_pix, buffer, cube_shape):
-    """
-    根據模型線的像素座標，自動計算一個帶緩衝的邊界框。
-
-    Parameters
-    ----------
-    x_pix, z_pix, v_pix : ndarray
-        模型線的有效像素座標陣列。
-    buffer : int
-        邊界框的緩衝區大小。
-    cube_shape : tuple
-        三維數據立方體的形狀 (nv, nz, nx)。
-
-    Returns
-    -------
-    bound : tuple or None
-        帶緩衝的邊界框，格式為 ([v_min, v_max], [z_min, z_max], [x_min, x_max])。
-        如果沒有有效點，則為 None。
-    """
-    if len(x_pix) == 0:
-        return None
-        
-    nv, nz, nx = cube_shape
-    
-    x_min, x_max = np.min(x_pix), np.max(x_pix)
-    z_min, z_max = np.min(z_pix), np.max(z_pix)
-    v_min, v_max = np.min(v_pix), np.max(v_pix)
-    
-    # x 軸邊界 (使用 max/min 來確保不超出 [0, nx-1])
-    x_min_bound = max(0, x_min - buffer)
-    x_max_bound = min(nx - 1, x_max + buffer)
-    
-    # z 軸邊界 (使用 max/min 來確保不超出 [0, nz-1])
-    z_min_bound = max(0, z_min - buffer)
-    z_max_bound = min(nz - 1, z_max + buffer)
-    
-    # v 軸邊界 (使用 max/min 來確保不超出 [0, nv-1])
-    v_min_bound = max(0, v_min - buffer)
-    v_max_bound = min(nv - 1, v_max + buffer)
-    
-    # if v_min_bound >= v_max_bound:        
-    #     bound = ([v_max_bound, v_min_bound],
-    #             [z_min_bound, z_max_bound],
-    #             [x_min_bound, x_max_bound])
-    # elif z_min_bound >= z_max_bound:
-    #     bound = ([v_min_bound, v_max_bound],
-    #             [z_max_bound, z_min_bound],
-    #             [x_min_bound, x_max_bound])
-    # elif x_min_bound >= x_max_bound:
-    #     bound = ([v_min_bound, v_max_bound],
-    #             [z_min_bound, z_max_bound],
-    #             [x_max_bound, x_min_bound])
-    # else:
-    bound = ([v_min_bound, v_max_bound],
-            [z_min_bound, z_max_bound],
-            [x_min_bound, x_max_bound])
-    return bound
-
-def grow_distance_cube_bounded(cube_shape, model_line_coords, max_dist_value, v_weight, bound=None):
-    """
-    在指定的邊界內，計算每個像素與模型線的最短「加權」距離。
-    
-    這個加權距離的計算方式是基於您提供的 error_function 邏G輯：
-    dist = sqrt( (dx_pix)^2 + (dz_pix)^2 + v_weight * (dv_chan)^2 )
-
-    Args:
-        cube_shape (tuple): 數據方塊的形狀 (nv, nz, nx)。
-        model_line_coords (list of tuples): 模型線上所有點的 (v, z, x) 座標列表。
-        max_dist_value (float): 允許的最大距離，超過此值的點將被標記為 -1.0。
-        v_weight (float): 速度(channel)維度的權重因子。
-                          對應 error_function 中的 weight_v。
-                          這是 (v_scale_factor)^2。
-        bound (tuple, optional): (v_bound, z_bound, x_bound) 的邊界。
-    
-    Returns:
-        np.ndarray: 一個與 cube_shape 相同形狀的 3D 陣列，
-                    包含每個體素到模型線的加權距離，
-                    超出邊界或 max_dist_value 的點被標記為 -1.0。
-    """
-    nv, nz, nx = cube_shape
-
-    if bound:
-        v_bound, z_bound, x_bound = bound
-        v_min, v_max = v_bound
-        z_min, z_max = z_bound
-        x_min, x_max = x_bound
-    else:
-        v_min, z_min, x_min = 0, 0, 0
-        v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
-
-    # 確保索引是整數
-    v_min, v_max = int(v_min), int(v_max)
-    z_min, z_max = int(z_min), int(z_max)
-    x_min, x_max = int(x_min), int(x_max)
-
-    # 創建子立方體
-    sub_distance_cube = np.full(
-        (v_max - v_min + 1, 
-         z_max - z_min + 1, 
-         x_max - x_min + 1), 
-        np.inf, 
-        dtype=np.float32  # 使用 float32
-    )
-    v_grid, z_grid, x_grid = np.indices(sub_distance_cube.shape)
-    
-    # 篩選出在邊界內部的模型點，並轉換為子立方體的相對座標
-    relative_model_coords = []
-    for v, z, x in model_line_coords:
-        if v_min <= v <= v_max and z_min <= z <= z_max and x_min <= x <= x_max:
-            relative_model_coords.append((v - v_min, z - z_min, x - x_min))
-    
-    if not relative_model_coords:
-        # 如果邊界內沒有模型點，返回一個全為 -1.0 的陣列
-        return np.full(cube_shape, -1.0, dtype=np.float32)
-
-    # 遍歷模型上的每個點
-    for v_line, z_line, x_line in relative_model_coords:
-        # --- 核心修改：使用加權距離 ---
-        dist_sq = (
-            (z_grid - z_line)**2 +
-            (x_grid - x_line)**2 +
-            v_weight * (v_grid - v_line)**2  # <--- 速度維度被加權
-        )
-        # 仍然取 sqrt，因為 max_dist_value 是距離，而不是距離的平方
-        dist = np.sqrt(dist_sq)
-        
-        # 更新子立方體中的最短距離
-        sub_distance_cube = np.minimum(sub_distance_cube, dist)
-
-    # --- 類型修正 ---
-    # 將超過最大距離的點標記為 -1.0 (而不是 np.nan，以避免 astype 錯誤)
-    sub_distance_cube[sub_distance_cube > max_dist_value] = -1.0
-    
-    # 創建完整的距離立方體，默認為 -1.0
-    full_distance_cube = np.full(cube_shape, -1.0, dtype=np.float32)
-    
-    # 將計算好的子立方體放回完整立方體的正確位置
-    full_distance_cube[v_min:v_max+1, z_min:z_max+1, x_min:x_max+1] = sub_distance_cube
-
-    return full_distance_cube
+# ===================================================================
+# 2. 核心物理模型 (Physics Core)
+# ===================================================================
 
 def Omega_ref(radius_ref_au, Mass_star):
-    Omega_ref = np.sqrt(spc.G * Mass_star * 2e30 / (radius_ref_au * 1.49e11)) / (radius_ref_au * 1.49e11) #Keplerian velocity (radian) 1e-13
-    return Omega_ref
+    """
+    (註：此函數是 PSS_model 的輔助函數)
+    """
+    r_m = radius_ref_au * spc.astronomical_unit
+    M_kg = Mass_star * M_SUN_KG # 改用 SciPy 的 M⊙
+    return np.sqrt(spc.G * M_kg / r_m) / r_m
 
-def x_func(Rx, A, k, R_0):
-    x_cos = A * np.cos(k * (Rx + R_0))
-    return x_cos
+def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
+              solar_mass, radius_in_au=1.5e3, radius_out_au=1e4, resolution=200,
+              scale='log', log_power=1.5):
+    """
+    產生 3D 的流線模型 (PSS model)。
+    (註：依賴 Omega_ref)
+    """
 
-def z_func(Rz, B, k, R_0, C):
-    z_sin = B * np.sin(k * (Rz + R_0)) + C
-    return z_sin
-
-def spherical_coords(x,y):
-    ''' Converts cartesian coordinates (x,y) to polar coordinates.'''
-    r = np.sqrt((x**2)+(y**2)) # total distance from center
-    theta = np.arctan2(y,x)  # Angle wrt x-axis, in radians
-    return(r,theta)
-
-def gaussian(x, mu, sig):
-    return np.exp(-np.power((x - mu) / sig, 2.0) / 2)
-
-def A_const(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    A = np.sum(X * np.cos(k * (R_i + R_0))) / np.sum(np.cos(k * (R_i + R_0)) ** 2)
-    return A
-
-def B_const(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    N = len(X)
-    B = (N * np.sum(Z * np.sin(k * (R_i + R_0))) - np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
-    return B
-
-def C_const(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    N = len(X)
-    C = (np.sum(Z) * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(Z * np.sin(k * (R_i + R_0))) * np.sum(np.sin(k * (R_i + R_0)))) / (N * np.sum(np.sin(k * (R_i + R_0)) ** 2) - np.sum(np.sin(k * (R_i + R_0))) ** 2)
-    return C
-
-def chi_square(R_0, k, params):
-    X, Z, R_i = params[0], params[1], params[2]
-    A = A_const(R_0, k, params)
-    B = B_const(R_0, k, params)
-    C = C_const(R_0, k, params)
-        
-    return np.sum((X - A * np.cos(k * (R_i + R_0))) ** 2 + (Z - B * np.sin(k * (R_i + R_0)) - C) ** 2)
-
-def f_kR(R_0, k, params):
+    # ... (函數內部程式碼保持不變) ...
     
-    X, Z, R_i = params[0], params[1], params[2]
+    theta_value = Theta_zero
     
-    A = A_const(R_0, k, params)
-    B = B_const(R_0, k, params)
-    C = C_const(R_0, k, params)
+    #######Unit conversion#######
+    T_s = T_Myr * 1e6 * spc.year #Time (s)
+    radius_in_m = radius_in_au * spc.astronomical_unit #Streamer edge (m)
+    radius_out_m = radius_out_au * spc.astronomical_unit #Streamer edge (m)
 
-    F_func = A * np.sum(X * R_i * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(R_i * np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * R_i * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(R_i * np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(R_i * np.cos(k * (R_i + R_0)))
-    return F_func
+    # --------------------------------------------------------------------
+    # 根據選擇的 scale 來產生 streamline_radius
+    # --------------------------------------------------------------------
+    if scale == 'linear':
+        streamline_radius = np.linspace(radius_in_m, radius_out_m, resolution)
+    elif scale == 'log':
+        s = np.linspace(0.0, 1.0, resolution)
+        s_transformed = s ** log_power
+        log_r_in = np.log10(radius_in_m)
+        log_r_out = np.log10(radius_out_m)
+        log_r = log_r_in + (log_r_out - log_r_in) * s_transformed
+        streamline_radius = 10 ** log_r
+    else:
+        raise ValueError(f"無效的 scale: '{scale}'。請選擇 'linear' 或 'log'。")
+    # --------------------------------------------------------------------
+    
+    c_s = 200 #m/s
+    
+    r_s = c_s * T_s #m
+    V_infall = - np.sqrt(2 * spc.G * solar_mass * M_SUN_KG / streamline_radius) - 3.3 * c_s #m/s
+    alpha = -1/3   #-1/3 ~ 1
+    Omega_s = Omega_ref(r_s / spc.astronomical_unit, solar_mass) * omega #Keplerian velocity (radian)
+    Omega = Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
+    phi_value = Phi_zero + T_s * Omega_s * np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * M_SUN_KG)) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) 
+    # m_0 = spc.G * solar_mass * M_SUN_KG / c_s ** 2 / r_s
+    # Omega = np.sqrt(m_0) / T_s * Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
+    # phi_value = Phi_zero + 3 * Omega_s * np.sqrt(m_0) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) 
+    velocity_r = streamline_radius * Omega * np.sin(theta_value)
 
-def g_kR(R_0, k, params):
-    
-    X, Z, R_i = params[0], params[1], params[2]
-    
-    A = A_const(R_0, k, params)
-    B = B_const(R_0, k, params)
-    C = C_const(R_0, k, params)
-    
-    G_func = A * np.sum(X * np.sin(k * (R_i + R_0))) - A ** 2 * np.sum(np.cos(k * (R_i + R_0)) * np.sin(k * (R_i + R_0))) - B * np.sum(Z * np.cos(k * (R_i + R_0))) + B ** 2 * np.sum(np.sin(k * (R_i + R_0)) * np.cos(k * (R_i + R_0))) + B * C * np.sum(np.cos(k * (R_i + R_0)))
-    return G_func
+    ######Streamer coordinate######
+    x = streamline_radius * np.sin(theta_value) * np.cos(phi_value)
+    y = streamline_radius * np.sin(theta_value) * np.sin(phi_value)
+    z = streamline_radius * np.cos(theta_value)
+    ######Rotated by X-axis Streamer coordinate#######
+    x_rotate = x                                                    # x
+    y_rotate = y * np.cos(Inclination) + z * np.sin(Inclination)
+    z_rotate = - y * np.sin(Inclination) + z * np.cos(Inclination)  # z
+    ######r Velocity######
+    u_r = V_infall * np.sin(theta_value) * np.cos(phi_value)
+    v_r = V_infall * np.sin(theta_value) * np.sin(phi_value)
+    w_r = V_infall * abs(np.cos(theta_value))
+    ######Velocity vector######
+    u = - velocity_r * np.sin(phi_value)
+    v = velocity_r * np.cos(phi_value)
+    w = np.zeros_like(velocity_r)
 
-def calc_params(R_root2, K_root2, params, radius_ref_au):
-    A = A_const(R_root2, K_root2, params)
-    B = B_const(R_root2, K_root2, params)
-    C = C_const(R_root2, K_root2, params)
-    if A < 0:
-        A = -A
-        B = -B
-        C = -C
-        R_root2 += np.pi / K_root2
-    radius_ref_m = radius_ref_au * spc.astronomical_unit
-    
-    inclin = np.arcsin(-B / A)
-    phi_par = R_root2 * K_root2
-    theta_par = np.arctan2(A, C / np.cos(inclin))
-    omega_ref = (A / radius_ref_m / np.sin(theta_par)) ** (4/3) / np.cos(inclin)
-    t = K_root2 * (np.cos(inclin)) ** (1/4) / omega_ref ** (3/4)
-    
-    return A, B, C, inclin, phi_par, theta_par, omega_ref, t
+    u += u_r
+    v += v_r
+    w += w_r
+    ######Rotated by X-axis Velocity######
+    u_rotate = u
+    v_rotate = v * np.cos(Inclination) + w * np.sin(Inclination) # v_y
+    w_rotate = - v * np.sin(Inclination) + w * np.cos(Inclination)
 
-    
+    ######Unit conversions######
+    x_rotate /= spc.astronomical_unit
+    y_rotate /= spc.astronomical_unit
+    z_rotate /= spc.astronomical_unit
+
+    u_rotate /= 1e3
+    v_rotate /= 1e3
+    w_rotate /= 1e3
+
+    return x_rotate, y_rotate, z_rotate, u_rotate, v_rotate, w_rotate #final 刪掉只保留x, z, v
+
 def arrow_line(times, arrow_resolution, interval_of_arrows, x, y, z, u, v, w, x_rotate, y_rotate, z_rotate, u_rotate, v_rotate, w_rotate):
+    """
+    (註：此函數在您提供的腳本中未被使用，但作為 PSS_model 的繪圖輔助工具保留)
+    """
     ######Streamer coordinate for Arrow######
     x_arrowline = x + u * times
     y_arrowline = y + v * times
@@ -485,338 +221,1099 @@ def arrow_line(times, arrow_resolution, interval_of_arrows, x, y, z, u, v, w, x_
         w_arrow_rotate = np.append(w_arrow_rotate, w_rotate [interval_of_arrows * i])
     return x_arrowline_interval, y_arrowline_interval, z_arrowline_interval, u_arrow, v_arrow, w_arrow, x_arrowline_rotate_interval, y_arrowline_rotate_interval, z_arrowline_rotate_interval, u_arrow_rotate, v_arrow_rotate, w_arrow_rotate
 
-def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
-              solar_mass, radius_in_au=1.5e3, radius_out_au=1e4, resolution=200,
-              scale='log', log_power=2):
+# ===================================================================
+# 3. 數據處理與遮罩 (Data Processing & Masking)
+# ===================================================================
 
-    # Omega = gM/r**3
-    # T_Myr = free-fall time
-
-    # #######Parameters#######
-    # Theta_zero = spc.pi/3
-    # Phi_zero = spc.pi*6/7
-    # Inclination = -spc.pi/3 #The angle of streamer rotated.
-
-    # #######Model parameters#######
-    # T_Myr = 1 #Time (Myr)
-    # Omega_ref = 3e-13 #Keplerian velocity (radian) 1e-13
-    # radius_ref_au = 500 #Disk edge (au)
-
-    # #######Variables#######
-    # radius_edge_au = 3000 #Streamer edge (au)
-    theta_value = Theta_zero
+def circular_mask(shape, center, radius):
+    """
+    建立一個圓形 mask。
     
-    #######Unit conversion#######
-    T_s = T_Myr * 1e6 * spc.year #Time (s)
-    # Omega_ref = Omega_ref(radius_ref_pixel, distance_pc, pc_to_AU, pixel_scale_arcsec, arcsec_per_degree)
-    radius_in_m = radius_in_au * spc.astronomical_unit #Streamer edge (m)
-    radius_out_m = radius_out_au * spc.astronomical_unit #Streamer edge (m)
+    Parameters:
+    - shape: (ny, nx) 影像大小
+    - center: (y, x)，圓心位置（像素座標）
+    - radius: 半徑（pixel）
 
-    # --------------------------------------------------------------------
-    # 根據選擇的 scale 來產生 streamline_radius
-    # --------------------------------------------------------------------
-    if scale == 'linear':
-        streamline_radius = np.linspace(radius_in_m, radius_out_m, resolution)
-    elif scale == 'log':
-        # np.logspace 會在對數尺度上產生均勻間距的點
-        # 這需要傳入起始點和結束點的對數值 (log10)
-        # 1. 創建一個 0 到 1 的基礎線性空間 (s)
-        s = np.linspace(0.0, 1.0, resolution)
-                
-        # 2. 對這個基礎施加冪次扭曲 (s^power)
-        s_transformed = s ** log_power
-                
-        # 3. 將這個扭曲的 (0, 1) 空間，映射到實際的 (log_r_in, log_r_out) 範圍
-        log_r_in = np.log10(radius_in_m)
-        log_r_out = np.log10(radius_out_m)
-        log_r = log_r_in + (log_r_out - log_r_in) * s_transformed
-                
-        # 4. 轉換回線性半徑
-        streamline_radius = 10 ** log_r
-    else:
-        raise ValueError(f"無效的 scale: '{scale}'。請選擇 'linear' 或 'log'。")
-    # --------------------------------------------------------------------
+    Returns:
+    - mask: 2D boolean array，圓形區域為 True，其餘為 False
+    """
+    Y, X = np.ogrid[:shape[0], :shape[1]]
+    dist_from_center = np.sqrt((X - center[1])**2 + (Y - center[0])**2)
+    mask = dist_from_center >= radius
+    return mask
+
+def grow_region(data, init_points, sigma_value, r_0=4, sigma_thresh=3, max_iter=1000):
+    """
+    依據初始點與像素強度，圈出擴展區域。
+    (註：依賴 radius_sn 和 spheres)
     
-    #######Resolution parameters######
-    # arrow_resolution = 20
-    # interval_of_arrows = int(resolution / arrow_resolution)
-    c_s = 200 #m/s
+    data: 3D array, 觀測影像資料
+    init_points: list of (z, y, x), 初始點
+    sigma_thresh: 門檻，像素強度需高於 mean + sigma_thresh * std
+    return: 3D boolean mask of selected region
+    """
+    data = data / sigma_value
+    region_mask = np.zeros_like(data, dtype=bool)
+    depth, height, width = data.shape
+    threshold = sigma_thresh
+
+    to_check = set(init_points)
+    visited = set(init_points)
+    sphere_dict = spheres(max_radius=r_0)
+    # for pt in init_points:
+    #     print(f"Init {pt}: {data[pt[0], pt[1]]:.2f} > {threshold:.2f}?")
+
+    for _ in range(max_iter):
+        new_points = set()
+        for z, y, x in to_check:
+            if (0 <= z < depth) and (0 <= y < height) and (0 <= x < width):
+                if data[z, y, x] > threshold and not region_mask[z, y, x]:
+                    region_mask[z, y, x] = True
+                    
+                    # print(f"Accepted: x={x}, y={y}, value={data[x, y]:.2f}")
+                    radius = radius_sn(data[z, y, x], mim_singal=sigma_thresh, r_0=4)
+                    int_radius = int(np.ceil(radius))
+                    
+                    if int_radius not in sphere_dict:
+                        continue  # 如果超過預設最大半徑就跳過
+                    # print(f"Sigma level {sigma_level}, checking {radius}x{radius} region")
+                    dz_array, dy_array, dx_array = sphere_dict[int_radius]
+                    
+                    for i in range(len(dx_array)):
+                        nz, ny, nx = z + dz_array[i], y + dy_array[i], x + dx_array[i]
+                        if (0 <= nz < depth) and (0 <= ny < width) and (0 <= nx < height):
+                            if (nz, ny, nx) not in visited:
+                                new_points.add((nz, ny, nx))
+                                visited.add((nz, ny, nx))
+        if not new_points:
+            break
+        to_check = new_points
+
+    return region_mask
+
+def get_bounding_box(x_pix, z_pix, v_pix, buffer, v_buffer, cube_shape):
+    """
+    根據模型線的像素座標，自動計算一個帶緩衝的邊界框。
+    """
+    if len(x_pix) == 0:
+        return None
+        
+    nv, nz, nx = cube_shape
     
-    # omega_ref = Omega_ref(radius_ref_au, solar_mass) #Keplerian velocity (radian)
-    # phi_value = Phi_zero + T_s ** (-1/2) * omega * omega_ref * (streamline_radius / radius_ref_m) ** (-1/2) * (radius_ref_m / c_s) ** (3/2)
-    # velocity_r = radius_ref_m * omega * omega_ref * np.sin(theta_value) * (streamline_radius / radius_ref_m) ** (-1)
-    # V_infall = - np.sqrt(spc.G * solar_mass * 2e30 / streamline_radius)
+    x_min, x_max = np.min(x_pix), np.max(x_pix)
+    z_min, z_max = np.min(z_pix), np.max(z_pix)
+    v_min, v_max = np.min(v_pix), np.max(v_pix)
     
-    r_s = c_s * T_s #m
-    V_infall = - np.sqrt(2 * spc.G * solar_mass * 2e30 / streamline_radius) - 3.3 * c_s #m/s
-    # phi_value = Phi_zero + T_s * Omega_ref * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (-1/3) - 2)
-    # velocity_r = r_s * Omega_ref * np.sin(theta_value) * ((streamline_radius / r_s) ** (-1) + (streamline_radius / r_s) ** (-1/3))
-    alpha = -1/3
-    Omega_s = Omega_ref(r_s / 1.49e11, solar_mass) * omega #Keplerian velocity (radian)
-    Omega = Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
-    phi_value = Phi_zero + T_s * Omega_s * np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * 2e30)) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) #np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * 2e30)) * 
-    velocity_r = streamline_radius * Omega * np.sin(theta_value)
-
-    # V_infall = -660 #3.3c_s (m/s)
-
-    # ######Origin coordinate#######
-    # x_orin = streamline_radius * np.sin(theta_value) * np.cos(Phi_zero)
-    # y_orin = streamline_radius * np.sin(theta_value) * np.sin(Phi_zero)
-    # z_orin = streamline_radius * np.cos(theta_value)
-    # ######Rotated by X-axis origin coordinate######
-    # y_orin_rotate = y_orin * np.cos(Inclination) + z_orin * np.sin(Inclination)
-    # z_orin_rotate = - y_orin * np.sin(Inclination) + z_orin * np.cos(Inclination)
+    # x 軸邊界 (使用 max/min 來確保不超出 [0, nx-1])
+    x_min_bound = max(0, x_min - buffer)
+    x_max_bound = min(nx - 1, x_max + buffer)
     
-    ######Streamer coordinate######
-    x = streamline_radius * np.sin(theta_value) * np.cos(phi_value)
-    y = streamline_radius * np.sin(theta_value) * np.sin(phi_value)
-    z = streamline_radius * np.cos(theta_value)
-    ######Rotated by X-axis Streamer coordinate#######
-    x_rotate = x                                                    # x
-    y_rotate = y * np.cos(Inclination) + z * np.sin(Inclination)
-    z_rotate = - y * np.sin(Inclination) + z * np.cos(Inclination)  # z
-    ######r Velocity######
-    u_r = V_infall * np.sin(theta_value) * np.cos(phi_value)
-    v_r = V_infall * np.sin(theta_value) * np.sin(phi_value)
-    w_r = V_infall * abs(np.cos(theta_value))
-    ######Velocity vector######
-    u = - velocity_r * np.sin(phi_value)
-    v = velocity_r * np.cos(phi_value)
-    w = np.zeros_like(velocity_r)
-
-    # print(r=np.sqrt(x_rotate**2+y_rotate**2+z_rotate**2))
-    # u_rotate = - x_rotate
-    u += u_r
-    v += v_r
-    w += w_r
-    ######Rotated by X-axis Velocity######
-    u_rotate = u
-    v_rotate = v * np.cos(Inclination) + w * np.sin(Inclination) # v_y
-    w_rotate = - v * np.sin(Inclination) + w * np.cos(Inclination)
-
-    # times = 5e9 #length
-    # ######Streamer coordinate for Arrow######
-    # x_arrowline = x + u * times
-    # y_arrowline = y + v * times
-    # z_arrowline = z + w * times
-    # ######Rotated by X-axis Streamer coordinate for Arrow######
-    # x_arrowline_rotate = x_rotate + u_rotate * times
-    # y_arrowline_rotate = y_rotate + v_rotate * times
-    # z_arrowline_rotate = z_rotate + w_rotate * times
-
-    # ######Draw arrow line######
-    # x_arrowline_interval, y_arrowline_interval, z_arrowline_interval, u_arrow, v_arrow, w_arrow, x_arrowline_rotate_interval, y_arrowline_rotate_interval, z_arrowline_rotate_interval, u_arrow_rotate, v_arrow_rotate, w_arrow_rotate = arrow_line(times, arrow_resolution, interval_of_arrows, x, y, z, u, v, w, x_rotate, y_rotate, z_rotate, u_rotate, v_rotate, w_rotate)
-
-    # ######Unit conversions######
-    #     ######m->au######
-    # x_orin /= spc.astronomical_unit
-    # y_orin /= spc.astronomical_unit
-    # z_orin /= spc.astronomical_unit
-
-    # y_orin_rotate /= spc.astronomical_unit
-    # z_orin_rotate /= spc.astronomical_unit
-
-    x_rotate /= spc.astronomical_unit
-    y_rotate /= spc.astronomical_unit
-    z_rotate /= spc.astronomical_unit
-
-    # x_arrowline_rotate /= spc.astronomical_unit
-    # y_arrowline_rotate /= spc.astronomical_unit
-    # z_arrowline_rotate /= spc.astronomical_unit
-
-    # x_arrowline_rotate_interval /= spc.astronomical_unit
-    # y_arrowline_rotate_interval /= spc.astronomical_unit
-    # z_arrowline_rotate_interval /= spc.astronomical_unit
-        ######m->km######
-    # velocity_vectors /= 1e3
-    u_rotate /= 1e3
-    v_rotate /= 1e3
-    w_rotate /= 1e3
-    # u_arrow_rotate /= 1e3
-    # v_arrow_rotate /= 1e3
-    # w_arrow_rotate /= 1e3
-    #     ######radian to degrees######
-    # Theta_zero_deg = Theta_zero * 180/spc.pi
-    # Phi_zero_deg = Phi_zero * 180/spc.pi
-    # Inclination_deg = Inclination * 180/spc.pi    
+    # z 軸邊界 (使用 max/min 來確保不超出 [0, nz-1])
+    z_min_bound = max(0, z_min - buffer)
+    z_max_bound = min(nz - 1, z_max + buffer)
+    
+    # v 軸邊界 (使用 max/min 來確保不超出 [0, nv-1])
+    v_min_bound = max(0, v_min - v_buffer)
+    v_max_bound = min(nv - 1, v_max + v_buffer)
+    
+    bound = ([v_min_bound, v_max_bound],
+            [z_min_bound, z_max_bound],
+            [x_min_bound, x_max_bound])
+    return bound
 
 
-    # ######Plot ratated streamer######
-    # fig = go.Figure()
-    # # fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0],)) #origin streamer line
-    # fig.add_trace(go.Scatter3d(x=x_orin, y=y_orin_rotate, z=z_orin_rotate, mode='lines', name='T=0, Rotated')) #origin streamer line
-    # fig.add_trace(go.Scatter3d(x=x_rotate, y=y_rotate, z=z_rotate, mode='lines', name='T=63', marker=dict(color='grey'))) #streamer line
-    # for i in range(arrow_resolution):
-    #     fig.add_trace(go.Scatter3d(x=[x_rotate[interval_of_arrows * i], x_arrowline_rotate[interval_of_arrows * i]], 
-    #                             y=[y_rotate[interval_of_arrows * i], y_arrowline_rotate[interval_of_arrows * i]], 
-    #                             z=[z_rotate[interval_of_arrows * i], z_arrowline_rotate[interval_of_arrows * i]], mode='lines', 
-    #                             marker=dict(color='rgb(100,100,100)'), line=dict(width=3))) #origin streamer line
-    #     # print(u[interval_of_arrows * i], v[interval_of_arrows * i], w[interval_of_arrows * i])
-    # fig.add_trace(go.Cone(x=x_arrowline_rotate_interval, y=y_arrowline_rotate_interval, z=z_arrowline_rotate_interval, 
-    #                         u=u_arrow_rotate, v=v_arrow_rotate, w=w_arrow_rotate, name='Streamer line', sizemode="scaled", 
-    #                         sizeref=0.3, cmin=np.min(velocity_vectors), cmax=np.max(velocity_vectors), colorscale="Portland",)) #arrow
-    # fig.update_layout(showlegend=False)
-    # # fig.add_trace(go.Cone(x=x, y=y_rotate, z=z_rotate, u=u, v=v, w=w, sizemode="scaled", sizeref=3, colorscale="Portland", cmin=np.min(velocity_vectors), cmax=np.max(velocity_vectors))) #arrow
-    # # fig.update_layout(scene = dict( 
-    # #                             xaxis = dict(nticks=4, range=x_axis_range,),
-    # #                             yaxis = dict(nticks=4, range=y_axis_range,),
-    # #                             zaxis = dict(nticks=4, range=z_axis_range,),
-    # #                             aspectmode='manual',
-    # #                             aspectratio=dict(x=1, y=1, z=1)
-    # #                             )
-    # #                 )
-    # fig.show()
-    # fig.write_html(f"/Users/thchuang/Documents/Code/MS_project/streamerimages/html/{round(Theta_zero_deg, 2)}_{round(Phi_zero_deg, 2)}_{round(Inclination_deg, 2)}.html")
+# ===================================================================
+# 4. 誤差/距離計算 (Error / Distance Functions)
+# ===================================================================
 
-    ######Plot X-Z-Vy######
-    # plt.scatter(x_rotate[::-1], z_rotate[::-1], s=500, c=v_rotate[::-1], cmap="coolwarm")
-    # plt.colorbar(label='Vy (km/s)')
-    # plt.scatter(0,0)
-    # plt.xlabel('X (au)')
-    # plt.ylabel('Z (au)')
-    # plt.xlim(-1.5e14,1.5e14)
-    # plt.ylim(-1.5e14,1.5e14)
-    # plt.gca().set_aspect('equal')
-    # plt.savefig(f"/Users/thchuang/Documents/Code/MS_project/streamerimages/pngs/{round(Theta_zero_deg, 2)}_{round(Phi_zero_deg, 2)}_{round(Inclination_deg, 2)}.png")
-    # plt.close()
-    # print(u_r,v_r,w_r)
-    return x_rotate, y_rotate, z_rotate, u_rotate, v_rotate, w_rotate #final 刪掉只保留x, z, v
+@njit
+def weighted_distance_numba(x, z, v, model_x, model_z, model_v, v_weight):
+    """
+    numba 版本：回傳距離平方 d^2
+    """
+    dmin = 1e30 
+    n = model_x.shape[0]
 
-def error_function(params, streamercom_x, streamercom_z, streamercom_v, 
-                   weight_v, T_Myr, omega, Inclination, solar_mass):
+    for j in range(n):
+        dx = x - model_x[j]
+        dz = z - model_z[j]
+        dv = v - model_v[j]
+        dist_sq = dx*dx + dz*dz + v_weight * dv*dv
+
+        if dist_sq < dmin:
+            dmin = dist_sq
+
+    return dmin
+
+def error_function(params, streamercom_x, streamercom_z, streamercom_v,
+                   weight_v, T_Myr, omega, Inclination, solar_mass, scale, log_power):
     """
     計算 PSS_model 與數據點的誤差，使用最近鄰匹配來尋找最佳對應點。
 
-    params: PSS_model 的參數
-    streamercom_x, streamercom_y, streamercom_v: 數據中的 11 個元素 (觀測值)
-
-    返回:
-    - error: 總誤差
+    這裡同時：
+    - 使用統一的加權距離 sqrt( dx^2 + dz^2 + weight_v * dv^2 ) 作為主誤差 (「AU-metric」)，
+      供 grid / MCMC 最小化。
+    - 紀錄分開的 RMS(position) 與 RMS(velocity)，方便之後轉換與診斷：
+        error_function.last_pos_rmse      (in AU)
+        error_function.last_vel_rmse      (in km/s)
+        error_function.last_eq_vel_rmse   (equivalent km/s from total AU-metric)
     """
-    
+
     Theta_zero, Phi_zero = params
-    total_error = 0
-    num_points = len(streamercom_x)  # 應該是 11
+    num_points = len(streamercom_x)
+    if num_points == 0:
+        return np.inf
 
+    # --- unified metric using nearest neighbor ---
+    d_list = []
     for i in range(num_points):
-        radius_in_au = np.sqrt(streamercom_x[i] ** 2 + streamercom_z[i] ** 2)
-        radius_out_au = radius_in_au * 30
-        # 計算 PSS_model 曲線
-        x_model, y_model, z_model, u_rotate, v_rotate, w_rotate = PSS_model(
-            Theta_zero, Phi_zero, Inclination, T_Myr, omega, 
-            solar_mass, radius_in_au, radius_out_au, resolution=20, scale='log')
+        radius_in_au = max(1.0, np.sqrt(streamercom_x[i] ** 2 + streamercom_z[i] ** 2) * 0.5)
+        radius_out_au = radius_in_au * 30.0
+        x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(
+            Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+            solar_mass, radius_in_au, radius_out_au,
+            resolution=100, scale=scale, log_power=log_power
+        )
+        d_min = weighted_distance_numba(
+            streamercom_x[i],
+            streamercom_z[i],
+            streamercom_v[i],
+            x_model,
+            z_model,
+            v_model,
+            weight_v,
+        )
+        d_list.append(d_min)
 
-        # 轉換為 NumPy 陣列
-        x_model, z_model, v_model = np.array(x_model), np.array(z_model), np.array(v_rotate)
-        
-        # 計算此數據點與這段曲線所有點的距離
-        distances = (streamercom_x[i] - x_model) ** 2 + \
-                    (streamercom_z[i] - z_model) ** 2 + \
-                    weight_v * (streamercom_v[i] - v_model) ** 2
-        # print(np.shape(distances), np.shape(x_model))
-        # 找到最近的 PSS_model 點
-        nearest_index = np.argmin(distances)
-        
-        # 計算此點的誤差
-        error = distances[nearest_index]  # 已經是平方誤差
-        total_error += error
-    total_error = np.sqrt(total_error / num_points)
+    # RMS of distances
+    d_arr = np.asarray(d_list, dtype=float)
+    total_error = np.sqrt(np.mean(d_arr))
+
     return total_error
 
-
-"""MCMC"""
-def log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au):
+@lru_cache(maxsize=None)
+def build_ball_offsets(max_r):
     """
-    計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
-    
-    參數：
-    - params: 模型的參數 (Theta, Phi, T, Inclination, Omega)
-    - data_cube: 觀測數據立方體 (V, Z, X)
-    - search_bound: 裁剪後的邊界 [ [v_min, v_max], [z_min, z_max], [x_min, x_max] ]
-    - 坐標轉換參數: AU_per_pixel, im_center, dv, v_lastch_num
+    建立「距離球殼」的 offsets：
+      - offsets: (N, 3)，每列是 (dv, dz, dx)
+      - shell_k: (N,)，每個 offset 對應的殼層 index (1..max_r)
+
+    定義：
+      dist = sqrt(dv^2 + dz^2 + dx^2)
+      1 <= ceil(dist) <= max_r 的點會被保留
     """
-    
-    # 從 data_cube 獲取形狀
-    cube_shape = data_cube.shape
-    
-    Theta_best, Phi_best, Inclination_best, T_best, Omega_best = params
+    coords = np.arange(-max_r, max_r + 1)
+    dv, dz, dx = np.meshgrid(coords, coords, coords, indexing="ij")
+    dist = np.sqrt(dv*dv + dz*dz + dx*dx)
 
-    # 1. 根據新的參數，重新生成模型線的物理座標
-    # 假設 PSS_model 輸出 x, y, z 是 AU 單位，v 是 km/s 單位
-    x_model, y_model, z_model, u_model, v_model, w_model = PSS_model(Theta_best, Phi_best, Inclination_best, T_best, Omega_best, M_star, radius_in_au, radius_out_au, 100, scale='log')
-    
-    # 2. 將物理座標轉換為整數像素座標
-    x_pix_rotated = x_model / AU_per_pixel
-    z_pix_rotated = z_model / AU_per_pixel
-    x_pix_int = np.round(x_pix_rotated * np.cos(pa_rad) - z_pix_rotated * np.sin(pa_rad) + im_center[1]).astype(int)
-    z_pix_int = np.round(x_pix_rotated * np.sin(pa_rad) + z_pix_rotated * np.cos(pa_rad) + im_center[0]).astype(int)
-    v_pix_int = np.round(v_lastch_num - (v_model - v_lastch_vel + v0) / dv).astype(int)
+    # 只保留 dist <= max_r 的點
+    mask = dist <= max_r
+    dv_sel = dv[mask]
+    dz_sel = dz[mask]
+    dx_sel = dx[mask]
+    dist_sel = dist[mask]
 
-    
-    # 3. 生成新的距離立方體
-    model_line_coords = list(zip(v_pix_int, z_pix_int, x_pix_int))
-    max_dist_value = 15
-    distance_cube = grow_distance_cube_bounded(
-        cube_shape, 
-        model_line_coords, 
-        max_dist_value, 
-        v_weight_for_cube,
-        bound=search_bound
+    # 殼層 index：ceil(dist)，中心點 dist=0 → 設成 1 層
+    shell_k = np.ceil(dist_sel).astype(np.int16)
+    shell_k[dist_sel == 0.0] = 1
+
+    offsets = np.column_stack([dv_sel, dz_sel, dx_sel]).astype(np.int16)
+    return offsets, shell_k
+
+@lru_cache(maxsize=None)
+def build_ball_offsets_for_shape(max_r, nv_sub, nz_sub, nx_sub):
+    """
+    根據 subcube 形狀 (nv_sub, nz_sub, nx_sub) 把球裁掉一部分，
+    避免產生一定會超出 subcube 的 offsets。
+    """
+    # 在每個軸上的最大 offset 不需要超過 subcube 尺寸的一半
+    max_dv = min(max_r, nv_sub - 1)
+    max_dz = min(max_r, nz_sub - 1)
+    max_dx = min(max_r, nx_sub - 1)
+
+    dv, dz, dx = np.meshgrid(
+        np.arange(-max_dv, max_dv + 1),
+        np.arange(-max_dz, max_dz + 1),
+        np.arange(-max_dx, max_dx + 1),
+        indexing="ij"
     )
-    
-    # 4. 計算誤差：Error = sum(Distance * CubeData) / sum(CubeData)
-    
-    # 篩選掉距離為 < 0 的點 (超出範圍或無效)
-    valid_mask = distance_cube >= 0
-    
-    # 計算分子：sum(Distance * CubeData)
-    # 使用 distance_cube[valid_mask] 和 data_cube[valid_mask] 確保只對有效區域計算
-    numerator = np.nansum(distance_cube[valid_mask] * data_cube[valid_mask])
-    
-    # 計算分母：sum(CubeData)
-    denominator = np.nansum(data_cube[valid_mask])
-    
-    # 確保分母不為零
-    if denominator == 0 or np.isnan(numerator):
-        return -np.inf 
-        
-    # 計算最終誤差 (要最小化的量)
-    normalized_error = numerator / denominator
-    
-    # 5. 轉換為 Log Likelihood
-    return np.log10(normalized_error)
+    dist = np.sqrt(dv*dv + dz*dz + dx*dx)
 
-# ---------------------------------------------------------------------------
+    mask = dist <= max_r
+    dv_sel = dv[mask]
+    dz_sel = dz[mask]
+    dx_sel = dx[mask]
+    dist_sel = dist[mask]
 
-def log_posterior(params, data_cube, search_bound, parameter_prior_ranges, pa_rad, AU_per_pixel, im_center, 
-                  dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au):
+    shell_k = np.ceil(dist_sel).astype(np.int16)
+    shell_k[dist_sel == 0.0] = 1
+
+    offsets = np.column_stack([dv_sel, dz_sel, dx_sel]).astype(np.int16)
+    return offsets, shell_k
+
+@njit(parallel=True)
+def stamp_shell_cube_numba(shell_cube, v_line, z_line, x_line,
+                           dv_off, dz_off, dx_off, shell_k):
+    nv, nz, nx = shell_cube.shape
+    Npts = len(v_line)
+    Noff = len(shell_k)
+
+    for i in prange(Npts):  
+        v0 = v_line[i]
+        z0 = z_line[i]
+        x0 = x_line[i]
+
+        for j in range(Noff):
+            vv = v0 + dv_off[j]
+            zz = z0 + dz_off[j]
+            xx = x0 + dx_off[j]
+
+            if (0 <= vv < nv) and (0 <= zz < nz) and (0 <= xx < nx):
+                k = shell_k[j]
+                cur = shell_cube[vv, zz, xx]
+                if cur < 0 or cur > k: #先確認現在shell cube的值有沒有比新的一輪大，大的話才更新更小的數字進去
+                    shell_cube[vv, zz, xx] = k
+
+    return shell_cube
+
+def apply_shell_ball_to_line(cube_shape, v_line, z_line, x_line, max_r):
+    shell_cube = np.full(cube_shape, -1, dtype=np.int16) #用原本的cube 形狀把所有值都填-1
+    nv_sub, nz_sub, nx_sub = cube_shape
+
+    offsets, shell_k = build_ball_offsets_for_shape(max_r, nv_sub, nz_sub, nx_sub)
+
+    dv_off = offsets[:, 0]
+    dz_off = offsets[:, 1]
+    dx_off = offsets[:, 2]
+
+    shell_cube = stamp_shell_cube_numba(
+        shell_cube,
+        v_line, z_line, x_line,
+        dv_off, dz_off, dx_off,
+        shell_k,
+    )
+    return shell_cube
+
+def compute_data_bbox(data_cube, max_r, extra_margin=0):
     """
-    計算對數後驗值。
-    (移除 cube_shape 參數)
+    根據 data_cube>0 的 voxel 算出一個 bounding box，
+    再加上 max_r + extra_margin 的 buffer。
+
+    回傳 (v_min, v_max, z_min, z_max, x_min, x_max)，都是 index（含端點）。
     """
-    lp = log_prior(params, parameter_prior_ranges)
-    if not np.isfinite(lp):
+    nv, nz, nx = data_cube.shape
+
+    mask = np.isfinite(data_cube) & (data_cube > 0)
+    if not np.any(mask):
+        return 0, nv-1, 0, nz-1, 0, nx-1  # 沒資料就用全域（保險）
+
+    v_idx, z_idx, x_idx = np.nonzero(mask)
+
+    # buffer 給 max_r 再多一點點
+    margin = int(max_r + extra_margin)
+
+    v_min = max(int(v_idx.min()) - margin, 0)
+    v_max = min(int(v_idx.max()) + margin, nv-1)
+    z_min = max(int(z_idx.min()) - margin, 0)
+    z_max = min(int(z_idx.max()) + margin, nz-1)
+    x_min = max(int(x_idx.min()) - margin, 0)
+    x_max = min(int(x_idx.max()) + margin, nx-1)
+
+    return v_min, v_max, z_min, z_max, x_min, x_max
+
+# ===================================================================
+def shell_error_from_cube(
+    data_cube,
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+    pa_rad, dx_au, header, Local_Standard_Velocity,
+    max_dist_value,
+    M_star, radius_in_au, radius_out_au,
+    scale, log_power,
+    data_bbox,
+):
+    """
+    使用「距離殼層 cube」計算 error：
+      - 先在 data 有訊號的區域算一個 bounding box（加上 max_dist_value 的 buffer）
+      - 只在這個 subcube 內 stamp 殼層，避免整個 cube 都 stamp，節省大量時間
+    """
+    cube_shape = data_cube.shape
+    nv, nz, nx = cube_shape
+
+    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
+        return np.inf
+
+    # 1) 建立 model line (物理單位：AU & km/s)
+    x_m, y_m, z_m, u_m, v_m, w_m = PSS_model(
+        Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+        M_star,
+        radius_in_au, radius_out_au,
+        resolution=80,
+        scale=scale,
+        log_power=log_power,
+    )
+
+    # 2) 轉換為像素 / 頻道座標
+    im_cy = float(header["CRPIX2"]) - 1.0  # 0-based
+    im_cx = float(header["CRPIX1"]) - 1.0
+
+    x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
+    z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
+
+    x_pix_line = np.round(x_rot / dx_au + im_cx).astype(np.int64)
+    z_pix_line = np.round(z_rot / dx_au + im_cy).astype(np.int64)
+
+    if Local_Standard_Velocity is None:
+        Local_Standard_Velocity = float(header.get("LSRVEL", 0.0))
+    v_lsr = v_m + Local_Standard_Velocity
+    v_pix_line = velocity_to_channel_index(v_lsr, header, nz=nv)
+    v_pix_line = np.round(v_pix_line).astype(np.int64)
+
+    # 3) 剪掉 cube 外的 model 點
+    valid_model = (
+        (x_pix_line >= 0) & (x_pix_line < nx) &
+        (z_pix_line >= 0) & (z_pix_line < nz) &
+        (v_pix_line >= 0) & (v_pix_line < nv)
+    )
+    x_pix_line = x_pix_line[valid_model]
+    z_pix_line = z_pix_line[valid_model]
+    v_pix_line = v_pix_line[valid_model]
+
+    if x_pix_line.size == 0:
+        return np.inf
+
+    # 4) 只在「data 有訊號的 bounding box」範圍內 stamp 殼層（bbox 已預先算好）
+    v_min, v_max, z_min, z_max, x_min, x_max = data_bbox
+
+    # subcube 的形狀
+    sub_shape = (
+        v_max - v_min + 1,
+        z_max - z_min + 1,
+        x_max - x_min + 1,
+    )
+
+    # shell_cube_sub 初始化為 -1
+    shell_cube_sub = np.full(sub_shape, -1, dtype=np.int16)
+
+    # 將 model 的像素座標 shift 到 subcube 座標系
+    v_line_sub = v_pix_line - v_min
+    z_line_sub = z_pix_line - z_min
+    x_line_sub = x_pix_line - x_min
+
+    # 只保留還落在 subcube 裡的 model 點（理論上前面剪過大 cube，這裡多一道保險）
+    valid_sub = (
+        (v_line_sub >= 0) & (v_line_sub < sub_shape[0]) &
+        (z_line_sub >= 0) & (z_line_sub < sub_shape[1]) &
+        (x_line_sub >= 0) & (x_line_sub < sub_shape[2])
+    )
+    v_line_sub = v_line_sub[valid_sub]
+    z_line_sub = z_line_sub[valid_sub]
+    x_line_sub = x_line_sub[valid_sub]
+
+    if v_line_sub.size == 0:
+        return np.inf
+
+    # --- 建立 subcube 的殼層 cube ---
+    shell_cube_sub = apply_shell_ball_to_line(
+        sub_shape,
+        v_line_sub,
+        z_line_sub,
+        x_line_sub,
+        max_dist_value,
+    )
+
+    # 對應到 data 的 subcube
+    data_sub = data_cube[v_min:v_max+1, z_min:z_max+1, x_min:x_max+1]
+
+    # 5) 用 subcube 的 data + shell 計算 weighted mean shell index
+    valid = (
+        (shell_cube_sub >= 1) &
+        (shell_cube_sub <= max_dist_value) &
+        (data_sub > 0)
+    )
+
+    if not np.any(valid):
+        return np.inf
+
+    s = shell_cube_sub[valid].astype(float)
+    w = data_sub[valid].astype(float)
+
+    if w.sum() <= 0:
+        return np.inf
+
+    weighted_mean_shell = np.sum(s * w) / np.sum(w)
+    return float(weighted_mean_shell)
+
+# ===================================================================
+# 5. MCMC 框架 (MCMC Framework)
+# ===================================================================
+def log_likelihood_shell(
+    params,
+    data_cube,
+    pa_rad,
+    dx_au,
+    header,
+    Local_Standard_Velocity,
+    max_dist_value,
+    M_star,
+    radius_in_au,
+    radius_out_au,
+    scale,
+    log_power,
+    data_bbox,
+    sigma_like
+):
+    """
+    基於「殼層距離 cube」的 log-likelihood
+
+    search_bound 若非 None，格式為 ([v_min,v_max],[z_min,z_max],[x_min,x_max])，
+    僅在該子區域內 stamp 殼層並計算殼層誤差。
+    """
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega = params
+
+    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
         return -np.inf
-    
-    # 傳入 log_likelihood 需要的參數
-    ll = log_likelihood(params, data_cube, search_bound, pa_rad, AU_per_pixel, im_center, 
-                        dv, v_lastch_vel, v_lastch_num, v0, v_weight_for_cube, M_star, radius_in_au, radius_out_au)
-    return lp + ll
 
-# ---------------------------------------------------------------------------
+    E = shell_error_from_cube(
+        data_cube,
+        Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+        pa_rad, dx_au, header, Local_Standard_Velocity,
+        max_dist_value,
+        M_star, radius_in_au, radius_out_au,
+        scale, log_power,
+        data_bbox,
+    )
+    if not np.isfinite(E):
+        return -np.inf
+    if E <= 0:
+        return -np.inf
+    alpha_like = 20.0
+    chi = E / (sigma_like / 2.0)
+    return -alpha_like * chi**2
 
-def log_prior(params, prior_ranges):
+def log_prior_shell(params, prior_ranges):
     """
     計算對數先驗值。
     """
     Theta0, Phi0, Incl, T, Omega = params
     
     # 檢查參數是否在先驗範圍內
-    if not (prior_ranges['Theta0'][0] < Theta0 < prior_ranges['Theta0'][1] and
-            prior_ranges['Phi0'][0] < Phi0 < prior_ranges['Phi0'][1] and
-            prior_ranges['Incl'][0] < Incl < prior_ranges['Incl'][1] and
-            prior_ranges['T'][0] < T < prior_ranges['T'][1] and
-            prior_ranges['Omega'][0] < Omega < prior_ranges['Omega'][1]):
+    if not (
+        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
+        and prior_ranges["Phi zero"][0] < Phi0 < prior_ranges["Phi zero"][1]
+        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
+        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
+        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
+    ):
         return -np.inf # 如果超出範圍，對數先驗為負無窮
     
     return 0.0 # 均勻先驗，對數值為 0
+
+def log_posterior_shell(
+    params,
+    data_cube,
+    priors,
+    pa_rad,
+    dx_au,
+    header,
+    Local_Standard_Velocity,
+    max_dist_value,
+    M_star,
+    radius_in_au,
+    radius_out_au,
+    scale,
+    log_power,
+    data_bbox,
+    sigma_like
+):
+    """
+    殼層距離版的 posterior：
+      log P(θ | data) = log Prior(θ) + log L_shell(data | θ)
+    """
+    # 1. 先驗
+    lp = log_prior_shell(params, priors)
+    if not np.isfinite(lp):
+        return -np.inf
+
+    # 2. likelihood
+    logL = log_likelihood_shell(
+        params,
+        data_cube,
+        pa_rad,
+        dx_au,
+        header,
+        Local_Standard_Velocity,
+        max_dist_value,
+        M_star,
+        radius_in_au,
+        radius_out_au,
+        scale,
+        log_power,
+        data_bbox,
+        sigma_like
+    )
+    if not np.isfinite(logL):
+        return -np.inf
+
+    post = lp + logL
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
+
+def in_phi_range(phi, phi_min, phi_max):
+    """
+    Handle periodic prior for Phi in [0, 2π):
+    若區間沒有跨 0 度：直接判斷 phi_min <= phi <= phi_max
+    若區間跨越 0 度：例如 (350°, 10°)，則接受 phi >= phi_min 或 phi <= phi_max
+    """
+    # 正規化到 [0, 2π)
+    two_pi = 2.0 * np.pi
+    phi = phi % two_pi
+    phi_min = phi_min % two_pi
+    phi_max = phi_max % two_pi
+
+    if phi_min <= phi_max:
+        return (phi_min <= phi) and (phi <= phi_max)
+    else:
+        # wrap-around case
+        return (phi >= phi_min) or (phi <= phi_max)
+
+# ===================================================================
+# 1. MCMC 先驗 (Prior)
+# ===================================================================
+def log_prior_fast(params, prior_ranges):
+    """
+    計算對數先驗值。
+    (這與您舊的 log_prior 函數相同，只檢查 5 個參數是否在範圍內)
+    """
+    Theta0, Phi0, Incl, T, Omega = params
+    
+    # 檢查參數是否在先驗範圍內
+    # 與這裡的 "Theta zero", "Phi zero" 等字串完全匹配。
+    if not (
+        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
+        and prior_ranges["Phi zero"][0] < Phi0 < prior_ranges["Phi zero"][1]
+        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
+        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
+        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
+    ):
+        return -np.inf # 如果超出範圍，對數先驗為負無窮
+    
+    return 0.0 # 均勻先驗，對數值為 0
+
+# ===================================================================
+# 2. MCMC 似然 (Likelihood) - [核心函數]
+# ===================================================================
+def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
+                        weight_v, solar_mass, scale, log_power, sigma_like):
+    """
+    這是一個「快速」的對數似然函數。
+    它只擬合 11 個質心點，而不是整個 3D 立方體。
+    
+    參數:
+    - params (list/array): MCMC 傳入的 5 個自由參數 
+                           [Theta0, Phi0, Incl, T_Myr, Omega]
+    - (其他...): 您的觀測數據和固定參數
+    """
+    # ---- 修改 1：先只保留真正有效的質心點 ----
+    valid = (
+        np.isfinite(streamercom_x) &
+        np.isfinite(streamercom_z) &
+        np.isfinite(streamercom_v) &
+        (streamercom_v != 0.0)
+    )
+
+    # 如果有效點太少（例如 < 3 個），直接放棄
+    if np.sum(valid) < 3:
+        return -np.inf
+
+    sx = streamercom_x[valid]
+    sz = streamercom_z[valid]
+    sv = streamercom_v[valid]
+    # 1. 解包 MCMC 傳入的 5 個參數
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega = params
+    
+    # 2. 準備 pss.error_function 需要的參數
+    #    (注意：您的 error_function 的第一個參數 'params' 只需要 2 個值)
+    params_for_error_func = [Theta_zero, Phi_zero]
+    
+    # 3. 呼叫您 *快速* 且 *有效* 的 error_function
+    #    (它會回傳 RMSE)
+    rmse_error = error_function(
+        params_for_error_func,
+        sx, 
+        sz, 
+        sv, 
+        weight_v, 
+        T_Myr,          # T_Myr 作為獨立參數傳入
+        omega,          # omega 作為獨立參數傳入
+        Inclination,    # Inclination 作為獨立參數傳入
+        solar_mass,
+        scale,
+        log_power
+    )
+    
+    if not np.isfinite(rmse_error):
+        return -np.inf
+    if rmse_error <= 0:
+        return -np.inf
+    alpha_like = 20.0 
+    chi = rmse_error / (sigma_like / 2.0) 
+    return -alpha_like * chi**2
+
+# ===================================================================
+# 3. MCMC 後驗 (Posterior)
+# ===================================================================
+def log_posterior_fast(params, prior_ranges, streamercom_x, streamercom_z, streamercom_v, 
+                       weight_v, solar_mass, scale, log_power, sigma_like):
+    """
+    這是 MCMC 採樣器 (sampler) 真正會呼叫的函數。
+    它結合了 Prior 和 Likelihood。
+    """
+    
+    # 1. 檢查先驗 (Priors)
+    lp = log_prior_fast(params, prior_ranges)
+    if not np.isfinite(lp):
+        return -np.inf
+    
+    # 2. 計算快速的似然 (Likelihood)
+    ll = log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v, 
+                             weight_v, solar_mass, scale, log_power, sigma_like)
+    
+    if not np.isfinite(ll):
+        return -np.inf
+    post = lp + ll
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
+
+# ===================================================================
+# 6. MCMC 結果分析 (MCMC Analysis)
+# ===================================================================
+
+def report_and_get_best_params(samples, confidence_level):
+    """
+    根據 MCMC 樣本和指定的信賴水準，計算、格式化輸出最佳參數和不確定性。
+    
+    參數:
+    - samples (np.ndarray): MCMC 採樣的扁平化結果 (flat chain)。
+    - confidence_level (float): 所需的信賴水Z準百分比 (例如 68.3, 95.0, 99.7)。
+    
+    回傳:
+    - tuple: 最佳擬合參數 (Theta, Phi, T, Inclination, Omega) 的弧度值。
+    """
+    
+    # 參數標籤 (必須與 samples 的列順序一致)
+    labels = ["Theta0", "Phi0", "Inclination", "T", "Omega"]
+    
+    # 1. 計算所需的百分位數 (兩端對稱)
+    if confidence_level >= 100 or confidence_level <= 0:
+        raise ValueError("信賴水準必須在 (0, 100) 之間。")
+        
+    tail_percent = (100.0 - confidence_level) / 2.0
+    
+    # 計算下限、中位數 (最佳值)、上限所需的百分位數
+    percentiles = [tail_percent, 50.0, 100.0 - tail_percent]
+    
+    print(f"\n--- MCMC 最佳擬合與不確定性 ({confidence_level:.1f}% 信賴區間) ---")
+    
+    # 用於儲存最佳參數的弧度值 (可以直接傳給 PSS_model)
+    best_fit_params_for_model = np.zeros(samples.shape[1])
+    
+    for i, label in enumerate(labels):
+        # 計算所需的百分位數
+        mcmc = np.percentile(samples[:, i], percentiles)
+        
+        # 最佳值 (50th 百分位數)
+        best_value = mcmc[1]
+        
+        # 誤差計算: q[0] 是下限誤差，q[1] 是上限誤差
+        q = np.diff(mcmc)
+        lower_error = q[0]
+        upper_error = q[1]
+        
+        # 3. 格式化輸出邏輯
+        
+        if label in ["Theta0", "Phi0", "Inclination"]:
+            # 儲存弧度值供模型使用
+            best_fit_params_for_model[i] = best_value 
+            
+            # 轉換為度數供輸出報告
+            best = np.rad2deg(best_value)
+            lower = np.rad2deg(lower_error)
+            upper = np.rad2deg(upper_error)
+            unit = "deg"
+            
+            # 輸出格式: 最佳值 (10.4f), 誤差 (.4e)
+            output_str = f"{label:<12s}: {best:10.4f} (+{upper:.4e} / -{lower:.4e}) {unit} ({confidence_level:.1f}%)"
+            
+        elif label == "T":
+            # 儲存原始值供模型使用
+            best_fit_params_for_model[i] = best_value
+            
+            # 時間參數 (最佳值 & 誤差都用科學記號, .4e)
+            best = best_value
+            lower = lower_error
+            upper = upper_error
+            unit = "Myr"
+            
+            output_str = f"{label:<12s}: {best:.4e} (+{upper:.4e} / -{lower:.4e}) {unit} ({confidence_level:.1f}%)"
+
+        else: # Omega
+            # 儲存原始值供模型使用
+            best_fit_params_for_model[i] = best_value
+            
+            # Omega 參數 (最佳值: 10.4f, 誤差: .4e)
+            best = best_value
+            lower = lower_error
+            upper = upper_error
+            unit = ""
+            
+            output_str = f"{label:<12s}: {best:10.4f} (+{upper:.4e} / -{lower:.4e}) {unit} ({confidence_level:.1f}%)"
+
+        print(output_str)
+
+    # 回傳弧度形式的最佳參數
+    return tuple(best_fit_params_for_model)
+
+"""
+# ===================================================================
+# 殼層距離 cube 以及誤差函數
+# ===================================================================
+
+def build_shell_distance_cube(
+    cube_shape,
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+    pa_rad, dx_au, header, Local_Standard_Velocity,
+    v_weight, max_dist_value,
+    M_star, radius_in_au, radius_out_au,
+    scale, log_power,
+    bound=None,
+):
+    # 1. 準備殼層立方體
+    nv, nz, nx = cube_shape
+    shell_cube = np.full(cube_shape, -1.0, dtype=np.float32)
+
+    # 2. 產生模型流線 (物理單位；AU & km/s)
+    x_m, y_m, z_m, u_m, v_m, w_m = PSS_model(
+        Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+        M_star,
+        radius_in_au, radius_out_au,
+        resolution=200,
+        scale=scale,
+        log_power=log_power,
+    )
+
+    # 3. 轉換為像素 / 頻道座標
+    im_center_y = float(header["CRPIX2"]) - 1.0  # 0-based
+    im_center_x = float(header["CRPIX1"]) - 1.0
+    CDELT3 = float(header["CDELT3"])
+    CRVAL3 = float(header["CRVAL3"])
+    CRPIX3 = float(header["CRPIX3"])
+
+    # 若呼叫端沒有特別給，從 header 讀取 LSRVEL（若沒有就維持原值）
+    if Local_Standard_Velocity is None:
+        Local_Standard_Velocity = float(header.get("LSRVEL", 0.0))
+
+    # 旋轉到 image frame
+    x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
+    z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
+
+    # 轉成像素座標 (x_pix, z_pix)
+    x_pix = np.round(x_rot / dx_au + im_center_x).astype(int)
+    z_pix = np.round(z_rot / dx_au + im_center_y).astype(int)
+
+    # 轉成頻道座標 v_pix（依照 FITS WCS: v = CRVAL3 + (i + 1 - CRPIX3) * CDELT3）
+    v_LSR = v_m + Local_Standard_Velocity
+    v_pix = np.round((v_LSR - CRVAL3) / CDELT3 + CRPIX3 - 1.0).astype(int)
+
+    # 4. 過濾掉落在 cube 之外的模型點
+    valid_mask = (
+        (x_pix >= 0) & (x_pix < nx) &
+        (z_pix >= 0) & (z_pix < nz) &
+        (v_pix >= 0) & (v_pix < nv)
+    )
+    x_pix = x_pix[valid_mask]
+    z_pix = z_pix[valid_mask]
+    v_pix = v_pix[valid_mask]
+
+    if x_pix.size == 0:
+        # 沒有任何模型點落在 cube 內，直接回傳全 -1
+        return shell_cube
+
+    # 5. 決定計算區域的邊界
+    if bound is not None:
+        v_bound, z_bound, x_bound = bound
+        v_min, v_max = int(v_bound[0]), int(v_bound[1])
+        z_min, z_max = int(z_bound[0]), int(z_bound[1])
+        x_min, x_max = int(x_bound[0]), int(x_bound[1])
+    else:
+        v_min, z_min, x_min = 0, 0, 0
+        v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
+
+    # 保險起見，再把邊界裁切到合法的索引範圍
+    v_min = max(0, v_min)
+    z_min = max(0, z_min)
+    x_min = max(0, x_min)
+    v_max = min(nv - 1, v_max)
+    z_max = min(nz - 1, z_max)
+    x_max = min(nx - 1, x_max)
+
+    # 6. 建立子立方體遮罩，對模型線位置做 EDT
+    sub_shape = (v_max - v_min + 1,
+                 z_max - z_min + 1,
+                 x_max - x_min + 1)
+    # True = background, False = model-line seeds
+    sub_mask = np.ones(sub_shape, dtype=bool)
+
+    # 將模型點轉為子立方體內的相對座標，標記為 False
+    for vv, zz, xx in zip(v_pix, z_pix, x_pix):
+        if (v_min <= vv <= v_max and
+            z_min <= zz <= z_max and
+            x_min <= xx <= x_max):
+            sub_mask[vv - v_min, zz - z_min, xx - x_min] = False
+
+    # 若整個子區域裡沒有任何 False（即沒有模型點），直接回傳全 -1
+    if np.all(sub_mask):
+        return shell_cube
+
+    # 7. 使用 EDT 計算到最近模型點的距離
+    #    sampling[0] 對應頻道軸，帶入 sqrt(v_weight) 以實現
+    #    d = sqrt(dx^2 + dz^2 + v_weight * dv^2)
+    if v_weight > 0.0:
+        v_scale = np.sqrt(v_weight)
+    else:
+        # v_weight = 0 時，速度軸不應影響距離，給一個很小的尺度避免數值問題
+        v_scale = 1e-3
+
+    sub_dist = distance_transform_edt(
+        sub_mask,
+        sampling=(v_scale, 1.0, 1.0)
+    ).astype(np.float32)
+
+    # 8. 將距離 d 轉成殼層編號 k，超過 max_dist_value 的改回 -1
+    sub_shell = np.full_like(sub_dist, -1.0, dtype=np.float32)
+    valid = sub_dist >= 0.0
+    if np.any(valid):
+        d_valid = sub_dist[valid]
+        k = np.ceil(d_valid).astype(np.int32)
+        # 把 0 距離也視為第一層殼
+        k[k < 1] = 1
+        # 上限不超過 max_dist_value
+        k[k > int(max_dist_value)] = int(max_dist_value)
+        sub_shell[valid] = k.astype(np.float32)
+
+    # 9. 寫回到完整殼層立方體
+    shell_cube[v_min:v_max + 1,
+               z_min:z_max + 1,
+               x_min:x_max + 1] = sub_shell
+
+    return shell_cube
+    
+@njit(parallel=True)
+def fill_distance_cube_core(distance_cube,
+                            model_x, model_z, model_v,
+                            v_weight, max_dist_value,
+                            v_min, v_max, z_min, z_max, x_min, x_max):
+
+    在給定的邊界內，對每一個 voxel 計算最近模型點的距離，
+    結果寫到 distance_cube 裡。
+    for vv in prange(v_min, v_max + 1):
+        for zz in range(z_min, z_max + 1):
+            for xx in range(x_min, x_max + 1):
+                d2 = weighted_distance_numba(
+                    float(xx), float(zz), float(vv),
+                    model_x, model_z, model_v,
+                    v_weight,
+                )
+                d = np.sqrt(d2)
+                if d <= max_dist_value:
+                    distance_cube[vv, zz, xx] = d
+                # 否則保持原本的 -1
+
+def grow_distance_cube_bounded(
+    cube_shape,
+    Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+    pa_rad, dx_au, header, Local_Standard_Velocity,
+    v_weight, max_dist_value,
+    M_star, radius_in_au, radius_out_au,
+    scale, log_power,
+    bound=None,
+):
+    
+    使用與 nearest_weighted_distance 相同的加權距離：
+        d^2 = dx^2 + dz^2 + v_weight * dv^2
+
+    在 (v, z, x) 的子區域內，對每一個 voxel 找出距離模型線最近的點，
+    把「根號後的距離」存成 distance_cube：
+        distance_cube[v,z,x] = d_min  (若 d_min <= max_dist_value，否則設為 -1)
+
+    參數中的座標一律以 pixel / channel 為單位。
+    
+
+    nv, nz, nx = cube_shape
+    distance_cube = np.full(cube_shape, -1.0, dtype=np.float32)
+
+    # ---------- 1. 產生模型流線 (物理單位：AU, km/s) ----------
+    x_m, y_m, z_m, u_m, v_m, w_m = PSS_model(
+        Theta_zero, Phi_zero, Inclination, T_Myr, omega,
+        M_star,
+        radius_in_au, radius_out_au,
+        resolution=100,
+        scale=scale,
+        log_power=log_power,
+    )
+
+    # ---------- 2. 轉成 cube 的 pixel / channel 座標 ----------
+    im_center_y = float(header["CRPIX2"]) - 1.0  # 0-based
+    im_center_x = float(header["CRPIX1"]) - 1.0
+
+    # 旋轉到 image frame
+    x_rot = x_m * np.cos(pa_rad) - z_m * np.sin(pa_rad)
+    z_rot = x_m * np.sin(pa_rad) + z_m * np.cos(pa_rad)
+
+    # 轉成像素座標 (x_pix, z_pix)
+    x_pix = x_rot / dx_au + im_center_x   # 先保留為 float
+    z_pix = z_rot / dx_au + im_center_y
+
+    # 頻道座標 v_pix
+    v_LSR = v_m + Local_Standard_Velocity
+    v_pix = velocity_to_channel_index(v_LSR, header, nz=nv)   # float
+
+    # ---------- 3. 只留下落在 cube 內的 model 點 ----------
+    valid_mask = (
+        (x_pix >= 0) & (x_pix < nx) &
+        (z_pix >= 0) & (z_pix < nz) &
+        (v_pix >= 0) & (v_pix < nv)
+    )
+    x_pix = x_pix[valid_mask]
+    z_pix = z_pix[valid_mask]
+    v_pix = v_pix[valid_mask]
+
+    if x_pix.size == 0:
+        # 沒有任何模型點落在 cube 內，直接回傳全 -1
+        return distance_cube
+
+    # ---------- 4. 決定實際要掃描的 (v,z,x) 邊界 ----------
+    if bound is not None:
+        v_bound, z_bound, x_bound = bound
+        v_min, v_max = int(v_bound[0]), int(v_bound[1])
+        z_min, z_max = int(z_bound[0]), int(z_bound[1])
+        x_min, x_max = int(x_bound[0]), int(x_bound[1])
+    else:
+        v_min, z_min, x_min = 0, 0, 0
+        v_max, z_max, x_max = nv - 1, nz - 1, nx - 1
+
+    # 再跟 model 本身的位置 ± max_dist_value 取交集，避免掃太大
+    pad = 50
+    pad_v = pad / np.sqrt(v_weight)    
+    v_min_model = int(np.floor(v_pix.min())) - pad_v
+    v_max_model = int(np.ceil(v_pix.max())) + pad_v
+    z_min_model = int(np.floor(z_pix.min())) - pad
+    z_max_model = int(np.ceil(z_pix.max())) + pad
+    x_min_model = int(np.floor(x_pix.min())) - pad
+    x_max_model = int(np.ceil(x_pix.max())) + pad
+
+    v_min = max(0,          max(v_min, v_min_model))
+    z_min = max(0,          max(z_min, z_min_model))
+    x_min = max(0,          max(x_min, x_min_model))
+    v_max = min(nv - 1,     min(v_max, v_max_model))
+    z_max = min(nz - 1,     min(z_max, z_max_model))
+    x_max = min(nx - 1,     min(x_max, x_max_model))
+
+    if (v_min > v_max) or (z_min > z_max) or (x_min > x_max):
+        # 邊界完全沒有相交，回傳全 -1
+        return distance_cube
+
+    fill_distance_cube_core(
+        distance_cube,
+        x_pix, z_pix, v_pix,
+        float(v_weight), float(max_dist_value),
+        int(v_min), int(v_max),
+        int(z_min), int(z_max),
+        int(x_min), int(x_max),
+    )
+    return distance_cube
+def log_likelihood_distance(params, data_cube, search_bound,
+                            pa_rad, dx_au, header, Local_Standard_Velocity,
+                            v_weight_for_cube, max_dist_value,
+                            M_star, radius_in_au, radius_out_au,
+                            scale, log_power):
+    計算對數似然值，使用 distance_cube * data_cube 的誤差模型。
+    
+    這裡不再手動計算 model 的像素座標，而是把 5 個參數與
+    WCS / 幾何資訊全部丟給 grow_distance_cube_bounded，
+    由它負責：
+      PSS_model → 物理座標 → (x_pix, z_pix, v_pix) → distance cube。
+    if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
+        return -np.inf
+    # 從 data_cube 獲取形狀
+    cube_shape = data_cube.shape
+    
+    Theta_best, Phi_best, Inclination_best, T_best, Omega_best = params
+    # 直接呼叫 grow_distance_cube_bounded 建立距離立方體
+    distance_cube = grow_distance_cube_bounded(
+        cube_shape,
+        Theta_best, Phi_best, Inclination_best, T_best, Omega_best,
+        pa_rad, dx_au, header, Local_Standard_Velocity,
+        v_weight_for_cube, max_dist_value,
+        M_star, radius_in_au, radius_out_au,
+        scale, log_power,
+        bound=search_bound,
+    )
+    
+    valid_mask = distance_cube >= 0
+    numerator = np.nansum(distance_cube[valid_mask] * data_cube[valid_mask])
+    denominator = np.nansum(data_cube[valid_mask])
+    normalized_error = np.sqrt(numerator / denominator)
+    if not np.isfinite(normalized_error):
+        return -np.inf
+    if normalized_error <= 0:
+        return -np.inf
+    return -np.log10(normalized_error)
+
+def log_prior_distance(params, prior_ranges):
+    計算對數先驗值。
+    Theta0, Phi0, Incl, T, Omega = params
+    
+    # 檢查參數是否在先驗範圍內
+    if not (
+        prior_ranges["Theta zero"][0] < Theta0 < prior_ranges["Theta zero"][1]
+        and in_phi_range(Phi0, *prior_ranges["Phi zero"])
+        and prior_ranges["Inclination"][0] < Incl < prior_ranges["Inclination"][1]
+        and prior_ranges["Time"][0] < T < prior_ranges["Time"][1]
+        and prior_ranges["Omega"][0] < Omega < prior_ranges["Omega"][1]
+    ):
+        return -np.inf # 如果超出範圍，對數先驗為負無窮
+    
+    return 0.0 # 均勻先驗，對數值為 0
+
+def log_posterior_distance(params, data_cube, search_bound, parameter_prior_ranges,
+                           pa_rad, dx_au, header, Local_Standard_Velocity,
+                           v_weight_for_cube, max_dist_value,
+                           M_star, radius_in_au, radius_out_au,
+                           scale, log_power):
+    計算對數後驗值。
+    (註：依賴 log_prior_distance 和 log_likelihood_distance)
+    lp = log_prior_distance(params, parameter_prior_ranges)
+    if not np.isfinite(lp):
+        return -np.inf
+
+    ll = log_likelihood_distance(
+        params,
+        data_cube,
+        search_bound,
+        pa_rad, dx_au, header, Local_Standard_Velocity,
+        v_weight_for_cube, max_dist_value,
+        M_star, radius_in_au, radius_out_au,
+        scale, log_power,
+    )
+    if not np.isfinite(ll):
+        return -np.inf
+    post = lp + ll
+    if not np.isfinite(post):
+        return -np.inf
+
+    return post
+"""
