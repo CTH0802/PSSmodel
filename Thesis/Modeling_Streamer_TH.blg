@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99d (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: Modeling_Streamer_TH.aux
+The style file: aasjournal.bst
+Database file #1: reference.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+You've used 13 entries,
+            3168 wiz_defined-function locations,
+            768 strings with 13892 characters,
+and the built_in function-call counts, 9827 in all, are:
+= -- 517
+> -- 1322
+< -- 0
++ -- 441
+- -- 467
+* -- 1145
+:= -- 2000
+add.period$ -- 13
+call.type$ -- 13
+change.case$ -- 79
+chr.to.int$ -- 13
+cite$ -- 13
+duplicate$ -- 221
+empty$ -- 348
+format.name$ -- 475
+if$ -- 1789
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 13
+newline$ -- 47
+num.names$ -- 52
+pop$ -- 80
+preamble$ -- 1
+purify$ -- 79
+quote$ -- 0
+skip$ -- 178
+stack$ -- 0
+substring$ -- 209
+swap$ -- 0
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 117
+warning$ -- 0
+while$ -- 44
+width$ -- 0
+write$ -- 150

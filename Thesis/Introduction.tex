@@ -1,24 +1,162 @@
 \section{The formation of cores}
-In a molecular cloud, a local density enhancement can trigger gravitational collapse, forming a prestellar core. As the collapse proceeds, the prestellar core becomes a protostellar core.
-During the early class 0 or class I stage, these systems are still deeply embedded within their envelope. Within this turbulent environment, small fluctuations can lead to gravitational instability, giving rise to an asymmetric, filamentary structure known as the streamer.
-Streamer is the density enhancement structures within the protostellar envelope. The key characteristics are that do not necessarily follow the Keplerian rotation. They have been considered as a channel to carry mass onto the disk.
+Stars form within cold, dense regions of molecular clouds, where local density enhancements can initiate gravitational collapse. Once a sufficiently overdense region begins to contract, it forms a dense core, a gravitationally bound structure that represents the earliest stage of star formation. Before any central heating source develops, the collapsing dense core is referred to as a prestellar core, characterized by low temperatures ($\sim$10 K) and the absence of an internal heat source.
 
+As the collapse proceeds and densities rise, the gas eventually becomes optically thick to its own radiation. At this point, radiative cooling becomes inefficient, and the collapse slows as the pressure begins to increase adiabatically. This transition leads to the formation of the first hydrostatic core (FHSC), which is a short-lived structure supported primarily by adiabatic pressure. The FHSC phase lasts only a few thousand years and marks a key evolutionary stage between the prestellar core and the protostellar core.
+
+When the temperature in the center increases to ≳2000 K, molecular hydrogen begins to dissociate, a process that absorbs energy and reduces thermal pressure support. This triggers a second, rapid collapse and gives rise to the protostar, the central object that continues to grow by accreting material from its surrounding envelope. Although accretion from the envelope begins during the prestellar and FHSC stages, the protostar phase formally begins once the second collapse produces a gravitationally bound central object.
+
+The envelope surrounding the forming protostar is a cold, dusty reservoir of infalling material. It typically extends over thousands to tens of thousands of AU, and in the earliest stages the envelope retains a large fraction of the system's mass.
+
+During the early Class 0 and Class I stages, the protostar remains enshrouded within this parental envelope. In this turbulent and gravitationally unstable environment, small perturbations within the envelope can grow nonlinearly, giving rise to asymmetric, filamentary overdensities known as streamers. These streamers represent dense structures within the infalling envelope and, unlike the rotationally supported disk, do not necessarily follow Keplerian motion. They are increasingly recognized as an important channel for transporting material from the envelope onto the disk, thereby influencing disk growth, stability, and angular-momentum redistribution.
+
+Over time, as accretion weakens and the envelope dissipates, the protostar evolves into a pre-main-sequence star, eventually contracting toward the main sequence where sustained hydrogen fusion begins.
 \section{The streamer in observations}
 Recently, several observations revealed asymmetric structures in the protostellar system (e.g., \citealt{Pineda_2020}, \citealt{Valdivia-Mena_2022}, \citealt{Hsieh_2023}). The features of streamers are very diverse in morphology, do not always form in a disk plane, and have very weak density enhancement in observation. 
 
-\section{Observations}
-To test our model against sources where streamers have been detected, we use five observational datasets: Per-emb-2, Per-emb-50, S CrA, HL Tau, and SVS 13A. The Per-emb-2, Per-emb-50, and SVS 13A were observed by the Northern Extended Millimeter Array (NOEMA). Per-emb-2 was observed in D-configuration on June 22, July 27-28, and August 19, 2018, and in C-configuration on October 9, 10, 17, and 18 (project S18AG, \citealt{Pineda_2020}). The baseline values ranged from 16.4 to 287.8 meters. Per-emb-50 was observed in C-configuration on December 29, 2019, and January 5, 2021, and D-configuration on August 6, September 7, and 8, 2020 (\citealt{Valdivia-Mena_2022}). SVS13A was also observed using two different configurations: C-configuration on December 29, 2019, and January 5, 2020, and in D-configuration on August 6 and September 7, 2020. The baseline range is between 15.6 and 368 meters, corresponding to a synthesized beam size of $1.^"2 \times 0.^"7$ (\citealt{Hsieh_2023}). The S CrA , HL Tau were observed by Atacama Large Millimeter/submillimeter Array (ALMA). The S CrA observation data from ALMA Science Archrive was observed on November 6, 2019 (Project 2019.1.01792.S, \citealt{Gupta_2023}). HL Tau was observed by ALMA's C40-7 array configuration on August 22, 28, and September 1, 2017. The maximum projected baseline length is ~3.3 km (\citealt{Yen_2019}). For each source, we extract the position-position-velocity (PPV) data of the streamer.
+\section{Current Limitations and Our Approach}
 
+\section{Overview of Targets Used in This Study}
+To test our model against protostellar systems in which streamer-like structures have been reported, we use five observational datasets shown in Figure~\ref{fig:per2} $\sim$ \ref{fig:SVS13A}: Per-emb-2, Per-emb-50, S~CrA, HL~Tau, and SVS~13A. Per-emb-2 and Per-emb-50 were observed with the Northern Extended Millimeter Array (NOEMA), whereas S~CrA, HL~Tau, and SVS~13A were observed with the Atacama Large Millimeter/submillimeter Array (ALMA). For Per-emb-50, S~CrA, HL~Tau, and SVS~13A, we extract the position-position-velocity (PPV) information of the streamer directly from the calibrated data cubes, while for Per-emb-2 we work with the moment maps. A summary of the observational properties of all datasets is provided in Table~\ref{table:obs_summary}.
+
+Per-emb-2 was observed in D-configuration on June 22, July 27--28, and August 19, 2018, and in C-configuration on October 9, 10, 17, and 18, 2018 (project S18AG; \citep{Pineda_2020}). The baselines ranged from 16.4 to 287.8~m.
+
+Per-emb-50 was observed in C-configuration on December 29, 2019, and January 5, 2021, and in D-configuration on August 6, September 7, and 8, 2020 \citep{Valdivia-Mena_2022}. The synthesized beam of the cube used in this work is $1\farcs24\times0\farcs72$.
+
+SVS~13A was observed with ALMA in Band~6, producing the DCN ($J=3$--2) data cube used in this study. The cube data has a synthesized beam of $0\farcs15\times0\farcs11$.
+
+The S~CrA dataset was obtained from the ALMA Science Archive and was observed on November 6, 2019 (project 2019.1.01792.S; \citep{Gupta_2023}). The data cube has a spatial sampling of $0\farcs05$ per pixel.
+
+HL~Tau was observed with ALMA in the C40-7 configuration on August 22, 28, and September 1, 2017, with a maximum projected baseline of $\sim$3.3~km \citep{Yen_2019}. The restoring beam of the HCO$^+$ data cube used in this work is $0\farcs10\times0\farcs09$.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \caption{Moment 0 map}
+        \label{fig:per2_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per2_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of Per-emb-2.}
+    \label{fig:per2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&mom1/Per-emb-50_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:per50_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/mom0&mom1/Per-emb-50_mom1_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:per50_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of Per-emb-50.}
+    \label{fig:per50}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&mom1/SCrA_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:SCrA_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/mom0&mom1/SCrA_mom1_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:SCrA_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of S~CrA.}
+    \label{fig:SCrA}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&mom1/HLTau_mom0_cacheonly.png}
+        \caption{Moment 0 map}
+        \label{fig:HLTau_mom0}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png}
+        \caption{$r$--$\theta$ distribution}
+        \label{fig:HLTau_mom1}
+    \end{subfigure}
+
+    \caption{Moment map of HL~Tau.}
+    \label{fig:HLTau}
+\end{figure}
+
+% \begin{figure}[htbp]
+%     \centering
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/SVS13A/mom0&mom1/SVS13A_mom0_cacheonly.png}
+%         \caption{Moment 0 map}
+%         \label{fig:SVS13A_mom0}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{Results_image/SVS13A/mom0&mom1/SVS13A_mom1_cacheonly.png}
+%         \caption{$r$--$\theta$ distribution}
+%         \label{fig:SVS13A_mom1}
+%     \end{subfigure}
+
+%     \caption{Moment map of SVS13A.}
+%     \label{fig:SVS13A}
+% \end{figure}
 \subsection{Per-emb-2}
+Per-emb-2 (IRAS 03292+3039) is a protostellar object in the Perseus molecular cloud at a distance of 300 pc \citep{Zucker_2018}. The source contains a close binary with a separation below 20 au and show a clear outflow in CO (2-1) \citep{Stephens_2019}. NOEMA imaging has revealed a streamer structure connecting scales of more than 10,000 au to within a few hundred au of the protostar \citep{Pineda_2020}.
 
 \subsection{Per-emb-50}
+Per-emb-50 is a Class~I protostar in the NGC~1333 region at a distance of $\sim$293~pc \citep{Ortiz_2018}. It is relatively luminous among sources of similar evolutionary stage and hosts a compact disk with a characteristic radius of $\sim$30~au \citep{Segura_2016}. Molecular outflow activity is observed roughly east--west \citep{Stephens_2019}. The velocity structure along the streamer shows a gradual increase in blueshift toward smaller radii.
+
+\subsection{S~CrA}
+S~CrA is a binary system (two Class~II saperated $\sim$200~au \citep{Gupta_2023}) within the Corona Australis molecular cloud at a distance of 160~pc \citep{GaiaCollaboration_2023}. ALMA observations reveal complex circumbinary gas structures, including filamentary features extending from the envelope toward the central region \citep{Gupta_2023}. The $^{13}CO$ (2-1) data cube provide sufficient spatial and spectral resolution to trace these asymmetric accretion flows, making S~CrA an important case for testing dynamical streamer models.
+
+\subsection{HL~Tau}
+HL~Tau is a Class~I protostellar system located in the Taurus star-forming region at a distance of 147~pc \citep{Galli_2018}. High-resolution ALMA observations have revealed a compact protoplanetary disk exhibiting multiple concentric gaps and rings \citep{Yen_2019}. The HCO$^{+}$\,(3--2) cube used in this work resolves the morphology and velocity pattern of the streamer structure connecting envelope material to the disk.
 
 \subsection{SVS 13A}
 
-\subsection{S CrA}
 
-\subsection{HL Tau}
-
+\begin{table}[h]
+\centering
+\caption{Summary of the observational datasets used in this work.}
+\label{table:obs_summary}
+\begin{tabular}{lccccc}
+\hline\hline
+Target & Telescope & RA (J2000) & DEC (J2000) & Line & Beam (\arcsec) \\
+\hline
+Per-emb-2  & NOEMA & 03:32:17.932 & +30:49:47.705 & HC$_3$N (10--9) & 3\farcs73\times3\farcs02 \\
+Per-emb-50 & NOEMA & 03:29:07.768 & +31:21:57.128 & C$^{18}$O (2--1) & 1\farcs24\times0\farcs72 \\
+SVS~13A    & ALMA  & 03:29:03.740 & +31:16:03.800 & DCN (3--2) & 0\farcs15\times0\farcs11 \\
+S~CrA      & ALMA  & 19:01:08.600 & --36:57:20.000 & $^{13}$CO (2--1) & --\\
+HL~Tau     & ALMA  & 04:31:38.428 & +18:13:57.190 & HCO$^{+}$ (3--2) & 0\farcs10\times0\farcs09 \\
+\hline
+\end{tabular}
+\end{table}
 \section{Our work overview}
 The formation process of protoplanetary disks is still unrefined. Given their importance, we have developed a new model to characterize the streamer features and kinematics, focusing on gravitationally driven infalling and rotation.
-

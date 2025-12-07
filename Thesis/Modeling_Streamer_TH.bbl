@@ -1,0 +1,47 @@
+\begin{thebibliography}{}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\href{#1}{#1}}
+\providecommand{\dodoi}[1]{doi:~\href{http://doi.org/#1}{\nolinkurl{#1}}}
+\providecommand{\doeprint}[1]{\href{http://ascl.net/#1}{\nolinkurl{http://ascl.net/#1}}}
+\providecommand{\doarXiv}[1]{\href{https://arxiv.org/abs/#1}{\nolinkurl{https://arxiv.org/abs/#1}}}
+
+\bibitem[{{Foreman-Mackey} {et~al.}(2013){Foreman-Mackey}, {Hogg}, {Lang}, \& {Goodman}}]{Daniel_2013}
+{Foreman-Mackey}, D., {Hogg}, D.~W., {Lang}, D., \& {Goodman}, J. 2013, \pasp, 125, 306, \dodoi{10.1086/670067}
+
+\bibitem[{{Gahm} {et~al.}(2018){Gahm}, {Petrov}, {Tambovsteva}, {Grinin}, {Stempels}, \& {Walter}}]{Gahm_2018}
+{Gahm}, G.~F., {Petrov}, P.~P., {Tambovsteva}, L.~V., {et~al.} 2018, \aap, 614, A117, \dodoi{10.1051/0004-6361/201832891}
+
+\bibitem[{{Gaia Collaboration} {et~al.}(2023){Gaia Collaboration}, {Vallenari}, {Brown}, {Prusti}, {de Bruijne}, {Arenou}, {Babusiaux}, {Biermann}, {Creevey}, {Ducourant}, {Evans}, {Eyer}, {Guerra}, {Hutton}, {Jordi}, {Klioner}, {Lammers}, {Lindegren}, {Luri}, {Mignard}, {Panem}, {Pourbaix}, {Randich}, {Sartoretti}, {Soubiran}, {Tanga}, {Walton}, {Bailer-Jones}, {Bastian}, {Drimmel}, {Jansen}, {Katz}, {Lattanzi}, {van Leeuwen}, {Bakker}, {Cacciari}, {Casta{\~n}eda}, {De Angeli}, {Fabricius}, {Fouesneau}, {Fr{\'e}mat}, {Galluccio}, {Guerrier}, {Heiter}, {Masana}, {Messineo}, {Mowlavi}, {Nicolas}, {Nienartowicz}, {Pailler}, {Panuzzo}, {Riclet}, {Roux}, {Seabroke}, {Sordo}, {Th{\'e}venin}, {Gracia-Abril}, {Portell}, {Teyssier}, {Altmann}, {Andrae}, {Audard}, {Bellas-Velidis}, {Benson}, {Berthier}, {Blomme}, {Burgess}, {Busonero}, {Busso}, {C{\'a}novas}, {Carry}, {Cellino}, {Cheek}, {Clementini}, {Damerdji}, {Davidson}, {de Teodoro}, {Nu{\~n}ez Campos}, {Delchambre}, {Dell'Oro}, {Esquej}, {Fern{\'a}ndez-Hern{\'a}ndez}, {Fraile}, {Garabato}, {Garc{\'\i}a-Lario}, {Gosset}, {Haigron}, {Halbwachs}, {Hambly}, {Harrison}, {Hern{\'a}ndez}, {Hestroffer}, {Hodgkin}, {Holl}, {Jan{\ss}en}, {Jevardat de Fombelle}, {Jordan}, {Krone-Martins}, {Lanzafame}, {L{\"o}ffler}, {Marchal}, {Marrese}, {Moitinho}, {Muinonen}, {Osborne}, {Pancino}, {Pauwels}, {Recio-Blanco}, {Reyl{\'e}}, {Riello}, {Rimoldini}, {Roegiers}, {Rybizki}, {Sarro}, {Siopis}, {Smith}, {Sozzetti}, {Utrilla}, {van Leeuwen}, {Abbas}, {{\'A}brah{\'a}m}, {Abreu Aramburu}, {Aerts}, {Aguado}, {Ajaj}, {Aldea-Montero}, {Altavilla}, {{\'A}lvarez}, {Alves}, {Anders}, {Anderson}, {Anglada Varela}, {Antoja}, {Baines}, {Baker}, {Balaguer-N{\'u}{\~n}ez}, {Balbinot}, {Balog}, {Barache}, {Barbato}, {Barros}, {Barstow}, {Bartolom{\'e}}, {Bassilana}, {Bauchet}, {Becciani}, {Bellazzini}, {Berihuete}, {Bernet}, {Bertone}, {Bianchi}, {Binnenfeld}, {Blanco-Cuaresma}, {Blazere}, {Boch}, {Bombrun}, {Bossini}, {Bouquillon}, {Bragaglia}, {Bramante}, {Breedt}, {Bressan}, {Brouillet}, {Brugaletta}, {Bucciarelli}, {Burlacu}, {Butkevich}, {Buzzi}, {Caffau}, {Cancelliere}, {Cantat-Gaudin}, {Carballo}, {Carlucci}, {Carnerero}, {Carrasco}, {Casamiquela}, {Castellani}, {Castro-Ginard}, {Chaoul}, {Charlot}, {Chemin}, {Chiaramida}, {Chiavassa}, {Chornay}, {Comoretto}, {Contursi}, {Cooper}, {Cornez}, {Cowell}, {Crifo}, {Cropper}, {Crosta}, {Crowley}, {Dafonte}, {Dapergolas}, {David}, {David}, {de Laverny}, {De Luise}, \& {De March}}]{GaiaCollaboration_2023}
+{Gaia Collaboration}, {Vallenari}, A., {Brown}, A.~G.~A., {et~al.} 2023, \aap, 674, A1, \dodoi{10.1051/0004-6361/202243940}
+
+\bibitem[{{Galli} {et~al.}(2018){Galli}, {Loinard}, {Ortiz-L{\'e}on}, {Kounkel}, {Dzib}, {Mioduszewski}, {Rodr{\'\i}guez}, {Hartmann}, {Teixeira}, {Torres}, {Rivera}, {Boden}, {Evans}, {Brice{\~n}o}, {Tobin}, \& {Heyer}}]{Galli_2018}
+{Galli}, P. A.~B., {Loinard}, L., {Ortiz-L{\'e}on}, G.~N., {et~al.} 2018, \apj, 859, 33, \dodoi{10.3847/1538-4357/aabf91}
+
+\bibitem[{{Gupta} {et~al.}(2023){Gupta}, {Miotello}, {Manara}, {Williams}, {Facchini}, {Beccari}, {Birnstiel}, {Ginski}, {Hacar}, {K{\"u}ffmeier}, {Testi}, {Tychoniec}, \& {Yen}}]{Gupta_2023}
+{Gupta}, A., {Miotello}, A., {Manara}, C.~F., {et~al.} 2023, \aap, 670, L8, \dodoi{10.1051/0004-6361/202245254}
+
+\bibitem[{{Hsieh} {et~al.}(2023){Hsieh}, {Segura-Cox}, {Pineda}, {Caselli}, {Bouscasse}, {Neri}, {Lopez-Sepulcre}, {Valdivia-Mena}, {Maureira}, {Henning}, {Smirnov-Pinchukov}, {Semenov}, {M{\"o}ller}, {Cunningham}, {Fuente}, {Marino}, {Dutrey}, {Tafalla}, {Chapillon}, {Ceccarelli}, \& {Zhao}}]{Hsieh_2023}
+{Hsieh}, T.~H., {Segura-Cox}, D.~M., {Pineda}, J.~E., {et~al.} 2023, \aap, 669, A137, \dodoi{10.1051/0004-6361/202244183}
+
+\bibitem[{{Ortiz-Le{\'o}n} {et~al.}(2018){Ortiz-Le{\'o}n}, {Loinard}, {Dzib}, {Galli}, {Kounkel}, {Mioduszewski}, {Rodr{\'\i}guez}, {Torres}, {Hartmann}, {Boden}, {Evans}, {Brice{\~n}o}, \& {Tobin}}]{Ortiz_2018}
+{Ortiz-Le{\'o}n}, G.~N., {Loinard}, L., {Dzib}, S.~A., {et~al.} 2018, \apj, 865, 73, \dodoi{10.3847/1538-4357/aada49}
+
+\bibitem[{{Pineda} {et~al.}(2020){Pineda}, {Segura-Cox}, {Caselli}, {Cunningham}, {Zhao}, {Schmiedeke}, {Maureira}, \& {Neri}}]{Pineda_2020}
+{Pineda}, J.~E., {Segura-Cox}, D., {Caselli}, P., {et~al.} 2020, Nature Astronomy, 4, 1158, \dodoi{10.1038/s41550-020-1150-z}
+
+\bibitem[{{Segura-Cox} {et~al.}(2016){Segura-Cox}, {Harris}, {Tobin}, {Looney}, {Li}, {Chandler}, {Kratter}, {Dunham}, {Sadavoy}, {Perez}, \& {Melis}}]{Segura_2016}
+{Segura-Cox}, D.~M., {Harris}, R.~J., {Tobin}, J.~J., {et~al.} 2016, \apjl, 817, L14, \dodoi{10.3847/2041-8205/817/2/L14}
+
+\bibitem[{{Stephens} {et~al.}(2019){Stephens}, {Bourke}, {Dunham}, {Myers}, {Pokhrel}, {Tobin}, {Arce}, {Sadavoy}, {Vorobyov}, {Pineda}, {Offner}, {Lee}, {Kristensen}, {J{\o}rgensen}, {Gurwell}, \& {Goodman}}]{Stephens_2019}
+{Stephens}, I.~W., {Bourke}, T.~L., {Dunham}, M.~M., {et~al.} 2019, \apjs, 245, 21, \dodoi{10.3847/1538-4365/ab5181}
+
+\bibitem[{{Valdivia-Mena} {et~al.}(2022){Valdivia-Mena}, {Pineda}, {Segura-Cox}, {Caselli}, {Neri}, {L{\'o}pez-Sepulcre}, {Cunningham}, {Bouscasse}, {Semenov}, {Henning}, {Pi{\'e}tu}, {Chapillon}, {Dutrey}, {Fuente}, {Guilloteau}, {Hsieh}, {Jim{\'e}nez-Serra}, {Marino}, {Maureira}, {Smirnov-Pinchukov}, {Tafalla}, \& {Zhao}}]{Valdivia-Mena_2022}
+{Valdivia-Mena}, M.~T., {Pineda}, J.~E., {Segura-Cox}, D.~M., {et~al.} 2022, \aap, 667, A12, \dodoi{10.1051/0004-6361/202243310}
+
+\bibitem[{{Yen} {et~al.}(2019){Yen}, {Gu}, {Hirano}, {Koch}, {Lee}, {Liu}, \& {Takakuwa}}]{Yen_2019}
+{Yen}, H.-W., {Gu}, P.-G., {Hirano}, N., {et~al.} 2019, \apj, 880, 69, \dodoi{10.3847/1538-4357/ab29f8}
+
+\bibitem[{{Zucker} {et~al.}(2018){Zucker}, {Schlafly}, {Speagle}, {Green}, {Portillo}, {Finkbeiner}, \& {Goodman}}]{Zucker_2018}
+{Zucker}, C., {Schlafly}, E.~F., {Speagle}, J.~S., {et~al.} 2018, \apj, 869, 83, \dodoi{10.3847/1538-4357/aae97c}
+
+\end{thebibliography}
