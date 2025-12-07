@@ -352,10 +352,6 @@ INPUT ./Introduction.tex
 INPUT ././Introduction.tex
 INPUT ./Introduction.tex
 INPUT ././Introduction.tex
-INPUT ./Methods.tex
-INPUT ././Methods.tex
-INPUT ./Methods.tex
-INPUT ././Methods.tex
 INPUT ./Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom0_overlay_50.png
 INPUT ./Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom0_overlay_50.png
 INPUT ./Results_image/Per_emb_2/mom0&mom1/Per-emb-2_model_vs_mom0_overlay_50.png
@@ -384,6 +380,10 @@ INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom0_cacheonly.png
 INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png
 INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png
 INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png
+INPUT ./Methods.tex
+INPUT ././Methods.tex
+INPUT ./Methods.tex
+INPUT ././Methods.tex
 INPUT ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png
 INPUT ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png
 INPUT ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png
