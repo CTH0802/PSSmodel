@@ -99,11 +99,7 @@ def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega,
               scale='log', log_power=1.5):
     """
     產生 3D 的流線模型 (PSS model)。
-    (註：依賴 Omega_ref)
-    """
-
-    # ... (函數內部程式碼保持不變) ...
-    
+    """    
     theta_value = Theta_zero
     
     #######Unit conversion#######

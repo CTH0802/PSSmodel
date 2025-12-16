@@ -1,23 +1,23 @@
 # Fdb version 4
-["bibtex Modeling_Streamer_TH"] 1765151380.33978 "Modeling_Streamer_TH.aux" "Modeling_Streamer_TH.bbl" "Modeling_Streamer_TH" 1765151380.33962 0
+["bibtex Modeling_Streamer_TH"] 1765430818.9044 "Modeling_Streamer_TH.aux" "Modeling_Streamer_TH.bbl" "Modeling_Streamer_TH" 1765430831.44599 0
   "./reference.bib" 1764984265.29736 22514 d5e5448e673095dbd5a200430f7565d9 ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/aastex/aasjournal.bst" 1565209774 36130 1e2d4614828005814bd64e3c665b8e99 ""
-  "Modeling_Streamer_TH.aux" 1765151380.1292 25019 5e0eb3c951f9567087eac497c505c5ce "xelatex"
+  "Modeling_Streamer_TH.aux" 1765430819.81501 25019 9be3758ebdda6e551fc1ecc3c14805ed "xelatex"
   (generated)
   "Modeling_Streamer_TH.bbl"
   "Modeling_Streamer_TH.blg"
   (rewritten before read)
-["xdvipdfmx"] 1765151380.425 "Modeling_Streamer_TH.xdv" "Modeling_Streamer_TH.pdf" "Modeling_Streamer_TH" 1765151380.42446 0
-  "Modeling_Streamer_TH.xdv" 1765151380.13084 329476 8f2622c632fab6f105fd4fc52a9d0078 "xelatex"
+["xdvipdfmx"] 1765430820.03574 "Modeling_Streamer_TH.xdv" "Modeling_Streamer_TH.pdf" "Modeling_Streamer_TH" 1765430831.44791 0
+  "Modeling_Streamer_TH.xdv" 1765430819.81686 334320 314dd1882bbac259f77cab2a7dbb961a "xelatex"
   (generated)
   "Modeling_Streamer_TH.pdf"
   (rewritten before read)
-["xelatex"] 1765151379.32227 "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Modeling_Streamer_TH.tex" "Modeling_Streamer_TH.xdv" "Modeling_Streamer_TH" 1765151380.4222 2
+["xelatex"] 1765430818.99329 "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Modeling_Streamer_TH.tex" "Modeling_Streamer_TH.xdv" "Modeling_Streamer_TH" 1765430831.44606 2
   "./Abstract.tex" 1764136318.36152 946 802587323453305475c667491ca5a3f7 ""
   "./Appendix.tex" 1765150955.77845 6162 b715c1959530e0f1f40b3b84ca80ef10 ""
   "./Conclusion.tex" 1760481101.44104 0 d41d8cd98f00b204e9800998ecf8427e ""
   "./Introduction.tex" 1765151362.57094 11127 049ff9a25d3dc873a0050008774fa709 ""
-  "./Methods.tex" 1765151373.65299 20843 72fd01c933ac891082652e1c10439071 ""
+  "./Methods.tex" 1765430794.09947 21494 10da17a27efdaeae1e006ad3ad34ec59 ""
   "./Results.tex" 1765149559.65901 10979 204c381a1eb9f29c6e1b41ea6dabf949 ""
   "/Users/thchuang/Documents/GitHub/PSSmodel/Thesis/Modeling_Streamer_TH.tex" 1765149452.42521 4179 d93fe81c8102c1c42991b54b87cc4729 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -204,14 +204,14 @@
   "Appendix.tex" 1765150955.77845 6162 b715c1959530e0f1f40b3b84ca80ef10 ""
   "Conclusion.tex" 1760481101.44104 0 d41d8cd98f00b204e9800998ecf8427e ""
   "Introduction.tex" 1765151362.57094 11127 049ff9a25d3dc873a0050008774fa709 ""
-  "Methods.tex" 1765151373.65299 20843 72fd01c933ac891082652e1c10439071 ""
-  "Modeling_Streamer_TH.aux" 1765151380.1292 25019 5e0eb3c951f9567087eac497c505c5ce "xelatex"
-  "Modeling_Streamer_TH.bbl" 1765151380.4214 6758 c2689b66c8e73b759fbd9f7cc2e2603f "bibtex Modeling_Streamer_TH"
-  "Modeling_Streamer_TH.lof" 1765151380.1307 2219 1b170f5e7407ab55ad11c989bf2ef894 "xelatex"
-  "Modeling_Streamer_TH.lot" 1765151380.13072 671 81f77c7d7266f878f0c2e5bb19ac50ef "xelatex"
-  "Modeling_Streamer_TH.out" 1765151380.13045 6171 69bbbdce619a8a55efe839de5441172e "xelatex"
+  "Methods.tex" 1765430794.09947 21494 10da17a27efdaeae1e006ad3ad34ec59 ""
+  "Modeling_Streamer_TH.aux" 1765430819.81501 25019 9be3758ebdda6e551fc1ecc3c14805ed "xelatex"
+  "Modeling_Streamer_TH.bbl" 1765430818.99028 6758 c2689b66c8e73b759fbd9f7cc2e2603f "bibtex Modeling_Streamer_TH"
+  "Modeling_Streamer_TH.lof" 1765430819.8168 2219 69dfc3ab1f3e0bc7baa2d569e2ad436f "xelatex"
+  "Modeling_Streamer_TH.lot" 1765430819.81681 671 81f77c7d7266f878f0c2e5bb19ac50ef "xelatex"
+  "Modeling_Streamer_TH.out" 1765430819.81651 6171 69bbbdce619a8a55efe839de5441172e "xelatex"
   "Modeling_Streamer_TH.tex" 1765149452.42521 4179 d93fe81c8102c1c42991b54b87cc4729 ""
-  "Modeling_Streamer_TH.toc" 1765151380.13067 3253 c447dca6ef0b61b2106f097a3b33944b "xelatex"
+  "Modeling_Streamer_TH.toc" 1765430819.81677 3253 03e5b78f7644103c8903d85e12a9155d "xelatex"
   "NTNUthesis.cls" 1764773945.51987 3283 20c5abbe12b0b59f6060ff9ce62d9938 ""
   "Results.tex" 1765149559.65901 10979 204c381a1eb9f29c6e1b41ea6dabf949 ""
   "Results_image/HLTau/grid_results/HLTau_mom0_cacheonly.png" 1765140859.38957 232842 263d2aa06506b38c878db0553744c7e1 ""

@@ -63,7 +63,7 @@ pa_deg = 20.0
 pa_rad = np.deg2rad(pa_deg)
 distance_pc = 147.0
 M_SUN_KG = 1.98847e30
-radius_ref_au = 280
+radius_ref_au = 300
 M_star = 2.1
 
 scale = "log"
@@ -1338,7 +1338,8 @@ def run_grid():
             streamercom_x_AU, streamercom_z_AU, streamercom_v_LS_km,
             v_weight_phys, M_star, scale, log_power, radius_ref_au,
             n_grid=10,
-            T_factor_range=(5.4, 245.0), #5.4, 245.0
+            phi_grid=(0, 2 * np.pi),
+            T_factor_range=(3.966, 182.4), #5.4, 245.0
             verbose=True,
         )
 

@@ -14,6 +14,7 @@ def run_grid_search(
     streamer_x_AU, streamer_z_AU, streamer_v_LS_km,
     v_weight_phys, M_star, scale, log_power,
     radius_ref_au, n_grid=10,
+    phi_grid=None,
     T_factor_range=(130.0, 300.0),
     verbose=True
 ):
@@ -29,11 +30,18 @@ def run_grid_search(
     T_range = [T_factor_range[0]*P_half_Myr, T_factor_range[1]*P_half_Myr]
 
     n_theta = n_phi = n_inc = n_T = n_Omega = n_grid
-    theta_grid = np.linspace(0.0, 0.5*np.pi, n_theta + 2)[1:-1]
-    phi_grid   = np.linspace(-np.pi, np.pi, n_phi, endpoint=False)
-    inc_grid   = np.linspace(-0.5*np.pi, 0.5*np.pi, n_inc + 2)[1:-1]
-    T_grid     = np.logspace(np.log10(T_range[0]), np.log10(T_range[1]), n_T)
-    omega_grid = np.linspace(0.0, 1.0, n_Omega + 1)[1:]
+    if phi_grid == None:
+        theta_grid = np.linspace(0.0, 0.5*np.pi, n_theta + 2)[1:-1]
+        phi_grid   = np.linspace(-np.pi, np.pi, n_phi, endpoint=False)
+        inc_grid   = np.linspace(-0.5*np.pi, 0.5*np.pi, n_inc + 2)[1:-1]
+        T_grid     = np.logspace(np.log10(T_range[0]), np.log10(T_range[1]), n_T)
+        omega_grid = np.linspace(0.0, 1.0, n_Omega + 1)[1:]
+    else:
+        theta_grid = np.linspace(0.0, 0.5*np.pi, n_theta + 2)[1:-1]
+        phi_grid   = np.linspace(phi_grid[0], phi_grid[1], n_phi, endpoint=False)
+        inc_grid   = np.linspace(-0.5*np.pi, 0.5*np.pi, n_inc + 2)[1:-1]
+        T_grid     = np.logspace(np.log10(T_range[0]), np.log10(T_range[1]), n_T)
+        omega_grid = np.linspace(0.0, 1.0, n_Omega + 1)[1:]
 
     error = np.zeros((n_theta, n_phi, n_inc, n_T, n_Omega), dtype=float)
     best_val, best_idx = np.inf, None
@@ -75,7 +83,7 @@ def run_grid_search(
     return best_params, grid, error
 
 
-def compute_priors_from_grid(error, grid, best_val, frac=0.05):
+def compute_priors_from_grid(error, grid, best_val, frac=0.05, phi_range=None):
     """
     根據 grid 結果自動決定每個參數的 prior 範圍，
     並且回傳一個代表性的 sigma_like（用在 fast likelihood 裡）。
@@ -135,14 +143,21 @@ def compute_priors_from_grid(error, grid, best_val, frac=0.05):
         lo = max(q5 - pad, abs_min) if abs_min is not None else q5 - pad
         hi = min(q95 + pad, abs_max) if abs_max is not None else q95 + pad
         return lo, hi
-
-    priors = {
-        "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=0.5*np.pi),
-        "Phi zero":    padded_range(Phi_good,   abs_min=-np.pi,  abs_max=np.pi),
-        "Inclination": padded_range(Incl_good,  abs_min=-0.5*np.pi, abs_max=0.5*np.pi),
-        "Time":        padded_range(T_good,     abs_min=0.0),
-        "Omega":       padded_range(Omega_good, abs_min=0.0,     abs_max=1.0),
-    }
-
-    # ⭐ 重點：現在回傳 (priors, sigma_like)
+    
+    if phi_range == None:
+        priors = {
+            "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=0.5*np.pi),
+            "Phi zero":    padded_range(Phi_good,   abs_min=-np.pi,  abs_max=np.pi),
+            "Inclination": padded_range(Incl_good,  abs_min=-0.5*np.pi, abs_max=0.5*np.pi),
+            "Time":        padded_range(T_good,     abs_min=0.0),
+            "Omega":       padded_range(Omega_good, abs_min=0.0,     abs_max=1.0),
+        }
+    else:
+        priors = {
+            "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=0.5*np.pi),
+            "Phi zero":    padded_range(Phi_good,   abs_min=phi_range[0],  abs_max=phi_range[1]),
+            "Inclination": padded_range(Incl_good,  abs_min=-0.5*np.pi, abs_max=0.5*np.pi),
+            "Time":        padded_range(T_good,     abs_min=0.0),
+            "Omega":       padded_range(Omega_good, abs_min=0.0,     abs_max=1.0),
+        }
     return priors, sigma_like

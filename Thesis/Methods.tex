@@ -77,7 +77,23 @@ $\theta$ corresponds to the initial polar angle of the streamer, $\phi_0$ is the
 The fitting procedure described below is applied to each dataset to constrain the model parameters. The results are compared to the observed streamer morphology and kinematics to assess the validity of the model.
 
 \subsection{Position angle}
-\YN{This step can be neglected if the disk PA on the sky is known. Otherwise, the previous step needs to be repeated until the optimal is found.}
+Before fitting the kinematic model, all observational centroids are rotated into the model reference frame, which assumes that the projected angular--momentum axis is aligned with the positive declination direction ($+z$). Because each target possesses a different disk position angle (P.A.), the observed coordinates are rotated by the measured P.A. to ensure a consistent geometric convention across sources. Each data point $(x_{\rm obs}, z_{\rm obs})$ is rotated according to
+\[
+\begin{pmatrix}
+x_{\rm mod} \\
+z_{\rm mod}
+\end{pmatrix}
+=
+\begin{pmatrix}
+\cos{\rm PA} & \sin{\rm PA} \\
+-\sin{\rm PA} & \cos{\rm PA}
+\end{pmatrix}
+\begin{pmatrix}
+x_{\rm obs} \\
+z_{\rm obs}
+\end{pmatrix},
+\]
+and the rotated coordinates $(x_{\rm mod}, z_{\rm mod})$ are used in all subsequent fitting procedures.
 
 \subsection{Centroid Extraction and Observed Streamer Morphology}
 

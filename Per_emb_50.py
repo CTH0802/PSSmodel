@@ -252,9 +252,6 @@ def build_streamer_masked_cube(cube, header, rms_channel):
     im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
     ny, nx = cube.shape[1], cube.shape[2]
 
-    # 先從原始 cube 開始，逐步加上手動圓形遮罩
-    masked_cube = cube
-
     mask_specs = [
         (4,   [108, 67]),
         (3,   [121, 64]),
@@ -266,7 +263,7 @@ def build_streamer_masked_cube(cube, header, rms_channel):
     for radius, pos in mask_specs:
         mask2d = pss.circular_mask((ny, nx), pos, radius)       # 2D: True 在圓外
         mask3d = np.repeat(mask2d[np.newaxis, :, :], cube.shape[0], axis=0)
-        masked_cube = masked_cube.with_mask(mask3d)
+        masked_cube = cube.with_mask(mask3d)
 
     # grow_region 找 streamer
     init_points = [
@@ -850,7 +847,7 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
 
     # ---------- 2) image-frame z (AU) ----------
     # 注意：這裡不做 PA 旋轉，直接用影像的 y (row) 當作 z_img，原點在 protostar
-    im_cy = float(header["CRPIX2"]) - 1.0  # FITS -> 0-based
+    im_cy = float(header["CRPIX2"]) # FITS -> 0-based
     y_idx = np.arange(ny)
     z_img_pix = y_idx - im_cy
     z_img_AU = z_img_pix * dx_au
@@ -1214,7 +1211,7 @@ def run_grid():
 
         sigma_like = None
         parameter_prior_ranges, sigma_like = compute_priors_from_grid(
-            error, grid, best_params["best_val"], frac=0.3
+            error, grid, best_params["best_val"]
         )
 
         print("\n[MCMC priors from grid]")

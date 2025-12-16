@@ -1223,7 +1223,7 @@ plot_z_v_imshow(
     data_mom0, data_mom1,
     pa_rad, dx_au,
     label='Per-emb-2 HC3N (Z–V diagram)',
-    outname="Per-emb-2_z_v_imshow.png",
+    outname=f"Per-emb-2_z_v_imshow_{pa_deg}.png",
 )
 
 plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="Per-emb-2_weights_cacheonly.png")
