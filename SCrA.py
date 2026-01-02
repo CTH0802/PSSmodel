@@ -60,7 +60,7 @@ from pss_grid_search import run_grid_search, compute_priors_from_grid
 
 # --- 基本天文參數（S CrA） ---
 Local_Standard_Velocity = 5.86  # km/s (Gupta 2024)
-pa_default = 220
+pa_default = 0
 pa_env = os.getenv("PA_OVERRIDE_DEG")
 
 if pa_env is not None:
@@ -315,7 +315,7 @@ def build_streamer_masked_cube(cube, header, rms_channel):
 
     # return shifted_cube_data, shifted_mom0, shifted_mom1
 
-    return new_center, masked_cube, shifted_cube_data
+    return new_center, masked_cube, new_cube_data
 
 def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au, center=None):
     """
@@ -549,7 +549,7 @@ def _compute_extent(header, im_center, ny, nx):
     return (ra_min, ra_max, dec_min, dec_max), dx_arcsec, dz_arcsec
 
 def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
-                          header, pa_rad, dx_au, im_center,
+                          header, pa_rad, dx_au, new_center,
                           mom0, label, outname,
                           v_range=1.0,
                           vmin=None, vmax=None,
@@ -562,11 +562,11 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     dx_arcsec = abs(header["CDELT1"]) * 3600.0
     dz_arcsec = abs(header["CDELT2"]) * 3600.0
     ny, nx = mom0.shape
-    extent, dx_arcsec, dz_arcsec = _compute_extent(header, im_center, ny, nx)
+    extent, dx_arcsec, dz_arcsec = _compute_extent(header, new_center, ny, nx)
 
     # --- 建立 PSS model ---
     x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
-        theta, phi, inc, T_Myr, omega, # rad
+        theta, phi, inc, T_Myr, omega,
         M_star,
         radius_in_au=radius_in_au,
         radius_out_au=radius_out_au,
@@ -574,30 +574,25 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         scale=scale,
         log_power=log_power,
     )
-    center1 = (391, 395)  # (y, x)
-    center2 = (368, 383)  # (y, x)
-    new_center = (int((center1[0] + center2[0]) / 2),
-                  int((center1[1] + center2[1]) / 2))
-    tz = im_center[0] - new_center[0]
-    tx = im_center[1] - new_center[1]
-    # AU -> 像素
+
+    # AU -> pixel
     x_pix = x_m / dx_au
     z_pix = z_m / dx_au
 
+    # rotate to image frame
     x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad)
     z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad)
 
-    ra_off  = (x_pix_rot - 2*tx) * dx_arcsec
-    dec_off = (z_pix_rot - 2*tz) * dz_arcsec
+    # offset relative to new_center
+    ra_off  = (x_pix_rot - new_center[1]) * dx_arcsec
+    dec_off = (z_pix_rot - new_center[0]) * dz_arcsec
 
-    # --- 組成 LineCollection ---
     pts = np.column_stack([ra_off, dec_off])
     if pts.shape[0] < 2:
         print("[plot_streamer_on_mom0] model points too few, skip.")
         return
     segments = np.stack([pts[:-1], pts[1:]], axis=1)
 
-    # --- 速度顏色範圍 ---
     if vmin is None or vmax is None:
         vmin = Local_Standard_Velocity - v_range
         vmax = Local_Standard_Velocity + v_range
@@ -613,26 +608,21 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         cmap="inferno",
         extent=extent,
         norm=norm,
-        # vmin=np.nanmin(mom0),
-        # vmax=np.nanmax(mom0)
     )
 
-    # colorbar（固定在右側，不撐壞主圖）
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3%", pad=0.04)
     cbar = fig.colorbar(im, cax=cax)
     cbar.set_label("(Jy/beam km/s)")
 
-    # 黑色外框線（提升可見度）
+    # model line
     lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
     ax.add_collection(lc_edge)
 
-    # 依 model LOS 速度上色的主線
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     lc = LineCollection(
         segments,
         cmap="coolwarm",
-        norm=norm,
+        norm=mpl.colors.Normalize(vmin=vmin, vmax=vmax),
         linewidth=2.5,
         zorder=3,
     )
@@ -648,48 +638,29 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     # cax     = divider.append_axes('right', size='3%', pad=0.04)
     # cbar = fig.colorbar(weights_im, cax=cax)
     # cbar.set_label('weight value')
-    
 
-    # --- 疊加質心點（如果有提供，輸入單位：pixel） ---
+    # centroids
     if cen_x_pix is not None and cen_z_pix is not None:
-        cen_x_pix = np.asarray(cen_x_pix)
-        cen_z_pix = np.asarray(cen_z_pix)
-
-        # 轉成 RA/Dec offset
-        cen_ra  = (cen_x_pix - im_center[1] - 2*tx) * dx_arcsec
-        cen_dec = (cen_z_pix - im_center[0] - 2*tz) * dz_arcsec
+        cen_ra  = (cen_x_pix - new_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - new_center[0]) * dz_arcsec
 
         if cen_v_LS_km is not None:
-            cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
             ax.scatter(
-                cen_ra,
-                cen_dec,
-                c=cen_v,
-                cmap="coolwarm",
-                vmin=vmin,
-                vmax=vmax,
-                s=4,
-                marker="o",
-                edgecolors="black",
-                linewidths=1.0,
+                cen_ra, cen_dec,
+                c=np.asarray(cen_v_LS_km) + Local_Standard_Velocity,
+                cmap="coolwarm", vmin=vmin, vmax=vmax,
+                s=10, edgecolors="black", linewidths=0.7,
                 zorder=5,
-                label="Streamer Centroids",
             )
         else:
             ax.scatter(
-                cen_ra,
-                cen_dec,
-                facecolors="none",
-                edgecolors="black",
-                s=45,
-                marker="o",
-                zorder=5,
-                label="Streamer Centroids",
+                cen_ra, cen_dec,
+                facecolors="none", edgecolors="black",
+                s=10, zorder=5,
             )
 
     # 中心位置
     ax.scatter(0, 0, c="C3", s=60, marker="+", zorder=6)
-    ax.scatter(-tx * dx_arcsec, tz * dx_arcsec, c="C3", s=60, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -774,7 +745,7 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     plt.close(fig)
 
 def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
-                          header, pa_rad, dx_au, im_center,
+                          header, pa_rad, dx_au, new_center,
                           mom1, label, outname,
                           v_range=1.0,
                           vmin=None, vmax=None,
@@ -783,15 +754,13 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
                           scale='log', log_power=log_power,
                           cen_x_pix=None, cen_z_pix=None, cen_v_LS_km=None):
 
-    # --- 基本尺寸 & 像素刻度 ---
     dx_arcsec = abs(header["CDELT1"]) * 3600.0
     dz_arcsec = abs(header["CDELT2"]) * 3600.0
     ny, nx = mom1.shape
-    extent, dx_arcsec, dz_arcsec = _compute_extent(header, im_center, ny, nx)
+    extent, dx_arcsec, dz_arcsec = _compute_extent(header, new_center, ny, nx)
 
-    # --- 建立 PSS model ---
     x_m, y_m, z_m, u_m, v_m, w_m = pss.PSS_model(
-        theta, phi, inc, T_Myr, omega, # rad
+        theta, phi, inc, T_Myr, omega,
         M_star,
         radius_in_au=radius_in_au,
         radius_out_au=radius_out_au,
@@ -800,37 +769,26 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
         log_power=log_power,
     )
 
-    center1 = (391, 395)  # (y, x)
-    center2 = (368, 383)  # (y, x)
-    new_center = (int((center1[0] + center2[0]) / 2),
-                  int((center1[1] + center2[1]) / 2))
-    tz = im_center[0] - new_center[0]
-    tx = im_center[1] - new_center[1]
-    # AU -> 像素
     x_pix = x_m / dx_au
     z_pix = z_m / dx_au
 
     x_pix_rot = x_pix * np.cos(pa_rad) - z_pix * np.sin(pa_rad)
     z_pix_rot = x_pix * np.sin(pa_rad) + z_pix * np.cos(pa_rad)
 
-    ra_off  = (x_pix_rot - 2*tx) * dx_arcsec
-    dec_off = (z_pix_rot - 2*tz) * dz_arcsec
+    ra_off  = (x_pix_rot - new_center[1]) * dx_arcsec
+    dec_off = (z_pix_rot - new_center[0]) * dz_arcsec
 
-    # --- 組成 LineCollection ---
     pts = np.column_stack([ra_off, dec_off])
     if pts.shape[0] < 2:
         print("[plot_streamer_on_mom1] model points too few, skip.")
         return
     segments = np.stack([pts[:-1], pts[1:]], axis=1)
 
-    # --- 速度顏色範圍 ---
     if vmin is None or vmax is None:
         vmin = Local_Standard_Velocity - v_range
         vmax = Local_Standard_Velocity + v_range
 
     fig, ax = plt.subplots(figsize=(6.2, 6))
-
-    # 背景 moment-1
     im = ax.imshow(
         mom1,
         origin="lower",
@@ -840,22 +798,17 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
         vmax=vmax,
     )
 
-    # colorbar（固定在右側，不撐壞主圖）
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3%", pad=0.04)
-    cbar = fig.colorbar(im, cax=cax)
-    cbar.set_label("Velocity (km/s)")
+    fig.colorbar(im, cax=cax)
 
-    # 黑色外框線（提升可見度）
     lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
     ax.add_collection(lc_edge)
 
-    # 依 model LOS 速度上色的主線
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     lc = LineCollection(
         segments,
         cmap="coolwarm",
-        norm=norm,
+        norm=mpl.colors.Normalize(vmin=vmin, vmax=vmax),
         linewidth=2.5,
         zorder=3,
     )
@@ -873,41 +826,26 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
     # cbar.set_label('weight value')
     
 
-    # --- 疊加質心點（輸入 cen_x_pix, cen_z_pix） ---
     if cen_x_pix is not None and cen_z_pix is not None:
-        cen_ra  = (cen_x_pix - im_center[1] - 2*tx) * dx_arcsec
-        cen_dec = (cen_z_pix - im_center[0] - 2*tz) * dz_arcsec
+        cen_ra  = (cen_x_pix - new_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - new_center[0]) * dz_arcsec
 
         if cen_v_LS_km is not None:
-            cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
             ax.scatter(
-                cen_ra,
-                cen_dec,
-                c=cen_v,
-                cmap="coolwarm",
-                vmin=vmin,
-                vmax=vmax,
-                s=20,
-                marker="o",
-                edgecolors="black",
-                linewidths=0.7,
+                cen_ra, cen_dec,
+                c=np.asarray(cen_v_LS_km) + Local_Standard_Velocity,
+                cmap="coolwarm", vmin=vmin, vmax=vmax,
+                s=10, edgecolors="black", linewidths=0.7,
                 zorder=5,
-                label="Streamer Centroids",
             )
         else:
             ax.scatter(
-                cen_ra,
-                cen_dec,
-                facecolors="none",
-                edgecolors="black",
-                s=20,
-                marker="o",
-                zorder=5,
-                label="Streamer Centroids",
+                cen_ra, cen_dec,
+                facecolors="none", edgecolors="black",
+                s=10, zorder=5,
             )
 
-    # 中心位置
-    ax.scatter(0, 0, c="C3", s=60, marker="+", zorder=6)
+    ax.scatter(0, 0, c="C3", s=70, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -1120,186 +1058,169 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     print(f"[z–v] Saved {outname}")
     
 def run_quick_mode_scra():
-    """
-    Quick Mode for S CrA:
-      - 從 cache (grid / mcmc_grid / mcmc_shell / final) 找 best-fit
-      - 盡量載入 streamer cube、moment maps
-      - 畫：
-          1) z–v 圖
-          2) moment-1 overlay
-          3) moment-0 overlay
-      - 印出物理參數
-      - 結束程式
-    """
     print("[Quick Mode] RUN_FROM_CACHE_ONLY=True → 僅讀取 cache 並繪圖")
 
     try:
-        # 1) 讀取 cache
-        cache_path_to_use = _resolve_cache_path(USE_CACHE_SOURCE)
-        c = np.load(cache_path_to_use, allow_pickle=True)
-        print(f"[cache] Loaded cache ({USE_CACHE_SOURCE}): {cache_path_to_use}")
+        # --------------------------------------------------
+        # 1) Load cache
+        # --------------------------------------------------
+        cache_path = _resolve_cache_path(USE_CACHE_SOURCE)
+        c = np.load(cache_path, allow_pickle=True)
+        print(f"[cache] Loaded cache ({USE_CACHE_SOURCE}): {cache_path}")
 
-        Theta_best, Phi_best, Incl_best, T_best, Omega_best = _extract_params_from_cache(
-            c, USE_CACHE_SOURCE
-        ) # rad
-        # Theta_best = np.deg2rad(81.818)
-        # Phi_best = np.deg2rad(0)
-        # Incl_best = np.deg2rad(-73.636)
-        # T_best = 0.073
-        # Omega_best = 0.2
+        Theta_best, Phi_best, Incl_best, T_best, Omega_best = \
+            _extract_params_from_cache(c, USE_CACHE_SOURCE)
+
         Theta_best_deg = np.rad2deg(Theta_best)
         Phi_best_deg   = np.rad2deg(Phi_best)
         Incl_best_deg  = np.rad2deg(Incl_best)
+
+        # ★ A-mode center: 반드시從 cache 讀 ★
+        if "new_center_yx" not in c:
+            raise RuntimeError("Cache missing new_center_yx (A-mode requires this).")
+        new_center = tuple(c["new_center_yx"])
+        print(f"[A-mode] Using new_center (y,x) = {new_center}")
+
+        # --------------------------------------------------
+        # 2) Load moment maps
+        # --------------------------------------------------
         rms_channel = 0.026211100061251217
 
-        # 2) 讀取 S CrA streamer 專用 moment map
-        try:
-            str_mom0 = fits.getdata("S_CrA_13CO_streamer_mom0.fits")
-            str_mom1 = fits.getdata("S_CrA_13CO_streamer_mom1.fits")
-            mom0 = fits.getdata("S_CrA_13CO_mom0.fits")
-            mom1 = np.where(fits.getdata("S_CrA_13CO_mom0.fits") > 3 * rms_channel, fits.getdata("S_CrA_13CO_mom1.fits"), np.nan)
-            header   = fits.getheader("S_CrA_13CO_streamer_mom1.fits")
-        except Exception:
-            cube = SpectralCube.read(cube_fname)
-            header = fits.getheader(cube_fname)
-            vrange = [2.4926, 14.8636] * u.km/u.s
-            subcube = cube.spectral_slab(vrange[0], vrange[1])
-            str_mom0 = subcube.moment(order=0).value
-            str_mom1 = subcube.moment(order=1).value
+        str_mom0 = fits.getdata("S_CrA_13CO_streamer_mom0.fits")
+        str_mom1 = fits.getdata("S_CrA_13CO_streamer_mom1.fits")
+        mom0     = fits.getdata("S_CrA_13CO_mom0.fits")
+        mom1     = np.where(
+            mom0 > 3 * rms_channel,
+            fits.getdata("S_CrA_13CO_mom1.fits"),
+            np.nan,
+        )
+        header = fits.getheader("S_CrA_13CO_streamer_mom1.fits")
 
-        # 基本轉換
-        im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
         dx_arcsec = abs(header["CDELT2"]) * 3600.0
-        dx_au     = dx_arcsec * distance_pc  # 160 pc for SCrA
-        dv        = abs(float(header["CDELT3"]))
+        dx_au     = dx_arcsec * distance_pc
 
-        # 3) 盡量讀取 streamer cube（若沒有，z–v 圖會自動跳過）
-        new_cube_data = None
+        # --------------------------------------------------
+        # 3) Load streamer cube (optional, for z–v)
+        # --------------------------------------------------
         try:
             new_cube_data = fits.getdata("S_CrA_13CO_streamer_cube.fits")
-            print("[cache] Loaded streamer cube from FITS")
-        except Exception as e:
-            print(f"[cache] No streamer FITS ({e}), z–v diagram may be skipped.")
+            print("[cache] Loaded streamer cube")
+        except Exception:
+            new_cube_data = None
+            print("[cache] No streamer cube → skip z–v diagram")
 
-        # 4) 從 cache 抓 streamer 質心（若有）
+        # --------------------------------------------------
+        # 4) Centroids (model-frame → image-frame pixel)
+        # --------------------------------------------------
         cen_x_pix = cen_z_pix = cen_v_LS = None
 
-        if ("streamercom_x_AU" in c) and ("streamercom_z_AU" in c):
+        if "streamercom_x_AU" in c and "streamercom_z_AU" in c:
             sx = c["streamercom_x_AU"]
             sz = c["streamercom_z_AU"]
 
             x_rot = sx / dx_au
             z_rot = sz / dx_au
-            cen_x_pix = x_rot*np.cos(pa_rad) - z_rot*np.sin(pa_rad) + im_center[1]
-            cen_z_pix = x_rot*np.sin(pa_rad) + z_rot*np.cos(pa_rad) + im_center[0]
 
-            streamercom_x_AU = sx
-            streamercom_z_AU = sz
-            streamercom_v_LS = c.get("streamercom_v_LS_km", None)
+            cen_x_pix = (
+                x_rot * np.cos(pa_rad) - z_rot * np.sin(pa_rad)
+                + new_center[1]
+            )
+            cen_z_pix = (
+                x_rot * np.sin(pa_rad) + z_rot * np.cos(pa_rad)
+                + new_center[0]
+            )
 
-            if streamercom_v_LS is not None:
-                cen_v_LS = streamercom_v_LS
+            cen_v_LS = c.get("streamercom_v_LS_km", None)
 
-                x_array = c["x_array"]
-                z_array = c["z_array"]
-                v_array = c["v_array"]
-                weights_array = c["weights_array"]
-                x_means = c["x_means"]
-                z_means = c["z_means"]
-                v_means = c["v_means"]
-        center1 = (391, 395)  # (y, x)
-        center2 = (368, 383)  # (y, x)
-        new_center = (int((center1[0] + center2[0]) / 2),
-                    int((center1[1] + center2[1]) / 2))
-        print(new_center, im_center)
-        # 5) z–v 圖（若 new_cube_data 存在）
-        plot_z_v_diagram_from_cube(
-            theta_deg=Theta_best_deg,
-            phi_deg=Phi_best_deg,
-            inc_deg=Incl_best_deg,
-            T_Myr=T_best,
-            omega=Omega_best,
-            new_cube_data=new_cube_data,
-            header=header,
-            pa_rad=pa_rad,
-            dx_au=dx_au,
-            z_means_pix=z_means,
-            streamer_v_LS_km=cen_v_LS,
-            outname="SCrA_z_v_data_overlay.png",
-            label="S CrA $^{13}$CO z-v"
-        )
+            x_array = c.get("x_array", None)
+            z_array = c.get("z_array", None)
+            weights_array = c.get("weights_array", None)
 
+        # --------------------------------------------------
+        # 5) z–v diagram
+        # --------------------------------------------------
+        if new_cube_data is not None and cen_v_LS is not None:
+            plot_z_v_diagram_from_cube(
+                theta_deg=Theta_best_deg,
+                phi_deg=Phi_best_deg,
+                inc_deg=Incl_best_deg,
+                T_Myr=T_best,
+                omega=Omega_best,
+                new_cube_data=new_cube_data,
+                header=header,
+                pa_rad=pa_rad,
+                dx_au=dx_au,
+                z_means_pix=None,
+                streamer_v_LS_km=cen_v_LS,
+                outname="SCrA_z_v_data_overlay.png",
+                label="S CrA $^{13}$CO z–v",
+            )
+
+        # --------------------------------------------------
+        # 6) moment overlays (A-mode!)
+        # --------------------------------------------------
         plot_streamer_on_mom1(
             Theta_best, Phi_best, Incl_best,
             float(T_best), float(Omega_best),
-            header, pa_rad, dx_au, im_center,
+            header, pa_rad, dx_au, new_center,
             str_mom1,
-            label="S CrA $^{13}$CO",
+            label="S CrA $^{13}$CO moment-1",
             outname="SCrA_mom1_cacheonly.png",
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
-            # vmax=np.nanmax(mom1),
-            # vmin=np.nanmin(mom1)
         )
 
         plot_streamer_on_mom0(
             Theta_best, Phi_best, Incl_best,
             float(T_best), float(Omega_best),
-            header, pa_rad, dx_au, im_center,
+            header, pa_rad, dx_au, new_center,
             str_mom0,
-            label="S CrA $^{13}$CO",
+            label="S CrA $^{13}$CO moment-0",
             outname="SCrA_mom0_cacheonly.png",
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
         )
-        
-        plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="SCrA_weights_cacheonly.png")
 
-        # 8) Print physical values
-        r_ref_AU = radius_ref_au * T_best * 1e6 * spc.year / spc.astronomical_unit  # radius_ref_au=280
+        if x_array is not None and weights_array is not None:
+            plot_r_theta_weights_from_output(
+                x_array, z_array, weights_array,
+                outname="SCrA_weights_cacheonly.png"
+            )
 
-        M_0 = M_star * M_SUN_KG * spc.G / (radius_ref_au**3 * T_best * 1e6 * spc.year)
-        M_dot = M_star / (T_best * 1e6)
-
-        print("\n==================== Parameters (S CrA) ====================")
-        print(f"Theta        = {Theta_best_deg:.3f} deg")
-        print(f"Phi          = {Phi_best_deg:.3f} deg")
-        print(f"Inclination  = {Incl_best_deg:.3f} deg")
-        print(f"Time (T_Myr) = {T_best:.6f} Myr")
-        print(f"Omega        = {Omega_best:.4f}")
-        print(f"r_ref        = {r_ref_AU:.2f} AU")
-        print(f"M_0          = {M_0:.3e}")
-        print(f"Mdot         = {M_dot:.3e} M_sun/yr")
-        print("============================================================")
-        print("[Quick Mode] 繪圖完成，程式結束。")
+        print("[Quick Mode] Done.")
         sys.exit(0)
 
     except Exception as e:
-        print(f"[Quick Mode] 失敗，改跑完整流程: {e}")
-        return
+        print(f"[Quick Mode] failed → fallback to full run: {e}")
 # ============================================================
 # 3. 資料準備：讀 cube + 建 mask + 抽質心
 # ============================================================
 def prepare_data():
-    global cube, header, im_center, dx_arcsec, dx_au, dv, v0
-    global v_lastch_vel, v_lastch_num, subcube, moment0, moment1, cube_shape, spec_kms
-    global rms_channel, shifted_cube_data, str_mom0, str_mom1
+    global cube, header, new_center, dx_arcsec, dx_au, dv, v0
+    global v_lastch_vel, v_lastch_num, subcube, moment0, moment1
+    global rms_channel, new_cube_data, str_mom0, str_mom1
     global streamercom_x_AU, streamercom_z_AU, streamercom_v_LS_km
     global x_array, z_array, v_array, weights_array, x_means, z_means, v_means
     global v_weight_phys, max_dist_value
-    # 讀 cube & header
+
+    # --------------------------------------------------
+    # 1) Read cube & header
+    # --------------------------------------------------
     cube = SpectralCube.read(cube_fname)
     header = fits.getheader(cube_fname)
 
-    im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
+    im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))  # (y, x)
     dx_arcsec = abs(header["CDELT2"]) * 3600.0
-    dx_au = dx_arcsec * distance_pc
-    dv = abs(float(header["CDELT3"]))
-    v0 = header["CRVAL3"]
-
-    # 速度軸 / 子立方體設定（依原本 S CrA 設定）
+    dx_au     = dx_arcsec * distance_pc
+    dv        = abs(float(header["CDELT3"]))
+    v0        = float(header["CRVAL3"])
+    print("CUNIT3 =", header.get("CUNIT3"))
+    print("CRVAL3 =", header["CRVAL3"], " CDELT3 =", header["CDELT3"])
+    # --------------------------------------------------
+    # 2) Subcube / moments
+    # --------------------------------------------------
     v_lastch_vel = 14.8636
     v_lastch_num = 150
     velocity_range = [2.4926, 14.8636] * u.km / u.s
@@ -1309,29 +1230,30 @@ def prepare_data():
     moment1 = subcube.moment(order=1).value
     rms_channel = 0.026211100061251217
 
-    # 儲存原始 moment 圖
-    fits.PrimaryHDU(data=moment0, header=header).writeto(
-        os.path.join("S_CrA_13CO_mom0.fits"), overwrite=True
-    )
+    # Save original moments (original header)
+    fits.PrimaryHDU(data=moment0, header=header).writeto("S_CrA_13CO_mom0.fits", overwrite=True)
     print("[mask] Saved S_CrA_13CO_mom0.fits")
+
     hdu_mom1 = fits.PrimaryHDU(data=moment1, header=header)
     hdu_mom1.header["BUNIT"] = "km/s"
-    hdu_mom1.writeto(
-        os.path.join("S_CrA_13CO_mom1.fits"), overwrite=True
-    )
+    hdu_mom1.writeto("S_CrA_13CO_mom1.fits", overwrite=True)
     print("[mask] Saved S_CrA_13CO_mom1.fits")
-    # 噪音（沿用你原本的數值）
-    
-    # 建立 streamer 專用 cube（遮罩 + 平移）
-    new_center, masked_cube, new_cube_data= build_streamer_masked_cube(
+
+    # --------------------------------------------------
+    # 3) Build streamer cube (masked) + define new_center
+    # --------------------------------------------------
+    new_center, masked_cube, new_cube_data = build_streamer_masked_cube(
         subcube, header, rms_channel
     )
-    header_shifted = header.copy()
-    header_shifted["CRPIX1"] = new_center[1]
-    header_shifted["CRPIX2"] = new_center[0]
-    
+
+    # streamer header: CRPIX should match new_center (A-mode center)
+    header_stream = header.copy()
+    header_stream["CRPIX1"] = float(new_center[1])
+    header_stream["CRPIX2"] = float(new_center[0])
+
+    # Save streamer cube + streamer moments (use header_stream)
     try:
-        fits.PrimaryHDU(data=new_cube_data, header=header).writeto(
+        fits.PrimaryHDU(data=new_cube_data, header=header_stream).writeto(
             "S_CrA_13CO_streamer_cube.fits", overwrite=True
         )
         print("[mask] Saved S_CrA_13CO_streamer_cube.fits")
@@ -1340,17 +1262,20 @@ def prepare_data():
 
     str_mom0 = masked_cube.moment(order=0).value
     str_mom1 = masked_cube.moment(order=1).value
-    fits.PrimaryHDU(data=str_mom0, header=header).writeto(
+
+    fits.PrimaryHDU(data=str_mom0, header=header_stream).writeto(
         "S_CrA_13CO_streamer_mom0.fits", overwrite=True
     )
     print("[mask] Saved S_CrA_13CO_streamer_mom0.fits")
 
-    fits.PrimaryHDU(data=str_mom1, header=header).writeto(
+    fits.PrimaryHDU(data=str_mom1, header=header_stream).writeto(
         "S_CrA_13CO_streamer_mom1.fits", overwrite=True
     )
     print("[mask] Saved S_CrA_13CO_streamer_mom1.fits")
 
-     # 從 streamer cube 抽質心
+    # --------------------------------------------------
+    # 4) Extract centroids (A-mode: center=new_center)
+    # --------------------------------------------------
     try:
         (streamercom_x_AU,
          streamercom_z_AU,
@@ -1363,37 +1288,45 @@ def prepare_data():
          z_means,
          v_means) = extract_streamer_centroids(
             new_cube_data,
-            header,
+            header_stream,   # ← 用 streamer header（CRPIX=new_center）
             pa_rad,
             dx_au,
             center=new_center
         )
-
     except Exception as e:
-        print("抽取質心失敗，請檢查 build_streamer_masked_cube_scra 或資料品質：", e)
+        print("抽取質心失敗，請檢查 build_streamer_masked_cube 或資料品質：", e)
         raise
-    # 權重（以物理空間為主）
-    v_weight_phys = (2 * dx_au / dv)**2
+    print(streamercom_v_LS_km)
+    # --------------------------------------------------
+    # 5) Weights & cache
+    # --------------------------------------------------
+    v_weight_phys = (dx_au / dv) ** 2
     max_dist_value = 100.0
 
-    # 把關鍵結果也塞進 cache，方便後續或 quick mode 使用
     cache.update({
         "streamercom_x_AU": streamercom_x_AU,
         "streamercom_z_AU": streamercom_z_AU,
         "streamercom_v_LS_km": streamercom_v_LS_km,
-        # 這四個是「list of arrays」，強制轉成 object array
+
         "x_array": np.array(x_array, dtype=object),
         "z_array": np.array(z_array, dtype=object),
         "v_array": np.array(v_array, dtype=object),
         "weights_array": np.array(weights_array, dtype=object),
-        # 下面這些就是一般 1D array，沒問題
+
         "x_means": x_means,
         "z_means": z_means,
         "v_means": v_means,
+
         "v_weight_phys": float(v_weight_phys),
         "max_dist_value": float(max_dist_value),
+
+        # centers
+        "im_center_yx": np.array(im_center),
+        "new_center_yx": np.array(new_center),
     })
+
     np.savez(CACHE_PATH_GRID, **cache)
+    print(f"[cache] Saved prepare_data cache to {CACHE_PATH_GRID}")
 
 # --- Grid fitting logic moved into function ---
 def run_grid():
@@ -1924,7 +1857,7 @@ def run_final_best_fit_and_overlay():
         c = np.load(cache_path_to_use, allow_pickle=True)
         print(f"[cache] Loaded for overlay ({USE_CACHE_SOURCE}): {cache_path_to_use}")
 
-        # 盡量從 cache 中抽出一組 (Theta, Phi, Incl, T, Omega)
+        # ---- 1) best-fit params ----
         Theta_best, Phi_best, Incl_best, T_best, Omega_best = _extract_params_from_cache(
             c, USE_CACHE_SOURCE
         )
@@ -1932,7 +1865,7 @@ def run_final_best_fit_and_overlay():
         Phi_best_deg   = np.rad2deg(Phi_best)
         Incl_best_deg  = np.rad2deg(Incl_best)
 
-        # streamer 專用 moment maps
+        # ---- 2) load streamer moment maps + header (prefer streamer header) ----
         try:
             str_mom0 = fits.getdata("S_CrA_13CO_streamer_mom0.fits")
             str_mom1 = fits.getdata("S_CrA_13CO_streamer_mom1.fits")
@@ -1941,12 +1874,22 @@ def run_final_best_fit_and_overlay():
             print(f"[overlay] Failed to load streamer moment maps from FITS: {e}")
             return
 
-        im_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
-        print(im_center)
+        # ---- 3) choose center: ALWAYS use new_center (A-mode) ----
+        if "new_center_yx" in c:
+            new_center = tuple(np.array(c["new_center_yx"]).astype(int))
+        else:
+            # fallback: if cache doesn't have it, use header CRPIX as last resort
+            new_center = (int(header["CRPIX2"]), int(header["CRPIX1"]))
+            print("[overlay][WARN] cache missing new_center_yx → fallback to header CRPIX")
+
+        # (optional) for debug
+        print(f"[overlay] using new_center(y,x) = {new_center}")
+
+        # ---- 4) scales ----
         dx_arcsec = abs(header["CDELT2"]) * 3600.0
         dx_au     = dx_arcsec * distance_pc
 
-        # 讀取 streamer cube（如果有的話就畫 z–v）
+        # ---- 5) load streamer cube for z–v (optional) ----
         new_cube_data = None
         try:
             new_cube_data = fits.getdata("S_CrA_13CO_streamer_cube.fits")
@@ -1954,23 +1897,26 @@ def run_final_best_fit_and_overlay():
         except Exception as e:
             print(f"[overlay] No streamer cube FITS ({e}), z–v diagram will be skipped.")
 
-        # 從 cache 抓質心（若有），轉成 pixel 座標
+        # ---- 6) centroids from cache → pixel (A-mode center = new_center) ----
         cen_x_pix = cen_z_pix = cen_v_LS_km = None
         if ("streamercom_x_AU" in c) and ("streamercom_z_AU" in c):
             sx_AU = c["streamercom_x_AU"]
             sz_AU = c["streamercom_z_AU"]
 
-            # model frame (AU) → 影像 pixel
             x_rot = sx_AU / dx_au
             z_rot = sz_AU / dx_au
-            cen_x_pix = x_rot * np.cos(pa_rad) - z_rot * np.sin(pa_rad) + im_center[1]
-            cen_z_pix = x_rot * np.sin(pa_rad) + z_rot * np.cos(pa_rad) + im_center[0]
+
+            # model frame (x_rot,z_rot) -> image pixel using new_center
+            cen_x_pix = x_rot * np.cos(pa_rad) - z_rot * np.sin(pa_rad) + new_center[1]
+            cen_z_pix = x_rot * np.sin(pa_rad) + z_rot * np.cos(pa_rad) + new_center[0]
 
             if "streamercom_v_LS_km" in c:
                 cen_v_LS_km = c["streamercom_v_LS_km"]
 
-        # 1) z–v 圖（若有 cube）
+        # ---- 7) z–v plot (use header + new_center convention) ----
         if new_cube_data is not None:
+            # 如果你想疊 centroids，就把 cache 的 z_means 傳進去
+            z_means_pix = c["z_means"] if "z_means" in c else None
             plot_z_v_diagram_from_cube(
                 theta_deg=Theta_best_deg,
                 phi_deg=Phi_best_deg,
@@ -1978,20 +1924,20 @@ def run_final_best_fit_and_overlay():
                 T_Myr=float(T_best),
                 omega=float(Omega_best),
                 new_cube_data=new_cube_data,
-                header=header,
+                header=header,          # streamer header（CRPIX 應該也等於 new_center）
                 pa_rad=pa_rad,
                 dx_au=dx_au,
-                z_means_pix=None,          # 目前不疊 centroids；之後需要可以從 cache 裡抓
-                streamer_v_LS_km=None,
+                z_means_pix=z_means_pix,
+                streamer_v_LS_km=cen_v_LS_km,
                 outname=f"SCrA_z_v_data_overlay_best_{pa_deg}.png",
                 label="S CrA $^{13}$CO z–v (best-fit)",
             )
 
-        # 2) moment-1 overlay（速度場）
+        # ---- 8) moment-1 overlay ----
         plot_streamer_on_mom1(
             Theta_best, Phi_best, Incl_best,
             float(T_best), float(Omega_best),
-            header, pa_rad, dx_au, im_center,
+            header, pa_rad, dx_au, new_center,   # <<< use new_center
             str_mom1,
             label="S CrA $^{13}$CO moment1 (best-fit)",
             outname=f"SCrA_13CO_model_vs_mom1_overlay_best_{pa_deg}.png",
@@ -2000,11 +1946,11 @@ def run_final_best_fit_and_overlay():
             cen_v_LS_km=cen_v_LS_km,
         )
 
-        # 3) moment-0 overlay（強度）
+        # ---- 9) moment-0 overlay ----
         plot_streamer_on_mom0(
             Theta_best, Phi_best, Incl_best,
             float(T_best), float(Omega_best),
-            header, pa_rad, dx_au, im_center,
+            header, pa_rad, dx_au, new_center,   # <<< use new_center
             str_mom0,
             label="S CrA $^{13}$CO moment0 (best-fit)",
             outname=f"SCrA_13CO_model_vs_mom0_overlay_best_{pa_deg}.png",

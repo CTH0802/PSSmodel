@@ -78,15 +78,15 @@ CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "Per-emb-50_fit_results_final.npz")
 USE_CACHE_SOURCE = "mcmc_shell"
 sample_from = "Median"
 # ---------- 開關 ----------
-# RUN_GRID = True               # 5D grid search 找初始解
-# RUN_MCMC_GRID = True          # 14 個質心點 fast likelihood
-# RUN_MCMC_SHELL = True         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_GRID = True               # 5D grid search 找初始解
+RUN_MCMC_GRID = True          # 14 個質心點 fast likelihood
+RUN_MCMC_SHELL = True         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
-RUN_GRID = False               # 5D grid search 找初始解
-RUN_MCMC_GRID = False          # 14 個質心點 fast likelihood
-RUN_MCMC_SHELL = False         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+# RUN_GRID = False               # 5D grid search 找初始解
+# RUN_MCMC_GRID = False          # 14 個質心點 fast likelihood
+# RUN_MCMC_SHELL = False         # distance_cube MCMC
+# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -502,22 +502,22 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     cbar = fig.colorbar(im, cax=cax)
     cbar.set_label("(K km/s)")
 
-    lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
-    ax.add_collection(lc_edge)
+    # lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
+    # ax.add_collection(lc_edge)
 
-    # 用 model v_m + LSR 當顏色（範圍依資料可調）
-    v_model_LSR = v_m + Local_Standard_Velocity
-    v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
-    norm_v = mpl.colors.Normalize(vmin=5.5, vmax=8.0)
-    lc = LineCollection(
-        segments,
-        cmap="coolwarm",
-        norm=norm_v,
-        linewidth=4.5,
-        zorder=3,
-    )
-    lc.set_array(v_seg)
-    ax.add_collection(lc)
+    # # 用 model v_m + LSR 當顏色（範圍依資料可調）
+    # v_model_LSR = v_m + Local_Standard_Velocity
+    # v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
+    # norm_v = mpl.colors.Normalize(vmin=5.5, vmax=8.0)
+    # lc = LineCollection(
+    #     segments,
+    #     cmap="coolwarm",
+    #     norm=norm_v,
+    #     linewidth=4.5,
+    #     zorder=3,
+    # )
+    # lc.set_array(v_seg)
+    # ax.add_collection(lc)
     
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
@@ -1378,11 +1378,11 @@ def run_mcmc_grid_search():
                         labels=labels_plot,
                         range=ranges,
                         show_titles=True,
-                        plot_contours=False,
+                        plot_contours=True,
                         title_fmt=".3f",
                         quantiles=[0.16, 0.5, 0.84],
                         truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
-                        smooth=0)
+                        smooth=1)
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid_median.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -1391,11 +1391,11 @@ def run_mcmc_grid_search():
                         labels=labels_plot,
                         range=ranges,
                         show_titles=False,
-                        plot_contours=False,
+                        plot_contours=True,
                         title_fmt=".3f",
                         quantiles=[0.16, 0.5, 0.84],
                         truths=[np.rad2deg(Theta_map), np.rad2deg(Phi_map), np.rad2deg(Incl_map), T_map, Omega_map],
-                        smooth=0)
+                        smooth=1)
     axes = np.array(fig.axes).reshape((ndim, ndim))
     titles = [
         rf"$\Theta_0$ (deg) = {np.rad2deg(Theta_map):.3f}",
@@ -1412,6 +1412,7 @@ def run_mcmc_grid_search():
     plt.close(fig)
 
     cache.update({
+        "mcmc_grid_used": True,
         "mcmc_grid_median_Theta": float(Theta_med),
         "mcmc_grid_median_Phi":   float(Phi_med),
         "mcmc_grid_median_Incl":  float(Incl_med),
@@ -1432,7 +1433,11 @@ def run_mcmc_grid_search():
 
     np.savez(CACHE_PATH_MCMC_GRID, **cache)
     print(f"[cache] Saved MCMC grid results to {CACHE_PATH_MCMC_GRID}")       
+    M_0 = M_star * M_SUN_KG * spc.G / (280.0**3 * T_med * 1e6 * spc.year)
 
+    print("\n==== Dimensionless mass (Per-emb-50) ====")
+    print(f"M_0     = {M_0:.3e}")
+    print("=========================================")
 
 # ============================================================
 # 8. MCMC_shell / MCMC_3D
@@ -1447,9 +1452,7 @@ def run_mcmc_shell():
     labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
     nwalkers, nsteps = 32, 5000  
 
-    # 優先選擇 shell 自己以前的結果，再來是 MCMC_grid，再來才是 grid_best
-    if cache.get("mcmc_grid_used", False):
-        # 推薦：用 posterior 中位數當中心
+    if cache.get("mcmc_grid_used", True):
         Theta_center = cache["mcmc_grid_median_Theta"]
         Phi_center   = cache["mcmc_grid_median_Phi"]
         Incl_center  = cache["mcmc_grid_median_Incl"]
@@ -1484,7 +1487,7 @@ def run_mcmc_shell():
     print("[bbox] computing DATA_BBOX ...")
     DATA_BBOX = pss.compute_data_bbox(new_cube_data, max_r=max_dist_value, extra_margin=5)
     print(f"[bbox] DATA_BBOX = {DATA_BBOX}")
-    E_center = pss.shell_error_from_cube(
+    E_center, Neff = pss.shell_error_from_cube(
         new_cube_data,
         Theta_center, Phi_center, Incl_center, T_center, Omega_center,
         pa_rad, dx_au, header, Local_Standard_Velocity,
@@ -1494,6 +1497,8 @@ def run_mcmc_shell():
         DATA_BBOX,
     )
     print("[MCMC_shell] reference shell error E_center =", E_center)
+    print("[MCMC_shell] reference shell Neff =", Neff)
+
     SIGMA_LIKE_SHELL = 2 * E_center
     
     log_args = (
@@ -1541,7 +1546,17 @@ def run_mcmc_shell():
     chain = sampler.get_chain()
     print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
     print("mean acceptance:", np.mean(sampler.acceptance_fraction))
+    # fig, axes = plt.subplots(ndim, 1, figsize=(10, 2.5*ndim), sharex=True)
 
+    # for i in range(ndim):
+    #     for w in range(nwalkers):
+    #         axes[i].plot(chain[:, w, i], alpha=0.3, lw=0.5)
+    #     axes[i].set_ylabel(labels_5d[i])
+
+    # axes[-1].set_xlabel("Step")
+    # fig.tight_layout()
+    # fig.savefig(os.path.join(PLOT_DIR, "walker_trace_mcmc_shell.png"), dpi=200)
+    # plt.close(fig)
     lp_chain = sampler.get_log_prob()
     print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp_chain)))
     print(parameter_prior_ranges)
@@ -1599,11 +1614,11 @@ def run_mcmc_shell():
                         labels=labels_plot,
                         range=ranges,
                         show_titles=True,
-                        plot_contours=False,
+                        plot_contours=True,
                         title_fmt=".3f",
                         quantiles=[0.16, 0.5, 0.84],
                         truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
-                        smooth=0)
+                        smooth=1)
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell_median.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -1612,11 +1627,11 @@ def run_mcmc_shell():
                         labels=labels_plot,
                         range=ranges,
                         show_titles=False,
-                        plot_contours=False,
+                        plot_contours=True,
                         title_fmt=".3f",
                         quantiles=[0.16, 0.5, 0.84],
                         truths=[np.rad2deg(Theta_map), np.rad2deg(Phi_map), np.rad2deg(Incl_map), T_map, Omega_map],
-                        smooth=0)
+                        smooth=1)
     axes = np.array(fig.axes).reshape((ndim, ndim))
     titles = [
         rf"$\Theta_0$ (deg) = {np.rad2deg(Theta_map):.3f}",
@@ -1633,19 +1648,19 @@ def run_mcmc_shell():
     plt.close(fig)
 
     cache.update({
-        "mcmc_grid_median_Theta": float(Theta_med),
-        "mcmc_grid_median_Phi":   float(Phi_med),
-        "mcmc_grid_median_Incl":  float(Incl_med),
-        "mcmc_grid_median_T":     float(T_med),
-        "mcmc_grid_median_Omega": float(Omega_med),
+        "mcmc_shell_median_Theta": float(Theta_med),
+        "mcmc_shell_median_Phi":   float(Phi_med),
+        "mcmc_shell_median_Incl":  float(Incl_med),
+        "mcmc_shell_median_T":     float(T_med),
+        "mcmc_shell_median_Omega": float(Omega_med),
     })
 
     cache.update({
-        "mcmc_grid_map_Theta": float(Theta_map),
-        "mcmc_grid_map_Phi":   float(Phi_map),
-        "mcmc_grid_map_Incl":  float(Incl_map),
-        "mcmc_grid_map_T":     float(T_map),
-        "mcmc_grid_map_Omega": float(Omega_map),
+        "mcmc_shell_map_Theta": float(Theta_map),
+        "mcmc_shell_map_Phi":   float(Phi_map),
+        "mcmc_shell_map_Incl":  float(Incl_map),
+        "mcmc_shell_map_T":     float(T_map),
+        "mcmc_shell_map_Omega": float(Omega_map),
     })
     np.savez(CACHE_PATH_MCMC_SHELL, **cache)
     print(f"[cache] Saved MCMC shell results to {CACHE_PATH_MCMC_SHELL}")

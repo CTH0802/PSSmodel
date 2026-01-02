@@ -29,7 +29,7 @@ import corner
 RUN_REFINE = False
 RUN_MCMC_GRID = False
 USE_CACHED_FIT = True
-FIT_CACHE = "Per-emb-2_fit_gird_results.npz"
+FIT_CACHE = "Per-emb-2_fit_grid_results.npz" #grid result
 # FIT_CACHE = "Per-emb-2_fit_results.npz" #mcmc result
 
 pa_deg = 50

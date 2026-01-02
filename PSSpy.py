@@ -128,12 +128,12 @@ def PSS_model(Theta_zero, Phi_zero, Inclination, T_Myr, omega,
     r_s = c_s * T_s #m
     V_infall = - np.sqrt(2 * spc.G * solar_mass * M_SUN_KG / streamline_radius) - 3.3 * c_s #m/s
     alpha = -1/3   #-1/3 ~ 1
-    Omega_s = Omega_ref(r_s / spc.astronomical_unit, solar_mass) * omega #Keplerian velocity (radian)
-    Omega = Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
-    phi_value = Phi_zero + T_s * Omega_s * np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * M_SUN_KG)) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) 
-    # m_0 = spc.G * solar_mass * M_SUN_KG / c_s ** 2 / r_s
-    # Omega = np.sqrt(m_0) / T_s * Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
-    # phi_value = Phi_zero + 3 * Omega_s * np.sqrt(m_0) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) 
+    # Omega_s = Omega_ref(r_s / spc.astronomical_unit, solar_mass) * omega #Keplerian velocity (radian)
+    # Omega = Omega_s * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
+    # phi_value = Phi_zero + T_s * Omega_s * np.sqrt(2 * c_s ** 3 * T_s / (spc.G * solar_mass * M_SUN_KG)) * ((streamline_radius / r_s) ** (-1/2) + (streamline_radius / r_s) ** (alpha)) 
+    m_0 = spc.G * solar_mass * M_SUN_KG / c_s ** 2 / r_s
+    Omega = np.sqrt(m_0) / T_s * omega * ((streamline_radius / r_s) ** (-2) + (streamline_radius / r_s) ** (alpha - 1))
+    phi_value = Phi_zero + omega * (np.sqrt(2) * (streamline_radius / r_s) ** (-1/2) + np.sqrt(m_0) * (streamline_radius / r_s) ** (alpha)) 
     velocity_r = streamline_radius * Omega * np.sin(theta_value)
 
     ######Streamer coordinate######
@@ -536,7 +536,7 @@ def shell_error_from_cube(
     nv, nz, nx = cube_shape
 
     if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
-        return np.inf
+        return np.inf, np.inf
 
     # 1) 建立 model line (物理單位：AU & km/s)
     x_m, y_m, z_m, u_m, v_m, w_m = PSS_model(
@@ -575,7 +575,7 @@ def shell_error_from_cube(
     v_pix_line = v_pix_line[valid_model]
 
     if x_pix_line.size == 0:
-        return np.inf
+        return np.inf, np.inf
 
     # 4) 只在「data 有訊號的 bounding box」範圍內 stamp 殼層（bbox 已預先算好）
     v_min, v_max, z_min, z_max, x_min, x_max = data_bbox
@@ -606,7 +606,7 @@ def shell_error_from_cube(
     x_line_sub = x_line_sub[valid_sub]
 
     if v_line_sub.size == 0:
-        return np.inf
+        return np.inf, np.inf
 
     # --- 建立 subcube 的殼層 cube ---
     shell_cube_sub = apply_shell_ball_to_line(
@@ -628,16 +628,18 @@ def shell_error_from_cube(
     )
 
     if not np.any(valid):
-        return np.inf
+        return np.inf, np.inf
 
     s = shell_cube_sub[valid].astype(float)
     w = data_sub[valid].astype(float)
 
     if w.sum() <= 0:
-        return np.inf
+        return np.inf, np.inf
+
+    Neff = (w.sum()**2) / np.sum(w**2)   # effective sample size
 
     weighted_mean_shell = np.sum(s * w) / np.sum(w)
-    return float(weighted_mean_shell)
+    return float(weighted_mean_shell), float(Neff)
 
 # ===================================================================
 # 5. MCMC 框架 (MCMC Framework)
@@ -669,7 +671,7 @@ def log_likelihood_shell(
     if not np.any(np.isfinite(data_cube) & (data_cube != 0.0)):
         return -np.inf
 
-    E = shell_error_from_cube(
+    E, Neff = shell_error_from_cube(
         data_cube,
         Theta_zero, Phi_zero, Inclination, T_Myr, omega,
         pa_rad, dx_au, header, Local_Standard_Velocity,
@@ -682,10 +684,12 @@ def log_likelihood_shell(
         return -np.inf
     if E <= 0:
         return -np.inf
-    alpha_like = 20.0
+    alpha_ref = 20.0 #(from -50)
+    Neff_ref = 5671.446111312402 #(from -50)
+    alpha_like = alpha_ref * (Neff / Neff_ref)
     chi = E / (sigma_like / 2.0)
-    return -alpha_like * chi**2
-
+    return -alpha_ref * chi**2
+    
 def log_prior_shell(params, prior_ranges):
     """
     計算對數先驗值。
@@ -853,7 +857,7 @@ def log_likelihood_fast(params, streamercom_x, streamercom_z, streamercom_v,
         return -np.inf
     if rmse_error <= 0:
         return -np.inf
-    alpha_like = 20.0 
+    alpha_like = 20.0 #20.0(-50)
     chi = rmse_error / (sigma_like / 2.0) 
     return -alpha_like * chi**2
 

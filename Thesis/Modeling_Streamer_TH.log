@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  11 DEC 2025 13:26
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  2 JAN 2026 02:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1130,84 +1130,7 @@ File: ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png Graphic file (typ
 [5]
 
 [6]
-! Missing $ inserted.
-<inserted text> 
-                $
-l.153 ...7.705 & HC$_3$N (10--9) & 3\farcs73\times
-                                                  3\farcs02 \\
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.154 P
-       er-emb-50 & NOEMA & 03:29:07.768 & +31:21:57.128 & C$^{18}$O (2--1) &...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.154 ....128 & C$^{18}$O (2--1) & 1\farcs24\times
-                                                  0\farcs72 \\
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.155 S
-       VS~13A    & ALMA  & 03:29:03.740 & +31:16:03.800 & DCN (3--2) & 0\far...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.155 ...:16:03.800 & DCN (3--2) & 0\farcs15\times
-                                                  0\farcs11 \\
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.156 S
-       ~CrA      & ALMA  & 19:01:08.600 & --36:57:20.000 & $^{13}$CO (2--1) ...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.157 ....190 & HCO$^{+}$ (3--2) & 0\farcs10\times
-                                                  0\farcs09 \\
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.158 \hline
-            
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-
-Overfull \hbox (16.35672pt too wide) in paragraph at lines 149--160
+Overfull \hbox (21.67479pt too wide) in paragraph at lines 149--160
  [][] 
  []
 
@@ -1222,8 +1145,8 @@ Chapter 2.
 ]
 
 [9]
-Overfull \hbox (20.9861pt too wide) detected at line 72
-[]
+Overfull \hbox (4.23038pt too wide) in paragraph at lines 56--58
+\TU/lmr/m/n/12 This transformation defines the intrinsic three-dimensional structure of the streamer
  []
 
 
@@ -1231,6 +1154,15 @@ Overfull \hbox (20.9861pt too wide) detected at line 72
 [10]
 
 [11]
+Overfull \hbox (6.99457pt too wide) in paragraph at lines 107--109
+\TU/lmr/m/n/12 The line-of-sight velocity $\OML/cmm/m/it/12 v[]$ \TU/lmr/m/n/12 is therefore directly comparable to the observed spectral-
+ []
+
+
+
+[12]
+
+[13]
 File: ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png>
 File: ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
@@ -1257,15 +1189,15 @@ File: ./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png Graphic fil
 <./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png>
 
 
-[12]
-
-[13]
-
 [14]
 
 [15]
 
 [16]
+
+[17]
+
+[18]
 
 Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 (xeCJK)                
@@ -1274,9 +1206,11 @@ Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 
 
 
-[17])
+[19])
 
-[18]
+[20]
+
+[21]
 Chapter 3.
 (././Results.tex
 File: ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
@@ -1339,39 +1273,39 @@ File: ./Results_image/HLTau/shell_results/corner_mcmc_shell.png Graphic file (ty
 <./Results_image/HLTau/shell_results/corner_mcmc_shell.png>
 )
 
-[19
+[22
 
 ]
-
-[20]
-
-[21]
-
-[22]
 
 [23]
 
 [24]
+
+[25]
+
+[26]
+
+[27]
 Chapter 4.
 (././Conclusion.tex)
 
-[25
+[28
 
 ]
 Chapter 5.
 (././Appendix.tex
 
-[26
+[29
 
 ]
 Appendix A.
 
 
-[27
+[30
 
 ]
 
-[28
+[31
 
 ]) (./Modeling_Streamer_TH.bbl
 ! Undefined control sequence.
@@ -1429,7 +1363,16 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.27 ...d}, L., {Dzib}, S.~A., {et~al.} 2018, \apj
+l.27 ..., {Kristensen}, L.~E., {et~al.} 2017, \aap
+                                                  , 600, A99, \dodoi{10.1051...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.30 ...d}, L., {Dzib}, S.~A., {et~al.} 2018, \apj
                                                   , 865, 73, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1438,7 +1381,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.33 ....~J., {Tobin}, J.~J., {et~al.} 2016, \apjl
+l.36 ....~J., {Tobin}, J.~J., {et~al.} 2016, \apjl
                                                   , 817, L14, \dodoi{10.3847...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1446,8 +1389,14 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
+
+
+[32
+
+
+]
 ! Undefined control sequence.
-l.36 ...~L., {Dunham}, M.~M., {et~al.} 2019, \apjs
+l.39 ...~L., {Dunham}, M.~M., {et~al.} 2019, \apjs
                                                   , 245, 21, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1455,14 +1404,17 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-
-
-[29
-
-
-]
 ! Undefined control sequence.
-l.39 ..., {Segura-Cox}, D.~M., {et~al.} 2022, \aap
+l.42 ...}, L.~W., {Li}, Z.-Y., {et~al.} 2018, \apj
+                                                  , 867, 43, \dodoi{10.3847/...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.45 ..., {Segura-Cox}, D.~M., {et~al.} 2022, \aap
                                                   , 667, A12, \dodoi{10.1051...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1471,7 +1423,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.42 ..., P.-G., {Hirano}, N., {et~al.} 2019, \apj
+l.48 ..., P.-G., {Hirano}, N., {et~al.} 2019, \apj
                                                   , 880, 69, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1480,7 +1432,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.45 ...~F., {Speagle}, J.~S., {et~al.} 2018, \apj
+l.51 ...~F., {Speagle}, J.~S., {et~al.} 2018, \apj
                                                   , 869, 83, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1490,7 +1442,7 @@ and I'll forget about whatever was undefined.
 
 )
 
-[30] (./Modeling_Streamer_TH.aux)
+[33] (./Modeling_Streamer_TH.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
@@ -1500,15 +1452,15 @@ L3 programming layer <2022/08/05>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `Modeling_Streamer_TH.out' has not changed.
-(rerunfilecheck)             Checksum: 69BBBDCE619A8A55EFE839DE5441172E;6171.
+(rerunfilecheck)             Checksum: C31E13719E51E8D0E2FFC1F11A8F6051;6173.
  ) 
 Here is how much of TeX's memory you used:
- 29164 strings out of 473832
- 623380 string characters out of 5729482
- 1026096 words of memory out of 5000000
- 51647 multiletter control sequences out of 15000+600000
+ 29170 strings out of 473832
+ 623494 string characters out of 5729482
+ 1026586 words of memory out of 5000000
+ 51653 multiletter control sequences out of 15000+600000
  564927 words of font info for 78 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,2645b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Modeling_Streamer_TH.xdv (38 pages, 334320 bytes).
+Output written on Modeling_Streamer_TH.xdv (41 pages, 375044 bytes).

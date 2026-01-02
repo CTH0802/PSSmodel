@@ -19,7 +19,7 @@ import PSSpy as pss
 # 1. 基本設定
 # ============================================================
 TARGETS = ["Per-emb-2", "Per-emb-50", "SCrA"]   # 可改成你要畫的列表
-TARGET_NAME = "Per-emb-50"                       # ← 選一個要畫的目標
+TARGET_NAME = "HLTau"                       # ← 選一個要畫的目標
 CACHE_DIR = "."                                 # 假設 cache 在目前目錄
 GIF_NAME = f"inclination_{TARGET_NAME}.gif"
 
