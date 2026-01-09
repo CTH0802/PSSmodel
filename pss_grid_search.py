@@ -25,22 +25,19 @@ def run_grid_search(
       - grid: dict of arrays (theta_grid, phi_grid, ...)
       - error: 5D array
     """
-    Omega_ref = pss.Omega_ref(radius_ref_au, M_star)
-    P_half_Myr = np.pi / Omega_ref / 1e6 / spc.year
-    T_range = [T_factor_range[0]*P_half_Myr, T_factor_range[1]*P_half_Myr]
 
     n_theta = n_phi = n_inc = n_T = n_Omega = n_grid
     if phi_grid == None:
-        theta_grid = np.linspace(0.0, 0.5*np.pi, n_theta + 2)[1:-1]
+        theta_grid = np.linspace(0.0, np.pi, n_theta + 2)[1:-1]
         phi_grid   = np.linspace(-np.pi, np.pi, n_phi, endpoint=False)
         inc_grid   = np.linspace(-0.5*np.pi, 0.5*np.pi, n_inc + 2)[1:-1]
-        T_grid     = np.logspace(np.log10(T_range[0]), np.log10(T_range[1]), n_T)
+        T_grid     = np.logspace(np.log10(T_factor_range[0]), np.log10(T_factor_range[1]), n_T)
         omega_grid = np.linspace(0.0, 1.0, n_Omega + 1)[1:]
     else:
-        theta_grid = np.linspace(0.0, 0.5*np.pi, n_theta + 2)[1:-1]
+        theta_grid = np.linspace(0.0, np.pi, n_theta + 2)[1:-1]
         phi_grid   = np.linspace(phi_grid[0], phi_grid[1], n_phi, endpoint=False)
         inc_grid   = np.linspace(-0.5*np.pi, 0.5*np.pi, n_inc + 2)[1:-1]
-        T_grid     = np.logspace(np.log10(T_range[0]), np.log10(T_range[1]), n_T)
+        T_grid     = np.logspace(np.log10(T_factor_range[0]), np.log10(T_factor_range[1]), n_T)
         omega_grid = np.linspace(0.0, 1.0, n_Omega + 1)[1:]
 
     error = np.zeros((n_theta, n_phi, n_inc, n_T, n_Omega), dtype=float)
@@ -146,7 +143,7 @@ def compute_priors_from_grid(error, grid, best_val, frac=0.05, phi_range=None):
     
     if phi_range == None:
         priors = {
-            "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=0.5*np.pi),
+            "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=np.pi),
             "Phi zero":    padded_range(Phi_good,   abs_min=-np.pi,  abs_max=np.pi),
             "Inclination": padded_range(Incl_good,  abs_min=-0.5*np.pi, abs_max=0.5*np.pi),
             "Time":        padded_range(T_good,     abs_min=0.0),
@@ -154,7 +151,7 @@ def compute_priors_from_grid(error, grid, best_val, frac=0.05, phi_range=None):
         }
     else:
         priors = {
-            "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=0.5*np.pi),
+            "Theta zero":  padded_range(Theta_good, abs_min=0.0,     abs_max=np.pi),
             "Phi zero":    padded_range(Phi_good,   abs_min=phi_range[0],  abs_max=phi_range[1]),
             "Inclination": padded_range(Incl_good,  abs_min=-0.5*np.pi, abs_max=0.5*np.pi),
             "Time":        padded_range(T_good,     abs_min=0.0),

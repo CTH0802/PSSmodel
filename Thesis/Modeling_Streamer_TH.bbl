@@ -23,17 +23,26 @@
 \bibitem[{{Hsieh} {et~al.}(2023){Hsieh}, {Segura-Cox}, {Pineda}, {Caselli}, {Bouscasse}, {Neri}, {Lopez-Sepulcre}, {Valdivia-Mena}, {Maureira}, {Henning}, {Smirnov-Pinchukov}, {Semenov}, {M{\"o}ller}, {Cunningham}, {Fuente}, {Marino}, {Dutrey}, {Tafalla}, {Chapillon}, {Ceccarelli}, \& {Zhao}}]{Hsieh_2023}
 {Hsieh}, T.~H., {Segura-Cox}, D.~M., {Pineda}, J.~E., {et~al.} 2023, \aap, 669, A137, \dodoi{10.1051/0004-6361/202244183}
 
+\bibitem[{{Larson}(1969)}]{Larson_1969}
+{Larson}, R.~B. 1969, \mnras, 145, 271, \dodoi{10.1093/mnras/145.3.271}
+
 \bibitem[{{Mottram} {et~al.}(2017){Mottram}, {van Dishoeck}, {Kristensen}, {Karska}, {San Jos{\'e}-Garc{\'\i}a}, {Khanna}, {Herczeg}, {Andr{\'e}}, {Bontemps}, {Cabrit}, {Carney}, {Drozdovskaya}, {Dunham}, {Evans}, {Fedele}, {Green}, {Harsono}, {Johnstone}, {J{\o}rgensen}, {K{\"o}nyves}, {Nisini}, {Persson}, {Tafalla}, {Visser}, \& {Y{\i}ld{\i}z}}]{Mottram_2017}
 {Mottram}, J.~C., {van Dishoeck}, E.~F., {Kristensen}, L.~E., {et~al.} 2017, \aap, 600, A99, \dodoi{10.1051/0004-6361/201628682}
 
 \bibitem[{{Ortiz-Le{\'o}n} {et~al.}(2018){Ortiz-Le{\'o}n}, {Loinard}, {Dzib}, {Galli}, {Kounkel}, {Mioduszewski}, {Rodr{\'\i}guez}, {Torres}, {Hartmann}, {Boden}, {Evans}, {Brice{\~n}o}, \& {Tobin}}]{Ortiz_2018}
 {Ortiz-Le{\'o}n}, G.~N., {Loinard}, L., {Dzib}, S.~A., {et~al.} 2018, \apj, 865, 73, \dodoi{10.3847/1538-4357/aada49}
 
+\bibitem[{{Penston}(1969)}]{Penston_1969}
+{Penston}, M.~V. 1969, \mnras, 144, 425, \dodoi{10.1093/mnras/144.4.425}
+
 \bibitem[{{Pineda} {et~al.}(2020){Pineda}, {Segura-Cox}, {Caselli}, {Cunningham}, {Zhao}, {Schmiedeke}, {Maureira}, \& {Neri}}]{Pineda_2020}
 {Pineda}, J.~E., {Segura-Cox}, D., {Caselli}, P., {et~al.} 2020, Nature Astronomy, 4, 1158, \dodoi{10.1038/s41550-020-1150-z}
 
 \bibitem[{{Segura-Cox} {et~al.}(2016){Segura-Cox}, {Harris}, {Tobin}, {Looney}, {Li}, {Chandler}, {Kratter}, {Dunham}, {Sadavoy}, {Perez}, \& {Melis}}]{Segura_2016}
 {Segura-Cox}, D.~M., {Harris}, R.~J., {Tobin}, J.~J., {et~al.} 2016, \apjl, 817, L14, \dodoi{10.3847/2041-8205/817/2/L14}
+
+\bibitem[{{Shu}(1977)}]{Shu_1977}
+{Shu}, F.~H. 1977, \apj, 214, 488, \dodoi{10.1086/155274}
 
 \bibitem[{{Stephens} {et~al.}(2019){Stephens}, {Bourke}, {Dunham}, {Myers}, {Pokhrel}, {Tobin}, {Arce}, {Sadavoy}, {Vorobyov}, {Pineda}, {Offner}, {Lee}, {Kristensen}, {J{\o}rgensen}, {Gurwell}, \& {Goodman}}]{Stephens_2019}
 {Stephens}, I.~W., {Bourke}, T.~L., {Dunham}, M.~M., {et~al.} 2019, \apjs, 245, 21, \dodoi{10.3847/1538-4365/ab5181}
@@ -43,6 +52,9 @@
 
 \bibitem[{{Valdivia-Mena} {et~al.}(2022){Valdivia-Mena}, {Pineda}, {Segura-Cox}, {Caselli}, {Neri}, {L{\'o}pez-Sepulcre}, {Cunningham}, {Bouscasse}, {Semenov}, {Henning}, {Pi{\'e}tu}, {Chapillon}, {Dutrey}, {Fuente}, {Guilloteau}, {Hsieh}, {Jim{\'e}nez-Serra}, {Marino}, {Maureira}, {Smirnov-Pinchukov}, {Tafalla}, \& {Zhao}}]{Valdivia-Mena_2022}
 {Valdivia-Mena}, M.~T., {Pineda}, J.~E., {Segura-Cox}, D.~M., {et~al.} 2022, \aap, 667, A12, \dodoi{10.1051/0004-6361/202243310}
+
+\bibitem[{{Whitworth} \& {Summers}(1985)}]{Whitworth_1985}
+{Whitworth}, A., \& {Summers}, D. 1985, \mnras, 214, 1, \dodoi{10.1093/mnras/214.1.1}
 
 \bibitem[{{Yen} {et~al.}(2019){Yen}, {Gu}, {Hirano}, {Koch}, {Lee}, {Liu}, \& {Takakuwa}}]{Yen_2019}
 {Yen}, H.-W., {Gu}, P.-G., {Hirano}, N., {et~al.} 2019, \apj, 880, 69, \dodoi{10.3847/1538-4357/ab29f8}

@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  2 JAN 2026 02:10
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  9 JAN 2026 19:09
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1145,13 +1145,13 @@ Chapter 2.
 ]
 
 [9]
+
+[10]
 Overfull \hbox (4.23038pt too wide) in paragraph at lines 56--58
 \TU/lmr/m/n/12 This transformation defines the intrinsic three-dimensional structure of the streamer
  []
 
 
-
-[10]
 
 [11]
 Overfull \hbox (6.99457pt too wide) in paragraph at lines 107--109
@@ -1206,7 +1206,11 @@ Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 
 
 
-[19])
+[19]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+)
 
 [20]
 
@@ -1223,6 +1227,15 @@ File: ./Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_model_vs_mom1_overla
 <./Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_model_vs_mom1_overlay_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_mcmc_corner.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_mcmc_corner.png>
+
+
+[22
+
+]
+
+[23]
+
+[24]
 File: ./Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png>
 File: ./Results_image/Per_emb_50/grid_results/mcmc/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
@@ -1235,10 +1248,14 @@ File: ./Results_image/Per_emb_50/grid_results/mcmc/Per-emb-50_mom1_cacheonly.png
 <./Results_image/Per_emb_50/grid_results/mcmc/Per-emb-50_mom1_cacheonly.png>
 File: ./Results_image/Per_emb_50/shell_results/Per-emb-50_mom1_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/Per-emb-50_mom1_cacheonly.png>
-File: ./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median.png>
-File: ./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median.png>
+File: ./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_peak2d_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_peak2d_cacheonly.png>
+File: ./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median_cacheonly.png>
+File: ./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_peak2d_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_peak2d_cacheonly.png>
+File: ./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median_cacheonly.png>
 File: ./Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png>
 File: ./Results_image/SCrA/grid_results/mcmc/SCrA_mom0_cacheonly.png Graphic file (type bmp)
@@ -1267,45 +1284,49 @@ File: ./Results_image/HLTau/grid_results/mcmc/HLTau_mom1_cacheonly.png Graphic f
 <./Results_image/HLTau/grid_results/mcmc/HLTau_mom1_cacheonly.png>
 File: ./Results_image/HLTau/shell_results/HLTau_mom1_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/shell_results/HLTau_mom1_cacheonly.png>
-File: ./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid.png Graphic file (type bmp)
-<./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid.png>
-File: ./Results_image/HLTau/shell_results/corner_mcmc_shell.png Graphic file (type bmp)
-<./Results_image/HLTau/shell_results/corner_mcmc_shell.png>
+File: ./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_map.png Graphic file (type bmp)
+<./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_map.png>
+File: ./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_median.png Graphic file (type bmp)
+<./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_median.png>
+File: ./Results_image/HLTau/shell_results/corner_mcmc_shell_map.png Graphic file (type bmp)
+<./Results_image/HLTau/shell_results/corner_mcmc_shell_map.png>
+File: ./Results_image/HLTau/shell_results/corner_mcmc_shell_median.png Graphic file (type bmp)
+<./Results_image/HLTau/shell_results/corner_mcmc_shell_median.png>
 )
-
-[22
-
-]
-
-[23]
-
-[24]
 
 [25]
 
 [26]
 
 [27]
+
+[28]
+
+[29]
 Chapter 4.
-(././Conclusion.tex)
-
-[28
-
-]
-Chapter 5.
-(././Appendix.tex
-
-[29
-
-]
-Appendix A.
-
+(././Discussion.tex
 
 [30
 
+])
+
+[31]
+Chapter 5.
+(././Conclusion.tex
+
+[32
+
+]) (././Appendix.tex
+
+[33]
+Appendix A.
+
+
+[34
+
 ]
 
-[31
+[35
 
 ]) (./Modeling_Streamer_TH.bbl
 ! Undefined control sequence.
@@ -1363,7 +1384,16 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.27 ..., {Kristensen}, L.~E., {et~al.} 2017, \aap
+l.27 {Larson}, R.~B. 1969, \mnras
+                                 , 145, 271, \dodoi{10.1093/mnras/145.3.271}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.30 ..., {Kristensen}, L.~E., {et~al.} 2017, \aap
                                                   , 600, A99, \dodoi{10.1051...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1372,7 +1402,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.30 ...d}, L., {Dzib}, S.~A., {et~al.} 2018, \apj
+l.33 ...d}, L., {Dzib}, S.~A., {et~al.} 2018, \apj
                                                   , 865, 73, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1381,8 +1411,8 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.36 ....~J., {Tobin}, J.~J., {et~al.} 2016, \apjl
-                                                  , 817, L14, \dodoi{10.3847...
+l.36 {Penston}, M.~V. 1969, \mnras
+                                  , 144, 425, \dodoi{10.1093/mnras/144.4.425}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -1391,12 +1421,30 @@ and I'll forget about whatever was undefined.
 
 
 
-[32
+[36
 
 
 ]
 ! Undefined control sequence.
-l.39 ...~L., {Dunham}, M.~M., {et~al.} 2019, \apjs
+l.42 ....~J., {Tobin}, J.~J., {et~al.} 2016, \apjl
+                                                  , 817, L14, \dodoi{10.3847...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.45 {Shu}, F.~H. 1977, \apj
+                            , 214, 488, \dodoi{10.1086/155274}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.48 ...~L., {Dunham}, M.~M., {et~al.} 2019, \apjs
                                                   , 245, 21, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1405,7 +1453,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.42 ...}, L.~W., {Li}, Z.-Y., {et~al.} 2018, \apj
+l.51 ...}, L.~W., {Li}, Z.-Y., {et~al.} 2018, \apj
                                                   , 867, 43, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1414,7 +1462,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.45 ..., {Segura-Cox}, D.~M., {et~al.} 2022, \aap
+l.54 ..., {Segura-Cox}, D.~M., {et~al.} 2022, \aap
                                                   , 667, A12, \dodoi{10.1051...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1423,7 +1471,16 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.48 ..., P.-G., {Hirano}, N., {et~al.} 2019, \apj
+l.57 ...tworth}, A., \& {Summers}, D. 1985, \mnras
+                                                  , 214, 1, \dodoi{10.1093/m...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.60 ..., P.-G., {Hirano}, N., {et~al.} 2019, \apj
                                                   , 880, 69, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1432,7 +1489,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.51 ...~F., {Speagle}, J.~S., {et~al.} 2018, \apj
+l.63 ...~F., {Speagle}, J.~S., {et~al.} 2018, \apj
                                                   , 869, 83, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1442,7 +1499,7 @@ and I'll forget about whatever was undefined.
 
 )
 
-[33] (./Modeling_Streamer_TH.aux)
+[37] (./Modeling_Streamer_TH.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/08/05>
@@ -1452,15 +1509,15 @@ L3 programming layer <2022/08/05>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `Modeling_Streamer_TH.out' has not changed.
-(rerunfilecheck)             Checksum: C31E13719E51E8D0E2FFC1F11A8F6051;6173.
+(rerunfilecheck)             Checksum: 7C792D75DE1C62F2932C74524E035E64;5904.
  ) 
 Here is how much of TeX's memory you used:
- 29170 strings out of 473832
- 623494 string characters out of 5729482
- 1026586 words of memory out of 5000000
- 51653 multiletter control sequences out of 15000+600000
- 564927 words of font info for 78 fonts, out of 8000000 for 9000
+ 29258 strings out of 473832
+ 628610 string characters out of 5729482
+ 1026634 words of memory out of 5000000
+ 51731 multiletter control sequences out of 15000+600000
+ 564935 words of font info for 79 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,2645b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Modeling_Streamer_TH.xdv (41 pages, 375044 bytes).
+Output written on Modeling_Streamer_TH.xdv (45 pages, 470780 bytes).

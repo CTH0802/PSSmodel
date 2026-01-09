@@ -80,6 +80,7 @@ def velocity_to_channel_index(v_lsr, header, nz=None):
     v_pix = (v_lsr - CRVAL3) / CDELT3 + CRPIX3 - 1.0  # 0-based index
     if nz is not None:
         v_pix = np.clip(v_pix, 0, nz - 1)
+
     return v_pix
 
 # ===================================================================
@@ -231,7 +232,7 @@ def circular_mask(shape, center, radius):
     - radius: 半徑（pixel）
 
     Returns:
-    - mask: 2D boolean array，圓形區域為 True，其餘為 False
+    - mask: 2D boolean array，圓形區域為 False，其餘為 True
     """
     Y, X = np.ogrid[:shape[0], :shape[1]]
     dist_from_center = np.sqrt((X - center[1])**2 + (Y - center[0])**2)
@@ -561,9 +562,21 @@ def shell_error_from_cube(
     if Local_Standard_Velocity is None:
         Local_Standard_Velocity = float(header.get("LSRVEL", 0.0))
     v_lsr = v_m + Local_Standard_Velocity
-    v_pix_line = velocity_to_channel_index(v_lsr, header, nz=nv)
+    v_pix_line = velocity_to_channel_index(v_lsr, header, nz=None)  # 不要 clip
     v_pix_line = np.round(v_pix_line).astype(np.int64)
-
+    # print("v_m range:", np.nanmin(v_m), np.nanmax(v_m))
+    # print("v_lsr range:", np.nanmin(v_lsr), np.nanmax(v_lsr))
+    # print("header CUNIT3:", header.get("CUNIT3"))
+    # print("CRVAL3, CDELT3, CRPIX3:", header["CRVAL3"], header["CDELT3"], header["CRPIX3"])
+    # print("raw v_pix range:", np.nanmin(v_pix_line), np.nanmax(v_pix_line))
+    # print("model pix range:",
+    #     x_pix_line.min(), x_pix_line.max(),
+    #     z_pix_line.min(), z_pix_line.max(),
+    #     v_pix_line.min(), v_pix_line.max())
+    # print("cube shape:", nv, nz, nx)
+    i = np.array([0, nv-1], dtype=float)
+    v_edge = header["CRVAL3"] + (i + 1 - header["CRPIX3"]) * header["CDELT3"]
+    # print("cube v at [0, nv-1] (header unit):", v_edge)
     # 3) 剪掉 cube 外的 model 點
     valid_model = (
         (x_pix_line >= 0) & (x_pix_line < nx) &
@@ -759,24 +772,6 @@ def log_posterior_shell(
         return -np.inf
 
     return post
-
-def in_phi_range(phi, phi_min, phi_max):
-    """
-    Handle periodic prior for Phi in [0, 2π):
-    若區間沒有跨 0 度：直接判斷 phi_min <= phi <= phi_max
-    若區間跨越 0 度：例如 (350°, 10°)，則接受 phi >= phi_min 或 phi <= phi_max
-    """
-    # 正規化到 [0, 2π)
-    two_pi = 2.0 * np.pi
-    phi = phi % two_pi
-    phi_min = phi_min % two_pi
-    phi_max = phi_max % two_pi
-
-    if phi_min <= phi_max:
-        return (phi_min <= phi) and (phi <= phi_max)
-    else:
-        # wrap-around case
-        return (phi >= phi_min) or (phi <= phi_max)
 
 # ===================================================================
 # 1. MCMC 先驗 (Prior)

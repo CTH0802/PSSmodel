@@ -7,9 +7,13 @@ Two-stage grid search: coarse + refined
 # 1. Import modules
 # ============================================================
 import sys, os, time
+import contextlib
+import io
 import numpy as np
 import scipy.constants as spc
 from scipy.interpolate import interp1d
+from scipy.stats import gaussian_kde
+from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.collections import LineCollection
@@ -22,15 +26,21 @@ from astropy import units as u
 from tqdm import tqdm
 from spectral_cube import SpectralCube
 import emcee 
+from multiprocessing import Pool
 import PSSpy as pss
+from pss_grid_search import compute_priors_from_grid
 import corner 
 
 
 RUN_REFINE = False
-RUN_MCMC_GRID = False
-USE_CACHED_FIT = True
-FIT_CACHE = "Per-emb-2_fit_grid_results.npz" #grid result
-# FIT_CACHE = "Per-emb-2_fit_results.npz" #mcmc result
+RUN_MCMC_GRID = True
+Grid_FIT_CACHE = "Per-emb-2_fit_grid_results.npz" #grid result
+MCMC_FIT_CACHE = "Per-emb-2_mcmc_grid_chain.npz" #mcmc result
+
+USE_CACHED_FIT = False
+FIT_CACHE = MCMC_FIT_CACHE
+
+PLOT_PARAM_MODE = "median"   # "median" or "peak"
 
 pa_deg = 50
 pa_rad = np.deg2rad(pa_deg)
@@ -175,6 +185,41 @@ plt.tight_layout()
 plt.savefig(os.path.join(PLOT_DIR, 'Per-emb-2_centroids_mom1.png'), dpi=200)
 plt.close(fig)
 
+def get_mcmc_moves(mode="explore"):
+    """
+    回傳 emcee moves。
+    mode:
+      - "explore": 偏探索 (DE + Snooker)
+      - "refine" : 偏收斂 (StretchMove)
+      - 其他     : 折衷
+
+    Moves 說明：
+      - StretchMove：affine-invariant，收斂穩定，適合 refine
+      - DEMove：差分進化（Differential Evolution），跳躍性大，探索性強
+      - DESnookerMove：特殊反射式 move，有助於跳出局部極值
+    """
+    if mode == "explore":
+        # 以探索為主：DEMove 為主，Snooker 輔助，StretchMove 較少
+        return [
+            (emcee.moves.StretchMove(a=2.5), 0.3),   # affine-invariant，收斂穩定，適合 refine
+            (emcee.moves.DEMove(),           0.6),   # 差分進化，跳躍性大，探索性強
+            (emcee.moves.DESnookerMove(),    0.1),   # 反射式 move，有助於跳出局部極值
+        ]
+    elif mode == "refine":
+        # 以收斂為主：StretchMove 為主，DEMove 輔助
+        return [
+            (emcee.moves.StretchMove(a=2.5), 0.8),   # affine-invariant，收斂穩定，適合 refine
+            (emcee.moves.DEMove(),           0.1),   # 差分進化，跳躍性大，探索性強
+            (emcee.moves.DESnookerMove(),    0.1),   # 反射式 move，有助於跳出局部極值
+        ]
+    else:
+        # 折衷模式：各 move 均衡
+        return [
+            (emcee.moves.StretchMove(a=2.5), 0.4),   # affine-invariant，收斂穩定，適合 refine
+            (emcee.moves.DEMove(),           0.3),   # 差分進化，跳躍性大，探索性強
+            (emcee.moves.DESnookerMove(),    0.3),   # 反射式 move，有助於跳出局部極值
+        ]
+
 def _compute_extent(header, im_center, ny, nx):
     dx_arcsec = header["CDELT1"] * 3600.0
     dz_arcsec = header["CDELT2"] * 3600.0
@@ -183,6 +228,35 @@ def _compute_extent(header, im_center, ny, nx):
     dec_min= (0   - im_center[0]) * dz_arcsec
     dec_max= (ny  - im_center[0]) * dz_arcsec
     return (ra_min, ra_max, dec_min, dec_max), dx_arcsec, dz_arcsec
+
+def summarize_1d_posterior(samples, name, bins=30):
+    samples = np.asarray(samples)
+    samples = samples[np.isfinite(samples)]
+    if samples.size == 0:
+        print(f"  {name:<12s}: no samples")
+        return
+
+    hist, _ = np.histogram(samples, bins=bins)
+    if np.all(hist == 0):
+        print(f"  {name:<12s}: flat-ish")
+        return
+
+    smooth = np.convolve(hist, [1, 4, 6, 4, 1], mode="same")
+    peak_mask = (smooth[1:-1] > smooth[:-2]) & (smooth[1:-1] > smooth[2:])
+    peaks = smooth[1:-1][peak_mask]
+    if peaks.size == 0:
+        n_peaks = 0
+    else:
+        thr = 0.5 * np.max(peaks)
+        n_peaks = int(np.sum(peaks >= thr))
+
+    if n_peaks <= 0:
+        shape = "flat-ish"
+    elif n_peaks == 1:
+        shape = "unimodal"
+    else:
+        shape = "multimodal"
+    print(f"  {name:<12s}: {shape}")
 
 def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           header, pa_rad, dx_au, im_center,
@@ -755,6 +829,67 @@ def plot_z_v_imshow(
     plt.tight_layout()
     plt.savefig(os.path.join(PLOT_DIR, outname), dpi=200)
     plt.close()
+
+def corner_2d_peak(x, y, bins=50, smooth=1.0, xlim=None, ylim=None):
+    """
+    Mimic corner's 'smooth' peak on a 2D marginal:
+      histogram2d (density) -> gaussian_filter(smooth) -> argmax -> bin center
+    Returns
+    -------
+    (x_peak, y_peak), H_smooth, (ix, iy), (xcenters, ycenters)
+    """
+    x = np.asarray(x, float)
+    y = np.asarray(y, float)
+
+    if xlim is None:
+        xlo, xhi = np.nanpercentile(x, [0, 100])
+    else:
+        xlo, xhi = xlim
+    if ylim is None:
+        ylo, yhi = np.nanpercentile(y, [0, 100])
+    else:
+        ylo, yhi = ylim
+
+    H, xedges, yedges = np.histogram2d(
+        x, y, bins=bins, range=[[xlo, xhi], [ylo, yhi]], density=True
+    )
+    Hs = gaussian_filter(H, smooth)
+
+    ix, iy = np.unravel_index(np.argmax(Hs), Hs.shape)
+    xcenters = 0.5 * (xedges[:-1] + xedges[1:])
+    ycenters = 0.5 * (yedges[:-1] + yedges[1:])
+    return (xcenters[ix], ycenters[iy]), Hs, (ix, iy), (xcenters, ycenters)
+
+def peak_pm(samples_1d, peak, frac_side=0.68):
+    """
+    Compute peak-centered ±(34%) interval on each side:
+      P(peak-err_lo <= x <= peak) = frac_side
+      P(peak <= x <= peak+err_hi) = frac_side
+
+    Returns
+    -------
+    err_lo, err_hi
+    """
+    s = np.asarray(samples_1d, float)
+    s = s[np.isfinite(s)]
+    if s.size == 0:
+        return np.nan, np.nan
+
+    left  = s[s <= peak]
+    right = s[s >= peak]
+
+    # 需要每一側至少有一些點，不然會爆
+    if left.size < 5 or right.size < 5:
+        return np.nan, np.nan
+
+    # 左側：取 (1-frac_side) 分位數，會靠近 peak
+    q_left  = np.quantile(left,  1.0 - frac_side)
+    # 右側：取 frac_side 分位數，會靠近 peak
+    q_right = np.quantile(right, frac_side)
+
+    err_lo = peak - q_left
+    err_hi = q_right - peak
+    return float(err_lo), float(err_hi)
 # ============================================================
 # 4d. MCMC refinement around grid best-fit (fast likelihood)
 # ============================================================
@@ -768,65 +903,339 @@ def run_mcmc_grid(
     solar_mass,
     scale,
     log_power,
+    sigma_like,
     nwalkers=64,
     nsteps=3000,
-    burnin=1000,
     out_chain="Per-emb-2_mcmc_grid_chain.npz",
 ):
-    """
-    以 grid-search 的最佳解為起點，對 5D 參數跑一輪 MCMC (fast likelihood)。
-    
-    start_params_rad: array-like, [Theta0, Phi0, Incl, T_Myr, Omega] (Theta/Phi/Incl 用 rad)
-    """
-    ndim = 5
-    start_params_rad = np.asarray(start_params_rad, dtype=float)
+    """Run 5D MCMC refinement around a given center (fast likelihood).
 
-    # 初始 walkers：在最佳解附近加一點小亂數
-    # 角度用 ~0.02 rad 的擾動，Time / Omega 用相對 5% 的擾動
-    sigma_theta = 0.02
-    sigma_phi   = 0.02
-    sigma_incl  = 0.02
-    sigma_T     = 0.05 * start_params_rad[3] if start_params_rad[3] > 0 else 0.01
-    sigma_Omega = 0.05 * start_params_rad[4] if start_params_rad[4] > 0 else 0.02
+    This version matches the HL Tau style:
+      - use fixed `sigma_vals` (deg-based for angles + 5% prior width for T/Omega)
+      - initialize walkers around a chosen center and clip to priors
+      - after sampling, compute median and MAP, make corner plots, and save results.
+
+    Parameters
+    ----------
+    start_params_rad : array-like
+        [Theta0, Phi0, Incl, T_Myr, Omega] where angles are in radians.
+    prior_ranges : dict
+        Prior bounds with keys: "Theta zero", "Phi zero", "Inclination", "Time", "Omega".
+    """
+    
+    # -----------------------------
+    # 0) centers
+    # -----------------------------
+    start_params_rad = np.asarray(start_params_rad, dtype=float)
+    if start_params_rad.size != 5:
+        raise ValueError("start_params_rad must have 5 elements: [Theta, Phi, Incl, T, Omega]")
+    
+    Theta_center, Phi_center, Incl_center, T_center, Omega_center = start_params_rad
+    center_vals = [Theta_center, Phi_center, Incl_center, T_center, Omega_center]
+    print("\n[MCMC_grid] start (fast likelihood)")
+    print("Init center:")
+    print(f"Theta = {np.rad2deg(Theta_center):.3f} deg")
+    print(f"Phi   = {np.rad2deg(Phi_center):.3f} deg")
+    print(f"Incl  = {np.rad2deg(Incl_center):.3f} deg")
+    print(f"T     = {T_center:.6f} Myr")
+    print(f"Omega = {Omega_center:.4f}")
+
+    # -----------------------------
+    # 1) init walkers (same sigma_vals as HL Tau)
+    # -----------------------------
+    ndim = 5
+    labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
+
+    sigma_vals = [
+        np.deg2rad(9.0),
+        np.deg2rad(18.0),
+        np.deg2rad(9.0),
+        0.05 * (prior_ranges["Time"][1] - prior_ranges["Time"][0]),
+        0.05 * (prior_ranges["Omega"][1] - prior_ranges["Omega"][0]),
+    ]
 
     p0 = np.zeros((nwalkers, ndim), dtype=float)
-    for i in range(nwalkers):
-        trial = start_params_rad.copy()
-        trial[0] += np.random.normal(scale=sigma_theta)
-        trial[1] += np.random.normal(scale=sigma_phi)
-        trial[2] += np.random.normal(scale=sigma_incl)
-        trial[3] += np.random.normal(scale=sigma_T)
-        trial[4] += np.random.normal(scale=sigma_Omega)
-        p0[i] = trial
+    for j, key in enumerate(labels_5d):
+        lo, hi = prior_ranges[key]
+        prop = center_vals[j] + sigma_vals[j] * np.random.randn(nwalkers)
+        prop = np.clip(prop, lo, hi)
+        p0[:, j] = prop
 
-    # emcee sampler，直接用 PSSpy 裡的 log_posterior_fast
+    # -----------------------------
+    # 2) sampler
+    # -----------------------------
+    # If you have get_mcmc_moves() defined, we'll use it; otherwise fall back to default moves
+    moves = get_mcmc_moves(mode="refine")
+
+    log_args=(
+        prior_ranges,
+        x_means_AU,
+        z_means_AU,
+        v_means_LS_km,
+        v_weight_phys,
+        solar_mass,
+        scale,
+        log_power,
+        sigma_like,
+    )
+    
+    print(f"\n[MCMC_grid] Start sampling: nwalkers={nwalkers}, nsteps={nsteps}")
     sampler = emcee.EnsembleSampler(
         nwalkers,
         ndim,
         pss.log_posterior_fast,
-        args=(prior_ranges, x_means_AU, z_means_AU, v_means_LS_km,
-              v_weight_phys, solar_mass, scale, log_power),
+        args=log_args,
+        moves=moves,
     )
+    sampler.run_mcmc(p0, nsteps, progress=True)
 
-    print(f"\n[MCMC_grid] Start sampling: nwalkers={nwalkers}, nsteps={nsteps}")
-    _ = sampler.run_mcmc(p0, nsteps, progress=True)
+    # -----------------------------
+    # 3) auto burn-in / thin
+    # -----------------------------
+    try:
+        tau = sampler.get_autocorr_time(quiet=True)
+        if (not np.all(np.isfinite(tau))) or (np.any(tau <= 0)):
+            raise RuntimeError(f"tau invalid: {tau}")
+        burnin = int(2 * np.nanmax(tau))
+        thin = max(1, int(1 * np.nanmin(tau)))
+        print(f"[MCMC_grid] tau: {tau}, burnin={burnin}, thin={thin}")
+    except Exception as e:
+        print("[MCMC_grid] tau failed, use default.", e)
+        burnin, thin = 100, 50
 
-    # 取掉前 burn-in 步
-    flat_samples = sampler.get_chain(discard=burnin, thin=1, flat=True)
-    print(f"[MCMC_grid] Flat samples shape = {flat_samples.shape}")
+    chain = sampler.get_chain()
+    lp_chain = sampler.get_log_prob()
+    print("chain shape:", chain.shape)  # (nsteps, nwalkers, ndim)
+    print("mean acceptance:", np.mean(sampler.acceptance_fraction))
+    print("non-finite log_prob fraction =", np.mean(~np.isfinite(lp_chain)))
+    flat = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+    lp_flat = sampler.get_log_prob(discard=burnin, thin=thin, flat=True)
 
-    # 用 PSSpy 的 helper 印出結果 & 拿回最佳參數 (rad)
-    best_params_rad = pss.report_and_get_best_params(flat_samples, confidence_level=68.3)
+    # Wrap phi around Phi_center for nicer posteriors
+    phi_samples = flat[:, 1]
+    phi_wrapped = ((phi_samples - Phi_center + np.pi) % (2 * np.pi)) - np.pi + Phi_center
+    flat_wrapped = flat.copy()
+    flat_wrapped[:, 1] = phi_wrapped
 
-    # 存檔 chain
-    np.savez(
-        out_chain,
-        chain=flat_samples,
-        start_params=start_params_rad,
-        best_params=best_params_rad,
+    smooth_corner = 1.0   # must match corner.corner(..., smooth=1.0)
+    bins_corner   = 50    # choose consistent bins; can tune to your sample size
+
+    pair_peaks = {}  # (i,j) -> (peak_i, peak_j)
+    acc = [[] for _ in range(ndim)]  # acc[k] collects peak estimates for param k
+
+    # Median from samples
+    q16, q50, q84 = np.percentile(flat, [16, 50, 84], axis=0)
+    Theta_med, Phi_med, Incl_med, T_med, Omega_med = q50
+
+    print("\n[MCMC_grid] median ±68%:")
+    for i, name in enumerate(labels_5d):
+        lo, md, hi = q16[i], q50[i], q84[i]
+        if i in [0, 1, 2]:
+            lo, md, hi = np.rad2deg([lo, md, hi])
+            unit = "deg"
+        elif name == "Time":
+            unit = "Myr"
+        else:
+            unit = ""
+        print(f"{name:12s}: {md:.6f} (+{hi - md:.6f}/-{md - lo:.6f}) {unit}")
+
+    print("\n[MCMC_grid] 1D posterior 形狀判斷：")
+    for i, name in enumerate(labels_5d):
+        summarize_1d_posterior(flat[:, i], name)
+
+    # -----------------------------
+    # 4) corner plots (angles -> deg)
+    # -----------------------------
+    samples_plot = flat.copy()
+    for _idx in [0, 1, 2]:
+        samples_plot[:, _idx] = np.rad2deg(samples_plot[:, _idx])
+
+    labels_plot = [
+        r"$\theta$ (deg)",
+        r"$\phi_0$ (deg)",
+        r"$i$ (deg)",
+        r"$t_{\rm s}$ (Myr)",
+        r"$\omega$",
+    ]
+
+    q16p, q50p, q84p = np.percentile(samples_plot, [16, 50, 84], axis=0)
+    ranges = []
+    for i in range(len(labels_plot)):
+        lo, md, hi = q16p[i], q50p[i], q84p[i]
+        width = hi - lo if hi > lo else 1e-3
+        ranges.append((md - 1.2 * width, md + 1.2 * width))
+        
+    for i in range(ndim):
+        for j in range(i + 1, ndim):
+            (pi, pj), _, _, _ = corner_2d_peak(
+                samples_plot[:, i], samples_plot[:, j],  # 用 samples_plot (deg + others)
+                bins=bins_corner,
+                smooth=smooth_corner,
+                xlim=ranges[i],
+                ylim=ranges[j],
+            )
+            pair_peaks[(i, j)] = (pi, pj)
+            acc[i].append(pi)
+            acc[j].append(pj)
+
+    peak_2d_plot = np.array([np.median(acc[k]) for k in range(ndim)], dtype=float)
+
+    Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d = peak_2d_plot
+    peak_2d_rad = peak_2d_plot.copy()
+    for k in [0, 1, 2]:
+        peak_2d_rad[k] = np.deg2rad(peak_2d_plot[k])
+
+    Theta_pk2d, Phi_pk2d, Incl_pk2d, T_pk2d, Omega_pk2d = peak_2d_rad
+    print("\n[MCMC_grid] 2D smoothed-peak (aggregated from pairwise 2D marginals):")
+    print(f"Theta = {Theta_pk2d_deg:.3f} deg")
+    print(f"Phi   = {Phi_pk2d_deg:.3f} deg")
+    print(f"Incl  = {Incl_pk2d_deg:.3f} deg")
+    print(f"T     = {T_pk2d:.6f} Myr")
+    print(f"Omega = {Omega_pk2d:.4f}")
+
+    # --- corner with median truths ---
+    fig = corner.corner(
+        samples_plot,
+        labels=labels_plot,
+        range=ranges,
+        show_titles=True,
+        plot_contours=True,
+        title_fmt=".3f",
+        quantiles=[0.16, 0.5, 0.84],
+        truths=[np.rad2deg(Theta_med), np.rad2deg(Phi_med), np.rad2deg(Incl_med), T_med, Omega_med],
+        smooth=1.0,
     )
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid_median.png"), dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
-    return best_params_rad, flat_samples
+    fig = corner.corner(
+        samples_plot,
+        labels=labels_plot,
+        range=ranges,
+        show_titles=False,
+        plot_contours=True,
+        title_fmt=".3f",
+        truths=[Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d],
+        smooth=smooth_corner,
+    )
+    axes = np.array(fig.axes).reshape((ndim, ndim))
+
+    def clip_zero(x, atol=5e-13):
+        x = np.asarray(x, dtype=float)
+        x[np.isclose(x, 0.0, atol=atol)] = 0.0
+        return x
+
+    def fmt_pm(x, nd=3):
+        if not np.isfinite(x):
+            return "?"
+        return f"{x:.{nd}f}"
+
+    def sup(x, nd=3):
+        return rf"^{{+{fmt_pm(x, nd)}}}"
+
+    def sub(x, nd=3):
+        if not np.isfinite(x):
+            return rf"_{{{fmt_pm(x, nd)}}}"
+        if x == 0.0:
+            return rf"_{{{fmt_pm(x, nd)}}}"
+        return rf"_{{-{fmt_pm(x, nd)}}}"
+
+    # ---- peak-centered ±34% each side ----
+    err_lo = np.zeros(ndim)
+    err_hi = np.zeros(ndim)
+
+    for k in range(ndim):
+        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_2d_rad[k], frac_side=0.68)
+
+    err_lo = clip_zero(err_lo)
+    err_hi = clip_zero(err_hi)
+
+    err_lo_deg = err_lo.copy()
+    err_hi_deg = err_hi.copy()
+    for i in [0, 1, 2]:
+        err_lo_deg[i] = np.rad2deg(err_lo[i])
+        err_hi_deg[i] = np.rad2deg(err_hi[i])
+    err_lo_deg = clip_zero(err_lo_deg)
+    err_hi_deg = clip_zero(err_hi_deg)
+
+    Theta_pk2d_deg = np.rad2deg(Theta_pk2d)
+    Phi_pk2d_deg   = np.rad2deg(Phi_pk2d)
+    Incl_pk2d_deg  = np.rad2deg(Incl_pk2d)
+
+    titles = [
+        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk2d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
+        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk2d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
+        rf"$i\ (\mathrm{{deg}}) = {Incl_pk2d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
+        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk2d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
+        rf"$\omega = {Omega_pk2d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
+    ]
+    for k in range(ndim):
+        axes[k, k].set_title(titles[k], fontsize=12)
+    # peak_2d_plot 是「畫圖用」單位 (deg,deg,deg,Myr,omega)
+    peak_plot = np.array([Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d], float)
+
+    # err_lo / err_hi 你目前是「rad單位」(對角線的前3個要轉成 deg)
+    err_lo_plot = err_lo.copy()
+    err_hi_plot = err_hi.copy()
+    for i in [0, 1, 2]:
+        err_lo_plot[i] = np.rad2deg(err_lo_plot[i])
+        err_hi_plot[i] = np.rad2deg(err_hi_plot[i])
+
+    # 轉成每個參數的下/上界（畫圖單位）
+    lo_plot = peak_plot - err_lo_plot
+    hi_plot = peak_plot + err_hi_plot
+
+    # --- 畫線：對角線兩條線 + 2D 十字線 ---
+    for i in range(ndim):
+        ax = axes[i, i]
+        ax.axvline(lo_plot[i], ls="--", lw=1.2, color="k", alpha=0.9)
+        ax.axvline(hi_plot[i], ls="--", lw=1.2, color="k", alpha=0.9)
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid_map.png"), dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    # -----------------------------
+    # 5) save results (no global cache dependency)
+    # -----------------------------
+    save_dict = {
+        "mcmc_grid_used": True,
+
+        # --- Median (rad) ---
+        "mcmc_grid_median_Theta": float(Theta_med),
+        "mcmc_grid_median_Phi": float(Phi_med),
+        "mcmc_grid_median_Incl": float(Incl_med),
+        "mcmc_grid_median_T": float(T_med),
+        "mcmc_grid_median_Omega": float(Omega_med),
+
+        # --- Peak2D (rad) ---
+        "mcmc_grid_peak2d_Theta": float(Theta_pk2d),
+        "mcmc_grid_peak2d_Phi": float(Phi_pk2d),
+        "mcmc_grid_peak2d_Incl": float(Incl_pk2d),
+        "mcmc_grid_peak2d_T": float(T_pk2d),
+        "mcmc_grid_peak2d_Omega": float(Omega_pk2d),
+
+        # --- Peak2D (deg, optional but recommended) ---
+        "mcmc_grid_peak2d_Theta_deg": float(Theta_pk2d_deg),
+        "mcmc_grid_peak2d_Phi_deg": float(Phi_pk2d_deg),
+        "mcmc_grid_peak2d_Incl_deg": float(Incl_pk2d_deg),
+
+        # Diagnostics
+        "mcmc_grid_peak2d_bins": int(bins_corner),
+        "mcmc_grid_peak2d_smooth": float(smooth_corner),
+        "mcmc_grid_peak2d_pair_peaks": np.array(
+            [(i, j, pair_peaks[(i,j)][0], pair_peaks[(i,j)][1]) for (i,j) in sorted(pair_peaks.keys())],
+            dtype=float
+        ),
+        # Samples
+        "mcmc_grid_flat_samples": flat,               # raw
+        "burnin": int(burnin),
+        "thin": int(thin),
+    }
+
+    np.savez(out_chain, **save_dict)
+    print(f"[cache] Saved MCMC grid results to {out_chain}")
+
+    best_params_mcmc_rad = np.array([Theta_med, Phi_med, Incl_med, T_med, Omega_med], dtype=float)
+    return best_params_mcmc_rad, flat
 
 # ============================================================
 # 5. 若已存在 cache 且選擇使用，載入最佳解並跳過 grid search
@@ -834,26 +1243,27 @@ def run_mcmc_grid(
 if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
     print(f"[Cache] Loading cached fit from {FIT_CACHE}, skip grid search.")
     cache = np.load(FIT_CACHE)
-    best_theta = float(cache["best_theta"])   # deg
-    best_phi   = float(cache["best_phi"])     # deg
-    best_T     = float(cache["best_T"])       # Myr
-    best_incl  = float(cache["best_incl"])    # deg
-    best_omega = float(cache["best_omega"])
 
-    if "v_weight_phys" in cache.files:
-        v_weight_phys = float(cache["v_weight_phys"])
-    if "r_ref_AU" in cache.files:
-        r_ref_AU = float(cache["r_ref_AU"])
-    if "M_0" in cache.files:
-        M_0 = float(cache["M_0"])
-    if "Mdot" in cache.files:
-        M_dot = float(cache["Mdot"])
-    if "pos_rmse_AU" in cache.files:
-        pos_rmse_AU = float(cache["pos_rmse_AU"])
-    if "vel_rmse_kms" in cache.files:
-        vel_rmse_kms = float(cache["vel_rmse_kms"])
-    if "eq_rmse_kms" in cache.files:
-        eq_rmse_kms = float(cache["eq_rmse_kms"])
+    if PLOT_PARAM_MODE == "median":
+        print("[Cache] Using MEDIAN parameters for plotting")
+
+        best_theta = np.rad2deg(cache["mcmc_grid_median_Theta"])
+        best_phi   = np.rad2deg(cache["mcmc_grid_median_Phi"])
+        best_incl  = np.rad2deg(cache["mcmc_grid_median_Incl"])
+        best_T     = float(cache["mcmc_grid_median_T"])
+        best_omega = float(cache["mcmc_grid_median_Omega"])
+
+    elif PLOT_PARAM_MODE == "peak":
+        print("[Cache] Using 2D SMOOTHED PEAK parameters for plotting")
+
+        best_theta = float(cache["mcmc_grid_peak2d_Theta_deg"])
+        best_phi   = float(cache["mcmc_grid_peak2d_Phi_deg"])
+        best_incl  = float(cache["mcmc_grid_peak2d_Incl_deg"])
+        best_T     = float(cache["mcmc_grid_peak2d_T"])
+        best_omega = float(cache["mcmc_grid_peak2d_Omega"])
+
+    else:
+        raise ValueError("PLOT_PARAM_MODE must be 'median' or 'peak'")
 
     print("\n==================== Cached Best-fit Parameters ====================")
     print(f"Theta        = {best_theta:.3f} deg")
@@ -862,6 +1272,7 @@ if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
     print(f"Inclination  = {best_incl:.3f} deg")
     print(f"Omega        = {best_omega:.4f}")
     print("===================================================================")
+
     use_cached = True
 else:
     use_cached = False
@@ -876,7 +1287,7 @@ if not use_cached:
     n_theta, n_phi, n_T_Myr, n_Incl, n_Omega = 10, 10, 10, 10, 10
     theta = np.linspace(0, np.pi, n_theta+1)[1:]
     phi   = np.linspace(0, 2*np.pi, n_phi, endpoint=False)
-    T_Myr = np.linspace(1e-1, 5e-1, n_T_Myr)
+    T_Myr = np.linspace(3.605e-02, 1.727, n_T_Myr)
     Incl  = np.linspace(-np.pi/2, np.pi/2, n_Incl+2)[1:-1]
     omega = np.linspace(0, 1, n_Omega+1)[1:]
 
@@ -1046,7 +1457,7 @@ if not use_cached:
 
     # 儲存最佳解到 cache，之後調整畫圖時可直接載入
     np.savez(
-        FIT_CACHE,
+        Grid_FIT_CACHE,
         best_theta=best_theta,
         best_phi=best_phi,
         best_T=best_T,
@@ -1085,7 +1496,7 @@ parameter_prior_ranges = {
 # ============================================================
 # 7. 若開啟 RUN_MCMC_GRID：在「目前」best 上再 refine 一次
 # ============================================================
-if RUN_MCMC_GRID:
+if RUN_MCMC_GRID and (not use_cached):
     start_params_rad = np.array([
         np.deg2rad(best_theta),
         np.deg2rad(best_phi),
@@ -1093,6 +1504,25 @@ if RUN_MCMC_GRID:
         best_T,
         best_omega,
     ])
+    grid_axes = {
+        "theta_grid": theta_r,   # 或 theta，看你最後用 refine 的哪套
+        "phi_grid":   phi_r,
+        "inc_grid":   Incl_r,
+        "T_grid":     T_Myr_r,
+        "omega_grid": omega_r,
+    }
+    best_val = float(error_refine[min_idx_r])
+    priors_from_grid, sigma_like = compute_priors_from_grid(
+        error_refine,
+        grid_axes,
+        best_val,
+        frac=0.05,
+        phi_range=None,   # 或你想限縮 phi 就給 (phi_lo, phi_hi)
+    )
+    print("[sigma_like from grid] =", sigma_like)
+    print("[priors from grid]")
+    for k, v in priors_from_grid.items():
+        print(k, ":", v)
 
     best_params_mcmc_rad, mcmc_samples = run_mcmc_grid(
         start_params_rad,
@@ -1104,10 +1534,10 @@ if RUN_MCMC_GRID:
         M_star,
         scale,
         log_power,
-        nwalkers=1000,
+        sigma_like,
+        nwalkers=20,
         nsteps=20000,
-        burnin=100,
-        out_chain="Per-emb-2_mcmc_grid_chain.npz",
+        out_chain=MCMC_FIT_CACHE,
     )
 
     best_theta_rad, best_phi_rad, best_incl_rad, best_T, best_omega = best_params_mcmc_rad
@@ -1154,20 +1584,24 @@ if RUN_MCMC_GRID:
     fig.savefig(os.path.join(PLOT_DIR, "Per-emb-2_mcmc_corner.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)
-    # 這邊直接用 MCMC 的結果存 cache（不要再改回 grid 那組）
-    np.savez(
-        FIT_CACHE,
-        best_theta=best_theta,
-        best_phi=best_phi,
-        best_T=best_T,
-        best_incl=best_incl,
-        best_omega=best_omega,
-        v_weight_phys=v_weight_phys,
-        pa_deg=pa_deg,
-        r_ref_AU=r_ref_AU,
-        M_0=M_0,
-        Mdot=M_dot,
-    )
+    # 讀取 run_mcmc_grid 已經寫好的完整檔
+    cache_full = dict(np.load(MCMC_FIT_CACHE))
+
+    # 加上你想要快速讀的 summary key（不會丟掉舊 key）
+    cache_full.update({
+        "best_theta": best_theta,
+        "best_phi": best_phi,
+        "best_T": best_T,
+        "best_incl": best_incl,
+        "best_omega": best_omega,
+        "v_weight_phys": v_weight_phys,
+        "pa_deg": pa_deg,
+        "r_ref_AU": r_ref_AU,
+        "M_0": M_0,
+        "Mdot": M_dot,
+    })
+
+    np.savez(MCMC_FIT_CACHE, **cache_full)
 
 # (前面：cache / grid / refine / MCMC 統統跑完，best_theta 等都已經是「最後版本」)
 

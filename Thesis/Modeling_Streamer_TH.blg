@@ -4,44 +4,44 @@ The top-level auxiliary file: Modeling_Streamer_TH.aux
 The style file: aasjournal.bst
 Database file #1: reference.bib
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
-You've used 15 entries,
+You've used 19 entries,
             3168 wiz_defined-function locations,
-            785 strings with 15063 characters,
-and the built_in function-call counts, 11030 in all, are:
-= -- 588
-> -- 1464
-< -- 0
-+ -- 487
-- -- 517
-* -- 1280
-:= -- 2241
-add.period$ -- 15
-call.type$ -- 15
-change.case$ -- 87
-chr.to.int$ -- 15
-cite$ -- 15
-duplicate$ -- 255
-empty$ -- 401
-format.name$ -- 527
-if$ -- 2016
+            816 strings with 15687 characters,
+and the built_in function-call counts, 12380 in all, are:
+= -- 710
+> -- 1522
+< -- 4
++ -- 506
+- -- 533
+* -- 1379
+:= -- 2492
+add.period$ -- 19
+call.type$ -- 19
+change.case$ -- 104
+chr.to.int$ -- 19
+cite$ -- 19
+duplicate$ -- 317
+empty$ -- 507
+format.name$ -- 550
+if$ -- 2297
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 15
-newline$ -- 53
-num.names$ -- 60
-pop$ -- 88
+missing$ -- 19
+newline$ -- 65
+num.names$ -- 76
+pop$ -- 101
 preamble$ -- 1
-purify$ -- 87
+purify$ -- 104
 quote$ -- 0
-skip$ -- 205
+skip$ -- 261
 stack$ -- 0
-substring$ -- 240
+substring$ -- 302
 swap$ -- 0
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 135
+type$ -- 171
 warning$ -- 0
-while$ -- 50
+while$ -- 66
 width$ -- 0
-write$ -- 172
+write$ -- 216

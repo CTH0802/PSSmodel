@@ -50,7 +50,16 @@
     \caption{MCMC corner plot of Per-emb-2.}
     \label{fig:per2_results_cornerplot}
 \end{figure}
+\subsection{Per-emb-50}
+The streamer associated with Per-emb-50 exhibits a coherent, curved morphology extending from large radii toward the central protostar, together with a smooth and monotonic velocity gradient in the moment~1 map. These characteristics indicate a dynamically organized flow rather than a collection of isolated clumps.
 
+All three fitting approaches—grid search, MCMC-grid, and MCMC-shell—are able to reproduce the overall projected morphology of the streamer in the moment~0 map (Fig.~\ref{fig:per50_results_mom0}). The grid search already recovers the main curvature and orientation of the streamer, demonstrating that it efficiently identifies the relevant region of parameter space. The subsequent MCMC-based refinements primarily serve to narrow the parameter ranges and improve the consistency with the observed structure, rather than altering the global morphology inferred from the grid search.
+
+In the velocity domain, all fitting approaches recover the global trend of increasing line-of-sight velocity toward smaller radii, consistent with an infalling and rotating flow (Fig.~\ref{fig:per50_results_mom1}). The MCMC-based solutions provide a smoother and more continuous representation of the velocity field, particularly in regions where the velocity gradient becomes steeper, while small discrepancies remain at the innermost radii where the emission is weaker and the velocity field is less well constrained.
+
+The posterior distributions show that the inclination angle $i$, the initial polar angle $\theta$, and the initial azimuthal angle $\phi_0$ are relatively well constrained, with consistent values obtained across all fitting methods (Fig.~\ref{fig:per50_results_cornerplot}). In contrast, the characteristic collapse time $t_{\rm s}$ and the rotational parameter $\omega$ exhibit a clear degeneracy, reflecting a trade-off between the collapse timescale and the strength of rotational motion in reproducing the observed kinematics.
+
+Taken together, the results for Per-emb-50 demonstrate that the streamer kinematics can be well described by a model combining radial infall and moderate rotational motion. The agreement between independent fitting approaches supports the robustness of the inferred large-scale dynamical structure.
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.32\textwidth}
@@ -106,20 +115,36 @@
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_peak2d_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_grid_cornerplot}
+        \label{fig:per50_mcmc_grid_map_cornerplot}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_cornerplot}
+        \label{fig:per50_mcmc_grid_median_cornerplot}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/corner_mcmc_shell_peak2d_cacheonly.png}
+        \caption{}
+        \label{fig:per50_mcmc_shell_map_cornerplot}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median_cacheonly.png}
+        \caption{}
+        \label{fig:per50_mcmc_shell_median_cornerplot}
     \end{subfigure}
     \caption{MCMC corner plot of Per-emb-50.}
     \label{fig:per50_results_cornerplot}
 \end{figure}
+
+\subsection{S CrA}
 
 \begin{figure}[htbp]
     \centering
@@ -191,6 +216,7 @@
     \label{fig:SCrA_results_cornerplot}
 \end{figure}
 
+\subsection{HL Tau}
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.32\textwidth}
@@ -246,21 +272,36 @@
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_map.png}
         \caption{}
-        \label{fig:HLTau_mcmc_grid_cornerplot}
+        \label{fig:HLTau_mcmc_grid_map_cornerplot}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/corner_mcmc_shell.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_median.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_cornerplot}
+        \label{fig:HLTau_mcmc_grid_median_cornerplot}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/corner_mcmc_shell_map.png}
+        \caption{}
+        \label{fig:HLTau_mcmc_shell_map_cornerplot}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/corner_mcmc_shell_median.png}
+        \caption{}
+        \label{fig:HLTau_mcmc_shell_median_cornerplot}
     \end{subfigure}
     \caption{MCMC corner plot of HL~Tau.}
     \label{fig:HLTau_results_cornerplot}
 \end{figure}
 
+\subsection{SVS 13A}
 % \begin{figure}[htbp]
 %     \centering
 %     \begin{subfigure}{0.32\textwidth}
@@ -312,7 +353,4 @@
 %     \label{fig:SVS13A_results_mom1}
 % \end{figure}
 
-\subsection{Per-emb-50}
-\subsection{S CrA}
-\subsection{HL Tau}
-\subsection{SVS 13A}
+
