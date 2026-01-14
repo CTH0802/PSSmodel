@@ -53,6 +53,7 @@ from itertools import product
 
 # 後驗分析 / 工具
 from scipy.signal import find_peaks
+from scipy.stats import gaussian_kde
 
 # 專案本地模組
 import PSSpy as pss
@@ -70,7 +71,7 @@ M_star = 2.1
 scale = "log"
 log_power = 1.5
 
-radius_in_au, radius_out_au = 3e1, 4e2
+radius_in_au, radius_out_au = 3e1, 3.6e2
 # 資料與輸出
 cube_fname = "HLTau_HCOp32.fits"
 CACHE_DIR = "HLTau_results/cache"
@@ -83,23 +84,23 @@ CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "HLTau_mcmc_grid_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "HLTau_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "HLTau_fit_results_final.npz")
 
-USE_CACHE_SOURCE = "mcmc_shell"
-sample_from = "Peak"
+USE_CACHE_SOURCE = "mcmc_grid"
+sample_from = "Median"
 
 # ---------- corner 重畫模式 ----------
 REBUILD_CORNER_ONLY = False   # True: 不跑資料、不跑MCMC，只從 cache 重畫 corner
 REBUILD_WHICH = ("mcmc_grid", "mcmc_shell")  # 想重畫哪些：可改成只留其中一個
 
 # --- 分析開關 ---
-RUN_GRID = True               # 5D grid search 找初始解
-RUN_MCMC_GRID = True          # 29 個質心點 fast likelihood
-RUN_MCMC_SHELL = True         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+# RUN_GRID = True               # 5D grid search 找初始解
+# RUN_MCMC_GRID = True          # 29 個質心點 fast likelihood
+# RUN_MCMC_SHELL = True         # distance_cube MCMC
+# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
-# RUN_GRID = False               # 5D grid search 找初始解
-# RUN_MCMC_GRID = False          # 29 個質心點 fast likelihood
-# RUN_MCMC_SHELL = False         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_GRID = False               # 5D grid search 找初始解
+RUN_MCMC_GRID = False          # 29 個質心點 fast likelihood
+RUN_MCMC_SHELL = False         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -333,7 +334,7 @@ def extract_streamer_centroids(new_cube_data, header, pa_rad, dx_au, spec_kms):
     # ------------------------------------------------------------
     # Step 1: 幾何中心（方向權重 + 半徑 shell）
     # ------------------------------------------------------------
-    N = 29
+    N = 25
     pars = np.linspace(10, 155, N + 1)   # HL Tau 用的半徑範圍（pixel）
 
     x_means = np.zeros(N)
@@ -614,6 +615,38 @@ def corner_2d_peak(x, y, bins=50, smooth=1.0, xlim=None, ylim=None):
     ycenters = 0.5 * (yedges[:-1] + yedges[1:])
     return (xcenters[ix], ycenters[iy]), Hs, (ix, iy), (xcenters, ycenters)
 
+def kde_5d_peak(samples_plot, ranges, n_candidates=20000, bw_method="scott", seed=0):
+    """
+    從 samples_plot (畫圖單位) 建 5D KDE（smooth），並在候選點中找最大 density 的點當 peak。
+    ranges: list of (min, max) for each dim, 用來限制候選點範圍
+    """
+    rng = np.random.default_rng(seed)
+
+    s = np.asarray(samples_plot, float)
+    ndim = s.shape[1]
+
+    kde = gaussian_kde(s.T, bw_method=bw_method)
+
+    def in_ranges(x):
+        ok = np.ones(x.shape[0], dtype=bool)
+        for k in range(ndim):
+            ok &= (x[:, k] >= ranges[k][0]) & (x[:, k] <= ranges[k][1])
+        return ok
+
+    # 候選點先從 samples 抽（快且穩）
+    n_take = min(n_candidates, s.shape[0])
+    idx = rng.choice(s.shape[0], size=n_take, replace=False)
+    cand = s[idx]
+    cand = cand[in_ranges(cand)]
+    if cand.shape[0] < max(2000, n_take // 10):
+        # 如果 ranges 太窄導致候選點不足，退而求其次用全部樣本（仍然會被 KDE 平滑）
+        cand = s
+
+    dens = kde(cand.T)
+    peak_plot = cand[np.argmax(dens)]
+    return peak_plot
+
+
 def peak_pm(samples_1d, peak, frac_side=0.34):
     """
     Compute peak-centered ±(34%) interval on each side:
@@ -740,32 +773,34 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
         width = hi - lo if hi > lo else 1e-3
         ranges.append((md - 1.2 * width, md + 1.2 * width))
 
-    # ---- 3) peak2d：用你現在的 2D smooth peak 做法 ----
-    bins_corner = int(c.get(f"{which}_peak2d_bins", 50))
+    # ---- 3) peak5d：smooth 5D (KDE) global peak ----
+    # 仍沿用 cache 裡的 smooth 設定（如果沒有就用預設）
     smooth_corner = float(c.get(f"{which}_peak2d_smooth", 1.0))
 
-    pair_peaks = {}
-    acc = [[] for _ in range(5)]
-    for i in range(5):
-        for j in range(i + 1, 5):
-            (pi, pj), _, _, _ = corner_2d_peak(
-                samples_plot[:, i], samples_plot[:, j],
-                bins=bins_corner,
-                smooth=smooth_corner,
-                xlim=ranges[i],
-                ylim=ranges[j],
-            )
-            pair_peaks[(i, j)] = (pi, pj)
-            acc[i].append(pi)
-            acc[j].append(pj)
+    # KDE bandwidth：用 smooth_corner 去控制（越大越平滑）
+    # 這裡給一個簡單映射：bw_scale = 1/sqrt(smooth)（可自行調）
+    # 如果你想更直覺，也可以直接固定 "scott" / "silverman"
+    bw_scale = 1.0 / np.sqrt(max(smooth_corner, 1e-6))
 
-    peak_2d_plot = np.array([np.median(acc[k]) for k in range(5)], dtype=float)
-    Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d = peak_2d_plot
+    peak_5d_plot = kde_5d_peak(
+        samples_plot,
+        ranges=ranges,
+        n_candidates=20000,
+        bw_method=bw_scale,   # 用 float 控制 KDE 平滑
+        seed=0,
+    )
 
-    peak_2d_rad = peak_2d_plot.copy()
+    Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d = peak_5d_plot
+
+    peak_5d_rad = peak_5d_plot.copy()
     for k in [0, 1, 2]:
-        peak_2d_rad[k] = np.deg2rad(peak_2d_plot[k])
-    Theta_pk2d, Phi_pk2d, Incl_pk2d, T_pk2d_rad, Omega_pk2d_val = peak_2d_rad
+        peak_5d_rad[k] = np.deg2rad(peak_5d_plot[k])
+
+    # 這組是 rad 單位（給 peak_pm 用）
+    Theta_pk5d, Phi_pk5d, Incl_pk5d, T_pk5d_rad, Omega_pk5d_val = peak_5d_rad
+
+    print(f"[corner-replot] peak5d (KDE smooth) = {peak_5d_plot}")
+
     # ---- 4) median corner ----
     fig = corner.corner(
         samples_plot,
@@ -790,7 +825,7 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
         lo=lo_med,          # q16p
         hi=hi_med,          # q84p
         center_color="C0",
-        interval_color="w",
+        interval_color="k",
         lw_main=1.3,
         lw_side=1.0,
         alpha_main=0.9,
@@ -811,7 +846,7 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
         show_titles=False,
         plot_contours=True,
         title_fmt=".3f",
-        truths=[Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d],
+        truths=[Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d],
         smooth=smooth_corner,
     )
     axes = np.array(fig.axes).reshape((5, 5))
@@ -841,7 +876,7 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
     err_lo = np.zeros(5)
     err_hi = np.zeros(5)
     for k in range(5):
-        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_2d_rad[k], frac_side=0.68)
+        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_5d_rad[k], frac_side=0.68)
 
     err_lo = clip_zero(err_lo)
     err_hi = clip_zero(err_hi)
@@ -855,17 +890,16 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
     err_hi_deg = clip_zero(err_hi_deg)
 
     titles = [
-        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk2d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
-        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk2d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
-        rf"$i\ (\mathrm{{deg}}) = {Incl_pk2d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
-        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk2d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
-        rf"$\omega = {Omega_pk2d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
+        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk5d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
+        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk5d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
+        rf"$i\ (\mathrm{{deg}}) = {Incl_pk5d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
+        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk5d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
+        rf"$\omega = {Omega_pk5d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
     ]
     for k in range(5):
         axes[k, k].set_title(titles[k], fontsize=12)
 
-    # 對角線畫上下界虛線（畫圖單位：角度用deg，T/Omega原值）
-    peak_plot = np.array([Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d], float)
+    peak_plot = np.array([Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d], float)    
     err_lo_plot = err_lo.copy()
     err_hi_plot = err_hi.copy()
     for i in [0, 1, 2]:
@@ -892,7 +926,7 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
         ls_main="-",
         ls_side="--",
     )
-    out2 = os.path.join(PLOT_DIR, f"corner_{which}_peak2d_{out_tag}.png")
+    out2 = os.path.join(PLOT_DIR, f"corner_{which}_peak5d_{out_tag}.png")
     fig.savefig(out2, dpi=200, bbox_inches="tight")
     plt.close(fig)
     print(f"[corner-replot] Saved: {out2}")
@@ -999,7 +1033,7 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     # cbar.set_label('weight value')
     
 
-    # # --- 疊加質心點（如果有提供，輸入單位：pixel） ---
+    # --- 疊加質心點（如果有提供，輸入單位：pixel） ---
     # if cen_x_pix is not None and cen_z_pix is not None:
     #     cen_x_pix = np.asarray(cen_x_pix)
     #     cen_z_pix = np.asarray(cen_z_pix)
@@ -1201,7 +1235,7 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
     # cbar.set_label('weight value')
     
 
-    # # --- 疊加質心點（輸入 cen_x_pix, cen_z_pix） ---
+    # --- 疊加質心點（輸入 cen_x_pix, cen_z_pix） ---
     # if cen_x_pix is not None and cen_z_pix is not None:
     #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
     #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
@@ -1410,7 +1444,7 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
         v_m + Local_Standard_Velocity,
         color="tab:blue",
         lw=2.0,
-        label="Model (image-frame)",
+        label="Model",
         zorder=3,
     )
 
@@ -1439,7 +1473,7 @@ def plot_z_v_diagram_from_cube(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     ax.set_xlim(300, -300)
     leg = ax.legend(frameon=False, fontsize=9)
     for txt in leg.get_texts():
-        txt.set_color("black")
+        txt.set_color("white")
     ax.grid(alpha=0.2)
 
     plt.tight_layout()
@@ -1474,7 +1508,27 @@ def run_quick_mode_hltau():
         Phi_best_deg   = np.rad2deg(Phi_best)
         Incl_best_deg  = np.rad2deg(Incl_best)
         rms_channel = 2.509251078668e-3
-
+        
+        #mcmc_grid peak
+        # Theta_best_deg = 67.591 # 67.591, 70.225
+        # Phi_best_deg   = -159.246 # -159.246, -164.650
+        # Incl_best_deg  = -87.712 # -87.712, -83.926
+        # Theta_best     = np.deg2rad(Theta_best_deg) 
+        # Phi_best       = np.deg2rad(Phi_best_deg)
+        # Incl_best      = np.deg2rad(Incl_best_deg)
+        # T_best         = 0.736 # 0.736, 0.791
+        # Omega_best     = 0.092 # 0.092, 0.092
+        
+        # shell peak
+        Theta_best_deg = 70.225 # 67.591, 70.225
+        Phi_best_deg   = -164.650 # -159.246, -164.650
+        Incl_best_deg  = -83.926 # -87.712, -83.926
+        Theta_best     = np.deg2rad(Theta_best_deg) 
+        Phi_best       = np.deg2rad(Phi_best_deg)
+        Incl_best      = np.deg2rad(Incl_best_deg)
+        T_best         = 0.791 # 0.736, 0.791
+        Omega_best     = 0.092 # 0.092, 0.092
+        
         # 2) 讀取 HL Tau streamer 專用 moment map
         try:
             str_mom0 = fits.getdata("HL_Tau_HCOp32_streamer_mom0.fits")
@@ -1494,7 +1548,7 @@ def run_quick_mode_hltau():
         # 基本轉換
         im_center = (int(round(header["CRPIX2"] - 1.0)),
                     int(round(header["CRPIX1"] - 1.0)))
-        dx_arcsec = abs(header["CDELT2"]) * 3600.0
+        dx_arcsec = abs(header["CDELT1"]) * 3600.0
         dx_au     = dx_arcsec * distance_pc  # 160 pc for HLTau
 
         # 3) 盡量讀取 streamer cube（若沒有，z–v 圖會自動跳過）
@@ -1578,9 +1632,9 @@ def run_quick_mode_hltau():
         plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="HLTau_weights_cacheonly.png")
 
         # 8) Print physical values
-        r_ref_AU = 280 * T_best * 1e6 * spc.year / spc.astronomical_unit  # radius_ref_au=280
+        r_ref_AU = 200 * T_best * 1e6 * spc.year / spc.astronomical_unit  # radius_ref_au=200
 
-        M_0 = M_star * M_SUN_KG * spc.G / (280.0**3 * T_best * 1e6 * spc.year)
+        M_0 = M_star * M_SUN_KG * spc.G / (200.0**3 * T_best * 1e6 * spc.year)
         M_dot = M_star / (T_best * 1e6)
 
         print("\n==================== Parameters (HL Tau) ====================")
@@ -1593,7 +1647,7 @@ def run_quick_mode_hltau():
         print(f"M_0          = {M_0:.3e}")
         print(f"Mdot         = {M_dot:.3e} M_sun/yr")
         print("============================================================")
-        print("[Quick Mode] 繪圖完成，程式結束。")
+        print("[Quick Mode] Done.")
         # T_factor_range=(5.4, 245.0)        
         # Omega_ref = pss.Omega_ref(radius_ref_au, M_star)
         # P_half_Myr = np.pi / Omega_ref / 1e6 / spc.year
@@ -1640,7 +1694,7 @@ def prepare_data():
     # 2D geometry
     im_center = (int(round(header["CRPIX2"] - 1.0)),
                 int(round(header["CRPIX1"] - 1.0)))
-    dx_arcsec = abs(header["CDELT2"]) * 3600.0
+    dx_arcsec = abs(header["CDELT1"]) * 3600.0
     dx_au     = dx_arcsec * distance_pc
 
     # --------------------------------------------------
@@ -1974,40 +2028,35 @@ def run_mcmc_grid():
     bins_corner   = 50    # choose consistent bins; can tune to your sample size
 
     pair_peaks = {}  # (i,j) -> (peak_i, peak_j)
-    acc = [[] for _ in range(ndim)]  # acc[k] collects peak estimates for param k
 
     ranges = []
     for i in range(len(labels_plot)):
         lo, md, hi = q16p[i], q50p[i], q84p[i]
         width = hi - lo if hi > lo else 1e-3
         ranges.append((md - 1.2*width, md + 1.2*width))
-    for i in range(ndim):
-        for j in range(i + 1, ndim):
-            (pi, pj), _, _, _ = corner_2d_peak(
-                samples_plot[:, i], samples_plot[:, j],  # 用 samples_plot (deg + others)
-                bins=bins_corner,
-                smooth=smooth_corner,
-                xlim=ranges[i],
-                ylim=ranges[j],
-            )
-            pair_peaks[(i, j)] = (pi, pj)
-            acc[i].append(pi)
-            acc[j].append(pj)
 
-    peak_2d_plot = np.array([np.median(acc[k]) for k in range(ndim)], dtype=float)
+    peak_5d_plot = kde_5d_peak(
+        samples_plot,
+        ranges=ranges,
+        n_candidates=20000,     # 可調：1e4~5e4 常用
+        bw_method="scott",      # 可調："silverman" 或 float
+        seed=0
+    )
 
-    Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d = peak_2d_plot
-    peak_2d_rad = peak_2d_plot.copy()
+    Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d = peak_5d_plot
+
+    peak_5d_rad = peak_5d_plot.copy()
     for k in [0, 1, 2]:
-        peak_2d_rad[k] = np.deg2rad(peak_2d_plot[k])
+        peak_5d_rad[k] = np.deg2rad(peak_5d_plot[k])
 
-    Theta_pk2d, Phi_pk2d, Incl_pk2d, T_pk2d, Omega_pk2d = peak_2d_rad
-    print("\n[MCMC_grid] 2D smoothed-peak (aggregated from pairwise 2D marginals):")
-    print(f"Theta = {Theta_pk2d_deg:.3f} deg")
-    print(f"Phi   = {Phi_pk2d_deg:.3f} deg")
-    print(f"Incl  = {Incl_pk2d_deg:.3f} deg")
-    print(f"T     = {T_pk2d:.6f} Myr")
-    print(f"Omega = {Omega_pk2d:.4f}")
+    Theta_pk5d, Phi_pk5d, Incl_pk5d, T_pk5d, Omega_pk5d = peak_5d_rad
+
+    print("\n[MCMC_grid] 5D KDE-smoothed peak (global peak in smoothed 5D posterior):")
+    print(f"Theta = {Theta_pk5d_deg:.3f} deg")
+    print(f"Phi   = {Phi_pk5d_deg:.3f} deg")
+    print(f"Incl  = {Incl_pk5d_deg:.3f} deg")
+    print(f"T     = {T_pk5d:.6f} Myr")
+    print(f"Omega = {Omega_pk5d:.4f}")
 
     fig = corner.corner(samples_plot,
                         labels=labels_plot,
@@ -2050,7 +2099,7 @@ def run_mcmc_grid():
         show_titles=False,
         plot_contours=True,
         title_fmt=".3f",
-        truths=[Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d],
+        truths=[Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d],
         smooth=smooth_corner,
     )
     axes = np.array(fig.axes).reshape((ndim, ndim))
@@ -2080,7 +2129,7 @@ def run_mcmc_grid():
     err_hi = np.zeros(ndim)
 
     for k in range(ndim):
-        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_2d_rad[k], frac_side=0.68)
+        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_5d_rad[k], frac_side=0.68)
 
     err_lo = clip_zero(err_lo)
     err_hi = clip_zero(err_hi)
@@ -2093,32 +2142,24 @@ def run_mcmc_grid():
     err_lo_deg = clip_zero(err_lo_deg)
     err_hi_deg = clip_zero(err_hi_deg)
 
-    Theta_pk2d_deg = np.rad2deg(Theta_pk2d)
-    Phi_pk2d_deg   = np.rad2deg(Phi_pk2d)
-    Incl_pk2d_deg  = np.rad2deg(Incl_pk2d)
-
     titles = [
-        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk2d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
-        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk2d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
-        rf"$i\ (\mathrm{{deg}}) = {Incl_pk2d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
-        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk2d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
-        rf"$\omega = {Omega_pk2d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
+        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk5d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
+        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk5d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
+        rf"$i\ (\mathrm{{deg}}) = {Incl_pk5d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
+        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk5d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
+        rf"$\omega = {Omega_pk5d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
     ]
     for k in range(ndim):
         axes[k, k].set_title(titles[k], fontsize=12)
-    peak_plot = np.array([Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d], float)
-    # err_lo / err_hi 你目前是「rad單位」(對角線的前3個要轉成 deg)
+    peak_plot = np.array([Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d], float)    
     err_lo_plot = err_lo.copy()
     err_hi_plot = err_hi.copy()
     for i in [0, 1, 2]:
         err_lo_plot[i] = np.rad2deg(err_lo_plot[i])
         err_hi_plot[i] = np.rad2deg(err_hi_plot[i])
 
-    # 轉成每個參數的下/上界（畫圖單位）
     lo_plot = peak_plot - err_lo_plot
     hi_plot = peak_plot + err_hi_plot
-
-    # --- 畫線：對角線兩條線 + 2D 十字線 ---
     for i in range(ndim):
         ax = axes[i, i]
         ax.axvline(lo_plot[i], ls="--", lw=1.2, color="k", alpha=0.9)
@@ -2150,14 +2191,14 @@ def run_mcmc_grid():
     })
 
     cache.update({
-        "mcmc_grid_peak2d_Theta": float(Theta_pk2d),
-        "mcmc_grid_peak2d_Phi": float(Phi_pk2d),
-        "mcmc_grid_peak2d_Incl": float(Incl_pk2d),
-        "mcmc_grid_peak2d_T": float(T_pk2d),
-        "mcmc_grid_peak2d_Omega": float(Omega_pk2d),
-        "mcmc_grid_peak2d_Theta_deg": float(Theta_pk2d_deg),
-        "mcmc_grid_peak2d_Phi_deg": float(Phi_pk2d_deg),
-        "mcmc_grid_peak2d_Incl_deg": float(Incl_pk2d_deg),
+        "mcmc_grid_peak2d_Theta": float(Theta_pk5d),
+        "mcmc_grid_peak2d_Phi": float(Phi_pk5d),
+        "mcmc_grid_peak2d_Incl": float(Incl_pk5d),
+        "mcmc_grid_peak2d_T": float(T_pk5d),
+        "mcmc_grid_peak2d_Omega": float(Omega_pk5d),
+        "mcmc_grid_peak2d_Theta_deg": float(Theta_pk5d_deg),
+        "mcmc_grid_peak2d_Phi_deg": float(Phi_pk5d_deg),
+        "mcmc_grid_peak2d_Incl_deg": float(Incl_pk5d_deg),
 
         "mcmc_grid_peak2d_bins": int(bins_corner),
         "mcmc_grid_peak2d_smooth": float(smooth_corner),
@@ -2172,12 +2213,12 @@ def run_mcmc_grid():
 
     np.savez(CACHE_PATH_MCMC_GRID, **cache)
     print(f"[cache] Saved MCMC grid results to {CACHE_PATH_MCMC_GRID}")  
-    M_0 = M_star * M_SUN_KG * spc.G / (280.0**3 * T_med * 1e6 * spc.year)
+    M_0 = M_star * M_SUN_KG * spc.G / (200.0**3 * T_med * 1e6 * spc.year)
 
     print("\n==== Dimensionless mass (HLTau) ====")
     print(f"M_0     = {M_0:.3e}")
     print("====================================")
- 
+
 
 # ============================================================
 # 5. 殼層版 MCMC：使用 log_posterior_shell（最簡潔版本）
@@ -2191,7 +2232,10 @@ def run_mcmc_shell():
     
     ndim = 5
     labels_5d = ["Theta zero", "Phi zero", "Inclination", "Time", "Omega"]
-    nwalkers, nsteps = 32, 5000  
+    nwalkers, nsteps = 32, 4000  
+    # cache_path_to_use = _resolve_cache_path(USE_CACHE_SOURCE)
+    # cache = np.load(cache_path_to_use, allow_pickle=True)
+    # print(f"[cache] Loaded cache ({USE_CACHE_SOURCE}): {cache_path_to_use}")
 
     if cache.get("mcmc_grid_used", False):
         Theta_center = cache["mcmc_grid_median_Theta"]
@@ -2414,34 +2458,29 @@ def run_mcmc_shell():
         lo, md, hi = q16p[i], q50p[i], q84p[i]
         width = hi - lo if hi > lo else 1e-3
         ranges.append((md - 1.2*width, md + 1.2*width))
-    for i in range(ndim):
-        for j in range(i + 1, ndim):
-            (pi, pj), _, _, _ = corner_2d_peak(
-                samples_plot[:, i], samples_plot[:, j],  # 用 samples_plot (deg + others)
-                bins=bins_corner,
-                smooth=smooth_corner,
-                xlim=ranges[i],
-                ylim=ranges[j],
-            )
-            pair_peaks[(i, j)] = (pi, pj)
-            acc[i].append(pi)
-            acc[j].append(pj)
 
-    peak_2d_plot = np.array([np.median(acc[k]) for k in range(ndim)], dtype=float)
+    peak_5d_plot = kde_5d_peak(
+        samples_plot,
+        ranges=ranges,
+        n_candidates=20000,     # 可調：1e4~5e4 常用
+        bw_method="scott",      # 可調："silverman" 或 float
+        seed=0
+    )
 
-    Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d = peak_2d_plot
-    peak_2d_rad = peak_2d_plot.copy()
+    Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d = peak_5d_plot
+
+    peak_5d_rad = peak_5d_plot.copy()
     for k in [0, 1, 2]:
-        peak_2d_rad[k] = np.deg2rad(peak_2d_plot[k])
+        peak_5d_rad[k] = np.deg2rad(peak_5d_plot[k])
 
-    Theta_pk2d, Phi_pk2d, Incl_pk2d, T_pk2d, Omega_pk2d = peak_2d_rad
-    print("\n[MCMC_grid] 2D smoothed-peak (aggregated from pairwise 2D marginals):")
-    print(f"Theta = {Theta_pk2d_deg:.3f} deg")
-    print(f"Phi   = {Phi_pk2d_deg:.3f} deg")
-    print(f"Incl  = {Incl_pk2d_deg:.3f} deg")
-    print(f"T     = {T_pk2d:.6f} Myr")
-    print(f"Omega = {Omega_pk2d:.4f}")
-    
+    Theta_pk5d_rad, Phi_pk5d_rad, Incl_pk5d_rad, T_pk5d_val, Omega_pk5d_val = peak_5d_rad
+    print("\n[MCMC_shell] 5D KDE-smoothed peak (global peak in smoothed 5D posterior):")
+    print(f"Theta = {Theta_pk5d_deg:.3f} deg")
+    print(f"Phi   = {Phi_pk5d_deg:.3f} deg")
+    print(f"Incl  = {Incl_pk5d_deg:.3f} deg")
+    print(f"T     = {T_pk5d:.6f} Myr")
+    print(f"Omega = {Omega_pk5d:.4f}")
+
     fig = corner.corner(samples_plot,
                         labels=labels_plot,
                         range=ranges,
@@ -2453,7 +2492,8 @@ def run_mcmc_shell():
                         smooth=1.0)
     axes = np.array(fig.axes).reshape((ndim, ndim))
 
-    cent_med = q50p   # plot unit (deg, Myr, ...)
+    # 用「畫圖單位」的 median 16/50/84：你前面已經算過 q16p, q50p, q84p
+    cent_med = q50p
     lo_med   = q16p
     hi_med   = q84p
 
@@ -2462,8 +2502,8 @@ def run_mcmc_shell():
         centers=cent_med,
         lo=lo_med,
         hi=hi_med,
-        center_color="C0",
-        interval_color="k",   # 想更清楚可改 "w"
+        center_color="C0",      # median 中心線顏色
+        interval_color="k",     # median 區間線顏色（想更清楚可改成 "w"）
         lw_main=1.3,
         lw_side=1.0,
         alpha_main=0.9,
@@ -2474,7 +2514,7 @@ def run_mcmc_shell():
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell_median.png"),
                 dpi=200, bbox_inches="tight")
     plt.close(fig)
-
+    
     fig = corner.corner(
         samples_plot,
         labels=labels_plot,
@@ -2482,7 +2522,7 @@ def run_mcmc_shell():
         show_titles=False,
         plot_contours=True,
         title_fmt=".3f",
-        truths=[Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d],
+        truths=[Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d],
         smooth=smooth_corner,
     )
     axes = np.array(fig.axes).reshape((ndim, ndim))
@@ -2512,7 +2552,7 @@ def run_mcmc_shell():
     err_hi = np.zeros(ndim)
 
     for k in range(ndim):
-        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_2d_rad[k], frac_side=0.68)
+        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_5d_rad[k], frac_side=0.68)
 
     err_lo = clip_zero(err_lo)
     err_hi = clip_zero(err_hi)
@@ -2525,28 +2565,22 @@ def run_mcmc_shell():
     err_lo_deg = clip_zero(err_lo_deg)
     err_hi_deg = clip_zero(err_hi_deg)
 
-    Theta_pk2d_deg = np.rad2deg(Theta_pk2d)
-    Phi_pk2d_deg   = np.rad2deg(Phi_pk2d)
-    Incl_pk2d_deg  = np.rad2deg(Incl_pk2d)
-
     titles = [
-        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk2d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
-        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk2d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
-        rf"$i\ (\mathrm{{deg}}) = {Incl_pk2d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
-        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk2d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
-        rf"$\omega = {Omega_pk2d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
+        rf"$\theta_0\ (\mathrm{{deg}}) = {Theta_pk5d_deg:.3f}" + sup(err_hi_deg[0]) + sub(err_lo_deg[0]) + r"$",
+        rf"$\phi_0\ (\mathrm{{deg}}) = {Phi_pk5d_deg:.3f}"   + sup(err_hi_deg[1]) + sub(err_lo_deg[1]) + r"$",
+        rf"$i\ (\mathrm{{deg}}) = {Incl_pk5d_deg:.3f}"       + sup(err_hi_deg[2]) + sub(err_lo_deg[2]) + r"$",
+        rf"$t_{{\rm s}}\ (\mathrm{{Myr}}) = {T_pk5d:.3f}"    + sup(err_hi[3])     + sub(err_lo[3])     + r"$",
+        rf"$\omega = {Omega_pk5d:.3f}"                       + sup(err_hi[4])     + sub(err_lo[4])     + r"$",
     ]
     for k in range(ndim):
         axes[k, k].set_title(titles[k], fontsize=12)
-    peak_plot = np.array([Theta_pk2d_deg, Phi_pk2d_deg, Incl_pk2d_deg, T_pk2d, Omega_pk2d], float)
-    # err_lo / err_hi 你目前是「rad單位」(對角線的前3個要轉成 deg)
+    peak_plot = np.array([Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d], float)    
     err_lo_plot = err_lo.copy()
     err_hi_plot = err_hi.copy()
     for i in [0, 1, 2]:
         err_lo_plot[i] = np.rad2deg(err_lo_plot[i])
         err_hi_plot[i] = np.rad2deg(err_hi_plot[i])
 
-    # 轉成每個參數的下/上界（畫圖單位）
     lo_plot = peak_plot - err_lo_plot
     hi_plot = peak_plot + err_hi_plot
 
@@ -2555,14 +2589,13 @@ def run_mcmc_shell():
         ax = axes[i, i]
         ax.axvline(lo_plot[i], ls="--", lw=1.2, color="k", alpha=0.9)
         ax.axvline(hi_plot[i], ls="--", lw=1.2, color="k", alpha=0.9)
-    # off-diagonal interval lines (2D 十字線)
     draw_2d_interval_lines(
         axes,
-        centers=peak_plot,
+        centers=peak_plot,   # 這裡要用「畫圖單位」：deg, Myr, ...
         lo=lo_plot,
         hi=hi_plot,
-        center_color="C0",
-        interval_color="k",
+        center_color="C0",     # 中心線顏色（你說要保留藍色）
+        interval_color="k",    # 區間線顏色
         lw_main=1.3,
         lw_side=1.0,
         alpha_main=0.9,
@@ -2570,8 +2603,7 @@ def run_mcmc_shell():
         ls_main="-",
         ls_side="--",
     )
-    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell_map.png"),
-                dpi=200, bbox_inches="tight")
+    fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_shell_map.png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
     
     # ---- 寫入 SHELL cache：保留 median，同時改存 peak2d（取代 map）----
@@ -2588,17 +2620,17 @@ def run_mcmc_shell():
     
     cache.update({
         # --- Peak2D (rad) ---
-        "mcmc_shell_peak2d_Theta": float(Theta_pk2d),
-        "mcmc_shell_peak2d_Phi":   float(Phi_pk2d),
-        "mcmc_shell_peak2d_Incl":  float(Incl_pk2d),
-        "mcmc_shell_peak2d_T":     float(T_pk2d),
-        "mcmc_shell_peak2d_Omega": float(Omega_pk2d),
-
+        "mcmc_shell_peak2d_Theta": float(Theta_pk5d_rad),
+        "mcmc_shell_peak2d_Phi":   float(Phi_pk5d_rad),
+        "mcmc_shell_peak2d_Incl":  float(Incl_pk5d_rad),
+        "mcmc_shell_peak2d_T":     float(T_pk5d_val),
+        "mcmc_shell_peak2d_Omega": float(Omega_pk5d_val),
+        
         # --- Peak2D (deg, optional but recommended) ---
-        "mcmc_shell_peak2d_Theta_deg": float(Theta_pk2d_deg),
-        "mcmc_shell_peak2d_Phi_deg":   float(Phi_pk2d_deg),
-        "mcmc_shell_peak2d_Incl_deg":  float(Incl_pk2d_deg),
-
+        "mcmc_shell_peak2d_Theta_deg": float(Theta_pk5d_deg),
+        "mcmc_shell_peak2d_Phi_deg":   float(Phi_pk5d_deg),
+        "mcmc_shell_peak2d_Incl_deg":  float(Incl_pk5d_deg),
+        
         # --- Diagnostics (optional but nice to keep consistent with grid) ---
         "mcmc_shell_peak2d_bins":   int(bins_corner),
         "mcmc_shell_peak2d_smooth": float(smooth_corner),
@@ -2627,16 +2659,15 @@ def run_mcmc_shell():
 
     cache.update({
         # 用 peak2d 當作你要的「best」
-        "best_Theta_peak2d": float(Theta_pk2d),
-        "best_Phi_peak2d":   float(Phi_pk2d),
-        "best_Incl_peak2d":  float(Incl_pk2d),
-        "best_T_peak2d":     float(T_pk2d),
-        "best_Omega_peak2d": float(Omega_pk2d),
-
+        "best_Theta_peak2d": float(Theta_pk5d_rad),
+        "best_Phi_peak2d":   float(Phi_pk5d_rad),
+        "best_Incl_peak2d":  float(Incl_pk5d_rad),
+        "best_T_peak2d":     float(T_pk5d_val),
+        "best_Omega_peak2d": float(Omega_pk5d_val),
         # 角度的 deg 版（方便畫圖/報告直接讀）
-        "best_Theta_peak2d_deg": float(Theta_pk2d_deg),
-        "best_Phi_peak2d_deg":   float(Phi_pk2d_deg),
-        "best_Incl_peak2d_deg":  float(Incl_pk2d_deg),
+        "best_Theta_peak2d_deg": float(Theta_pk5d_deg),
+        "best_Phi_peak2d_deg":   float(Phi_pk5d_deg),
+        "best_Incl_peak2d_deg":  float(Incl_pk5d_deg),
     })
 
     np.savez(CACHE_PATH_FINAL, **cache)
@@ -2684,7 +2715,7 @@ def run_final_best_fit_and_overlay():
 
         im_center = (int(round(header["CRPIX2"] - 1.0)),
                     int(round(header["CRPIX1"] - 1.0)))
-        dx_arcsec = abs(header["CDELT2"]) * 3600.0
+        dx_arcsec = abs(header["CDELT1"]) * 3600.0
         dx_au     = dx_arcsec * distance_pc
 
         # 讀取 streamer cube（如果有的話就畫 z–v）
@@ -2761,12 +2792,21 @@ def run_final_best_fit_and_overlay():
         
 # ------------------- MAIN FUNCTION -------------------
 def main():
+    # ---- NEW: corner-only mode ----
+    if REBUILD_CORNER_ONLY:
+        print("[corner-only] Rebuild corner plots from cache, no rerun.")
+        for w in REBUILD_WHICH:
+            rebuild_corner_from_cache(which=w, out_tag="cacheonly")
+        sys.exit(0)
+
     if RUN_FROM_CACHE_ONLY:
         run_quick_mode_hltau()
     else:
         prepare_data()
         run_grid()
+    if RUN_MCMC_GRID:
         run_mcmc_grid()
+    if RUN_MCMC_SHELL:
         run_mcmc_shell()
         run_final_best_fit_and_overlay()
     print("\n全部段落執行完成。")

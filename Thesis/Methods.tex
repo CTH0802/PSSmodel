@@ -131,6 +131,16 @@ z_{\rm obs}
 \]
 and the rotated coordinates $(x_{\rm mod}, z_{\rm mod})$ are used in all subsequent fitting procedures.
 
+\subsection{Streamer identification in the PPV cube}
+
+Before performing centroid extraction and model fitting, we isolate the emission associated with the streamer structure directly from the three-dimensional PPV datacube. This step is necessary to minimize contamination from unrelated component such as diffuse background structures.
+
+Starting from the original spectral cube, we apply an intensity-based region-growing procedure to identify the streamer emission. A initial points position is manually selected along the visually identified streamer in PPV space. From each point, neighboring voxels are iteratively included if their intensities exceed a threshold of three times the channel rms noise level ($3\sigma$). This criterion ensures that only statistically significant emission is retained while preserving the extended morphology of the streamer.
+
+The region-growing process is performed in full PPV space, allowing the streamer structure to be traced coherently across spatial and velocity dimensions. The resulting binary mask defines a streamer-only datacube, in which voxels not associated with the streamer are excluded from further analysis.
+
+This masked streamer datacube is subsequently used for both centroid extraction and shell-based MCMC fitting. By restricting the fitting to emission identified through this region-growing procedure, the comparison between the kinematic model and the observations is focused specifically on the streamer component, enabling a more robust assessment of the streamer geometry and kinematics.
+
 \subsection{Centroid Extraction and Observed Streamer Morphology}
 
 To characterize the observed streamer morphology, we extract a sequence of position--velocity centroids from moment map. Using the protostar position as the origin, we compute pixel offsets $(x_{\rm rel},z_{\rm rel})$ and convert them into polar coordinates $(r,\theta)$. A set of manually selected streamer points defines an interpolated main direction $\theta_{\rm stream}(r)$.
@@ -180,7 +190,11 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
         \caption{Moment 1 map}
         \label{fig:per2_mom1_cent}
     \end{subfigure}
-    \caption{Streamers in Per-emb-2.}
+    \caption{
+    Centroid extraction and observed streamer morphology in Per-emb-2.
+    The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
+    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    }
     \label{fig:per2_streamer}
 \end{figure}
 
@@ -206,7 +220,11 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
         \caption{Moment 1 map}
         \label{fig:per50_mom1_cent}
     \end{subfigure}
-    \caption{Streamers in Per-emb-50.}
+    \caption{
+    Centroid extraction and observed streamer morphology in Per-emb-50.
+    The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
+    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    }
     \label{fig:per50_streamer}
 \end{figure}
 
@@ -232,7 +250,11 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
         \caption{Moment 1 map}
         \label{fig:SCrA_mom1_cent}
     \end{subfigure}
-    \caption{Streamers in S~CrA.}
+    \caption{
+    Centroid extraction and observed streamer morphology in S~CrA.
+    The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
+    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    }
     \label{fig:SCrA_streamer}
 \end{figure}
 
@@ -258,7 +280,11 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
         \caption{Moment 1 map}
         \label{fig:HLTau_mom1_cent}
     \end{subfigure}
-    \caption{Streamers in HL~Tau.}
+    \caption{
+    Centroid extraction and observed streamer morphology in HL~Tau.
+    The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
+    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    }
     \label{fig:HLTau_streamer}
 \end{figure}
 
@@ -308,9 +334,9 @@ After constructing data-driven prior ranges from the grid search, we perform Mar
 
 We use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and $f$ is typically 0.05-0.10 (relaxed, if necessary, to include at least several tens of models). For each parameter, we take the 5th-95th percentile range of these "good" models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data-driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
 
-Each MCMC run begins by initializing an ensemble of walkers within the prior intervals, distributed in a narrow region around the best-performing grid-search solution. For the centroid-based likelihood, which evaluates the misfit using the extracted position-velocity centroids, this "fast-likelihood" stage enables efficient refinement of the parameter space and helps to identify the dominant modes of the posterior distribution. The adopted numbers of walkers and steps for each target are summarized in Table~\ref{table:MCMC_configuration}.
+Each MCMC run begins by initializing an ensemble of walkers within the prior intervals, distributed in a narrow region around the best-performing grid-search solution. For the Points method, which evaluates the misfit using the extracted position--velocity centroids, this stage enables efficient refinement of the parameter space and helps to identify the dominant modes of the posterior distribution. The adopted numbers of walkers and steps for each target are summarized in Table~\ref{table:MCMC_configuration}.
 
-For the full datacube fitting, we evaluate the agreement between the model and the observed position-position-velocity structure using a shell-based distance metric. Instead of computing distances for every voxel, we construct a shell-distance cube around the model streamer and compare it with the observed cube through intensity-weighted shell distances. This shell-based likelihood allows the MCMC to probe the full three-dimensional structure while remaining computationally tractable. The corresponding MCMC configurations (walkers, steps, and whether the shell-based likelihood is used) are also listed in Table~\ref{table:MCMC_configuration}.
+For the full datacube fitting (the global method), we evaluate the agreement between the model and the observed position-position-velocity structure using a shell-based distance metric. Instead of computing distances for every voxel, we construct a distance cube around the model streamer and compare it with the observed cube through intensity-weighted shell distances. This global method likelihood allows the MCMC to probe the full three-dimensional structure while remaining computationally tractable. The corresponding MCMC configurations (walkers, steps, and whether the shell-based likelihood is used) are also listed in Table~\ref{table:MCMC_configuration}.
 
 Convergence of the chains is evaluated using the autocorrelation time of each parameter, as well as visual inspection of walker trajectories. An initial burn-in phase is discarded, and the remaining samples are used to compute posterior medians and credible intervals as the final estimates of the five parameters.
 
@@ -322,19 +348,19 @@ Convergence of the chains is evaluated using the autocorrelation time of each pa
 Target & Method & $N_{\rm cent}$ & $N_{\rm walkers}$ & $N_{\rm steps}$ \\
 \hline
 \multirow{1}{*}{Per-emb-2}
-& Centroid-based & 10 & 32 & $6\times10^{3}$ \\
+& Points & 11 & 20 & $2\times10^{4}$ \\
 \hline
 \multirow{2}{*}{Per-emb-50}
-& Centroid-based & 11 & 32 & $1\times10^{4}$ \\
-& Shell-based    & -- & 32 & $4\times10^{3}$ \\
+& Points & 14 & 32 & $2\times10^{4}$ \\
+& Global & -- & 32 & $5\times10^{3}$ \\
 \hline
 \multirow{2}{*}{S~CrA}
-& Centroid-based & 32 & 20 & $8\times10^{4}$ \\
-& Shell-based    & -- & 20 & $8\times10^{3}$ \\
+& Points & 25 & 20 & $3\times10^{4}$ \\
+& Global & -- & 32 & $5\times10^{3}$ \\
 \hline
 \multirow{2}{*}{HL~Tau}
-& Centroid-based & 29 & 20 & $8\times10^{4}$ \\
-& Shell-based    & -- & 32 & $4\times10^{3}$ \\
+& Points & 25 & 20 & $3\times10^{4}$ \\
+& Global & -- & 32 & $4\times10^{3}$ \\
 \hline
 \end{tabular}
 \end{table}

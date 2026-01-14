@@ -5,6 +5,9 @@
 \providecommand{\doeprint}[1]{\href{http://ascl.net/#1}{\nolinkurl{http://ascl.net/#1}}}
 \providecommand{\doarXiv}[1]{\href{https://arxiv.org/abs/#1}{\nolinkurl{https://arxiv.org/abs/#1}}}
 
+\bibitem[{{Cassen} \& {Moosman}(1981)}]{Cassen_1981}
+{Cassen}, P., \& {Moosman}, A. 1981, \icarus, 48, 353, \dodoi{10.1016/0019-1035(81)90051-8}
+
 \bibitem[{{Foreman-Mackey} {et~al.}(2013){Foreman-Mackey}, {Hogg}, {Lang}, \& {Goodman}}]{Daniel_2013}
 {Foreman-Mackey}, D., {Hogg}, D.~W., {Lang}, D., \& {Goodman}, J. 2013, \pasp, 125, 306, \dodoi{10.1086/670067}
 
@@ -25,6 +28,9 @@
 
 \bibitem[{{Larson}(1969)}]{Larson_1969}
 {Larson}, R.~B. 1969, \mnras, 145, 271, \dodoi{10.1093/mnras/145.3.271}
+
+\bibitem[{{Mendoza} {et~al.}(2009){Mendoza}, {Tejeda}, \& {Nagel}}]{Mendoza_2009}
+{Mendoza}, S., {Tejeda}, E., \& {Nagel}, E. 2009, \mnras, 393, 579, \dodoi{10.1111/j.1365-2966.2008.14210.x}
 
 \bibitem[{{Mottram} {et~al.}(2017){Mottram}, {van Dishoeck}, {Kristensen}, {Karska}, {San Jos{\'e}-Garc{\'\i}a}, {Khanna}, {Herczeg}, {Andr{\'e}}, {Bontemps}, {Cabrit}, {Carney}, {Drozdovskaya}, {Dunham}, {Evans}, {Fedele}, {Green}, {Harsono}, {Johnstone}, {J{\o}rgensen}, {K{\"o}nyves}, {Nisini}, {Persson}, {Tafalla}, {Visser}, \& {Y{\i}ld{\i}z}}]{Mottram_2017}
 {Mottram}, J.~C., {van Dishoeck}, E.~F., {Kristensen}, L.~E., {et~al.} 2017, \aap, 600, A99, \dodoi{10.1051/0004-6361/201628682}
@@ -49,6 +55,9 @@
 
 \bibitem[{{Tobin} {et~al.}(2018){Tobin}, {Looney}, {Li}, {Sadavoy}, {Dunham}, {Segura-Cox}, {Kratter}, {Chandler}, {Melis}, {Harris}, \& {Perez}}]{Tobin_2018}
 {Tobin}, J.~J., {Looney}, L.~W., {Li}, Z.-Y., {et~al.} 2018, \apj, 867, 43, \dodoi{10.3847/1538-4357/aae1f7}
+
+\bibitem[{{Ulrich}(1976)}]{Ulrich_1976}
+{Ulrich}, R.~K. 1976, \apj, 210, 377, \dodoi{10.1086/154840}
 
 \bibitem[{{Valdivia-Mena} {et~al.}(2022){Valdivia-Mena}, {Pineda}, {Segura-Cox}, {Caselli}, {Neri}, {L{\'o}pez-Sepulcre}, {Cunningham}, {Bouscasse}, {Semenov}, {Henning}, {Pi{\'e}tu}, {Chapillon}, {Dutrey}, {Fuente}, {Guilloteau}, {Hsieh}, {Jim{\'e}nez-Serra}, {Marino}, {Maureira}, {Smirnov-Pinchukov}, {Tafalla}, \& {Zhao}}]{Valdivia-Mena_2022}
 {Valdivia-Mena}, M.~T., {Pineda}, J.~E., {Segura-Cox}, D.~M., {et~al.} 2022, \aap, 667, A12, \dodoi{10.1051/0004-6361/202243310}

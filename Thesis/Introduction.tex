@@ -1,28 +1,32 @@
 \section{The formation of cores}
 Stars form within cold, dense regions of molecular clouds, where local density enhancements can initiate gravitational collapse. Once a sufficiently overdense region begins to contract, it forms a dense core, a gravitationally bound structure that represents the earliest stage of star formation. Before any central heating source develops, the collapsing dense core is referred to as a prestellar core, characterized by low temperatures ($\sim$10 K) and the absence of an internal heat source.
 
-As the collapse proceeds and densities rise, the gas eventually becomes optically thick to its own radiation. At this point, radiative cooling becomes inefficient, and the collapse slows as the pressure begins to increase adiabatically. This transition leads to the formation of the first hydrostatic core (FHSC), which is a short-lived structure supported primarily by adiabatic pressure. The FHSC phase lasts only a few thousand years and marks a key evolutionary stage between the prestellar core and the protostellar core.
+As the collapse proceeds and densities rise, the gas eventually becomes optically thick to its own radiation. At this point, radiative cooling becomes inefficient, and the collapse slows as the pressure begins to increase adiabatically. This transition leads to the formation of the first hydrostatic core (FHSC, \citealt{Larson_1969}), which is a short-lived structure supported primarily by adiabatic pressure. The FHSC phase lasts only a few thousand years and marks a key evolutionary stage between the prestellar core and the protostellar core.
 
 When the temperature in the center increases to ≳2000 K, molecular hydrogen begins to dissociate, a process that absorbs energy and reduces thermal pressure support. This triggers a second, rapid collapse and gives rise to the protostar, the central object that continues to grow by accreting material from its surrounding envelope. Although accretion from the envelope begins during the prestellar and FHSC stages, the protostar phase formally begins once the second collapse produces a gravitationally bound central object.
 
 The envelope surrounding the forming protostar is a cold, dusty reservoir of infalling material. It typically extends over thousands to tens of thousands of AU, and in the earliest stages the envelope retains a large fraction of the system's mass.
 
-During the early Class 0 and Class I stages, the protostar remains enshrouded within this parental envelope. In this turbulent and gravitationally unstable environment, small perturbations within the envelope can grow nonlinearly, giving rise to asymmetric, filamentary overdensities known as streamers. These streamers represent dense structures within the infalling envelope and, unlike the rotationally supported disk, do not necessarily follow Keplerian motion. They are increasingly recognized as an important channel for transporting material from the envelope onto the disk, thereby influencing disk growth, stability, and angular-momentum redistribution.
+During the early Class 0 and Class I stages, the protostar remains enshrouded within this parental envelope. In this turbulent and gravitationally unstable environment, small perturbations within the envelope can grow nonlinearly, giving rise to asymmetric, filamentary overdensities known as streamers. These streamers represent dense structures within the infalling envelope and, unlike the rotationally supported disk, do not necessarily follow Keplerian motion. They are increasingly recognized as an important channel for transporting material from the envelope onto the disk, thereby influencing disk growth, stability, and angular-momentum redistribution (\citealt{Yen_2019}, \citealt{Pineda_2020}, \citealt{Valdivia-Mena_2022}, \citealt{Hsieh_2023}).
 
 Over time, as accretion weakens and the envelope dissipates, the protostar evolves into a pre-main-sequence star, eventually contracting toward the main sequence where sustained hydrogen fusion begins.
 \section{The streamer in observations}
 Recently, several observations revealed asymmetric structures in the protostellar system (e.g., \citealt{Pineda_2020}, \citealt{Valdivia-Mena_2022}, \citealt{Hsieh_2023}). The features of streamers are very diverse in morphology, do not always form in a disk plane, and have very weak density enhancement in observation. 
 
-\section{Current Limitations and Our Approach}
+\section{Current Limitations}
+
+Streamers are often interpreted as organized channels of infalling material that connect the envelope to the inner disk region. A common way to model such structures is to treat a streamer as a \emph{trajectory} governed by gravity and angular-momentum conservation. The Cassen--Moosman--Ulrich (CMU) model (\citealt{Ulrich_1976}; \citealt{Cassen_1981}) describes the motion of infalling streamer originating from an initial direction $(\theta_0,\phi_0)$ and evolving along ballistic paths as they fall toward a central mass. Because angular momentum is conserved, the resulting trajectories naturally develop curvature and a systematic line-of-sight velocity gradient, making the CMU model a physically motivated baseline for interpreting streamer-like features.
+
+Another widely used approach is the \emph{streamline} model (\citealt{Mendoza_2009}), where the streamer is constructed by tracing particle paths in a prescribed velocity field. This provides a flexible way to generate curved structures and to connect morphology with kinematics. However, an important limitation is that a streamline is fundamentally a mathematical object: it represents an instantaneous direction of the velocity field and does not correspond to a directly observable line. Observations typically measure emission from gas distributed over a finite volume and velocity range, rather than individual particle paths.
 
 \section{Overview of Targets Used in This Study}
-To test our model against protostellar systems in which streamer-like structures have been reported, we use five observational datasets shown in Figure~\ref{fig:per2} $\sim$ \ref{fig:SVS13A}: Per-emb-2, Per-emb-50, S~CrA, HL~Tau, and SVS~13A. Per-emb-2 and Per-emb-50 were observed with the Northern Extended Millimeter Array (NOEMA), whereas S~CrA, HL~Tau, and SVS~13A were observed with the Atacama Large Millimeter/submillimeter Array (ALMA). For Per-emb-50, S~CrA, HL~Tau, and SVS~13A, we extract the position-position-velocity (PPV) information of the streamer directly from the calibrated data cubes, while for Per-emb-2 we work with the moment maps. A summary of the observational properties of all datasets is provided in Table~\ref{table:obs_summary}.
+To test our model against protostellar systems in which streamer-like structures have been reported, we use five observational datasets shown in Figure~\ref{fig:per2} $\sim$ \ref{fig:HLTau}: Per-emb-2, Per-emb-50, S~CrA, and HL~Tau. Per-emb-2 and Per-emb-50 were observed with the Northern Extended Millimeter Array (NOEMA), whereas S~CrA and HL~Tau were observed with the Atacama Large Millimeter/submillimeter Array (ALMA). For Per-emb-50, S~CrA, and HL~Tau, we extract the position-position-velocity (PPV) information of the streamer directly from the calibrated data cubes, while for Per-emb-2 we work with the moment maps. A summary of the observational properties of all datasets is provided in Table~\ref{table:obs_summary}.
 
 Per-emb-2 was observed in D-configuration on June 22, July 27--28, and August 19, 2018, and in C-configuration on October 9, 10, 17, and 18, 2018 (project S18AG; \citep{Pineda_2020}). The baselines ranged from 16.4 to 287.8~m.
 
 Per-emb-50 was observed in C-configuration on December 29, 2019, and January 5, 2021, and in D-configuration on August 6, September 7, and 8, 2020 \citep{Valdivia-Mena_2022}. The synthesized beam of the cube used in this work is $1\farcs24\times0\farcs72$.
 
-SVS~13A was observed with ALMA in Band~6, producing the DCN ($J=3$--2) data cube used in this study. The cube data has a synthesized beam of $0\farcs15\times0\farcs11$.
+% SVS~13A was observed with ALMA in Band~6, producing the DCN ($J=3$--2) data cube used in this study. The cube data has a synthesized beam of $0\farcs15\times0\farcs11$.
 
 The S~CrA dataset was obtained from the ALMA Science Archive and was observed on November 6, 2019 (project 2019.1.01792.S; \citep{Gupta_2023}). The data cube has a spatial sampling of $0\farcs05$ per pixel.
 
@@ -139,7 +143,7 @@ S~CrA is a binary system (two Class~II saperated $\sim$200~au \citep{Gupta_2023}
 \subsection{HL~Tau}
 HL~Tau is a Class~I protostellar system located in the Taurus star-forming region at a distance of 147~pc \citep{Galli_2018}. High-resolution ALMA observations have revealed a compact protoplanetary disk exhibiting multiple concentric gaps and rings \citep{Yen_2019}. The HCO$^{+}$\,(3--2) cube used in this work resolves the morphology and velocity pattern of the streamer structure connecting envelope material to the disk.
 
-\subsection{SVS 13A}
+% \subsection{SVS 13A}
 
 
 \begin{table}[h]
@@ -152,11 +156,11 @@ Target & Telescope & RA (J2000) & DEC (J2000) & Line & Beam (\arcsec) \\
 \hline
 Per-emb-2  & NOEMA & 03:32:17.932 & +30:49:47.705 & HC$_3$N (10--9) & $3\farcs73\times3\farcs02$ \\
 Per-emb-50 & NOEMA & 03:29:07.768 & +31:21:57.128 & C$^{18}$O (2--1) & $1\farcs24\times0\farcs72$ \\
-SVS~13A    & ALMA  & 03:29:03.740 & +31:16:03.800 & DCN (3--2) & $0\farcs15\times0\farcs11$ \\
+% SVS~13A    & ALMA  & 03:29:03.740 & +31:16:03.800 & DCN (3--2) & $0\farcs15\times0\farcs11$ \\
 S~CrA      & ALMA  & 19:01:08.600 & --36:57:20.000 & $^{13}$CO (2--1) & --\\
 HL~Tau     & ALMA  & 04:31:38.428 & +18:13:57.190 & HCO$^{+}$ (3--2) & $0\farcs10\times0\farcs09$ \\
 \hline
 \end{tabular}
 \end{table}
 \section{Our work overview}
-The formation process of protoplanetary disks is still unrefined. Given their importance, we have developed a new model to characterize the streamer features and kinematics, focusing on gravitationally driven infalling and rotation.
+The formation process of protoplanetary disks is conplex and not fully understood. Given their importance, we have developed a new model to characterize the streamer features and kinematics, focusing on gravitationally driven instability. We can use the streamer features to derive the underlying core properties.

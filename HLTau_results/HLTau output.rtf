@@ -1,0 +1,130 @@
+{\rtf1\ansi\ansicpg950\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 (/Users/thchuang/Documents/GitHub/PSSmodel/.conda) thchuang@Tsung-Han PSSmodel % python ./HLTau.py\
+/Users/thchuang/Documents/GitHub/PSSmodel/.conda/lib/python3.12/site-packages/spectral_cube/_moments.py:182: RuntimeWarning: invalid value encountered in divide\
+  return (np.nansum(data * pix_cen, axis=axis) /\
+[HLTau] centroid step1 (pos.):   0%|                     | 0/25 [00:00<?, ?it/s]/Users/thchuang/Documents/GitHub/PSSmodel/./HLTau.py:354: RuntimeWarning: invalid value encountered in divide\
+  weight_theta = (x_rel * np.cos(theta0) + z_rel * np.sin(theta0)) / r\
+[Extracted] 25 valid centroids (3D cube)                                        \
+\
+[Grid fitting] Start 5D grid search (100,000 points) ...\
+Grid search: 100%|\uc0\u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 | 100000/100000 [01:55<00:00, 866.24it/s]\
+\
+[MCMC priors from grid]\
+Theta zero  : ( 36.00, 180.00) deg\
+Phi zero    : (-180.00, 180.00) deg\
+Inclination : (-90.00,  90.00) deg\
+Time        : (0.00000, 1.46580) Myr\
+Omega       : (0.000, 1.000)\
+[cache] Saved grid search results to HLTau_results/cache/HLTau_grid_results.npz\
+Grid results:\
+Theta = 65.455 deg\
+Phi   = -144.000 deg\
+Incl  = -73.636 deg\
+T     = 0.312003 Myr\
+Omega = 0.1000\
+\
+[MCMC_grid] start 29 \uc0\u36074 \u24515  fast likelihood)\
+Grid best:\
+Theta = 65.455 deg\
+Phi   = -144.000 deg\
+Incl  = -73.636 deg\
+T     = 0.312003 Myr\
+Omega = 0.1000\
+\
+[MCMC_grid] full-run attempt 1/6\
+  0%|                                                                                                                                                                                      | 0/30000 [00:00<?, ?it/s]/Users/thchuang/Documents/GitHub/PSSmodel/.conda/lib/python3.12/site-packages/emcee/moves/red_blue.py:99: RuntimeWarning: invalid value encountered in scalar subtract\
+  lnpdiff = f + nlp - state.log_prob[j]\
+100%|\uc0\u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 | 30000/30000 [03:30<00:00, 142.69it/s]\
+[MCMC_grid] convergence check: \{'acceptance': np.float64(0.24389166666666667), 'bad_frac': np.float64(1.6666666666666667e-06), 'tau': array([125.90738028, 216.9333565 , 132.93036558, 406.69865685,\
+       449.45832591]), 'n_tau': np.float64(66.7470113921051)\}\
+mean acceptance: 0.24389166666666667\
+non-finite log_prob fraction = 1.6666666666666667e-06\
+[MCMC_grid] \uc0\u10003  Accepted this run\
+[MCMC_grid] tau: [125.90738028 216.9333565  132.93036558 406.69865685 449.45832591], burnin=898, thin=125\
+chain shape: (30000, 20, 5)\
+mean acceptance: 0.24389166666666667\
+non-finite log_prob fraction = 1.6666666666666667e-06\
+\{'Theta zero': (np.float64(0.6283185307179586), 3.141592653589793), 'Phi zero': (-3.141592653589793, 3.141592653589793), 'Inclination': (-1.5707963267948966, 1.5707963267948966), 'Time': (0.0, np.float64(1.465802)), 'Omega': (0.0, 1.0)\}\
+\
+[MCMC_grid] median \'b168%:\
+Theta zero  : 68.075130 (+2.331133/-2.360127) deg\
+Phi zero    : -158.493372 (+10.411888/-11.093924) deg\
+Inclination : -87.430587 (+2.403646/-1.755578) deg\
+Time        : 0.663609 (+0.517894/-0.422178) Myr\
+Omega       : 0.091893 (+0.034542/-0.018801) \
+\
+[MCMC_grid] 1D posterior shape:\
+  Theta zero  : unimodal\
+  Phi zero    : unimodal\
+  Inclination : unimodal\
+  Time        : multimodal\
+  Omega       : unimodal\
+\
+[MCMC_grid] 2D smoothed-peak (aggregated from pairwise 2D marginals):\
+Theta = 68.188 deg\
+Phi   = -157.461 deg\
+Incl  = -88.728 deg\
+T     = 0.460553 Myr\
+Omega = 0.0753\
+[cache] Saved MCMC grid results to HLTau_results/cache/HLTau_mcmc_grid_results.npz\
+\
+==== Dimensionless mass (HLTau) ====\
+M_0     = 1.665e+00\
+====================================\
+\
+[MCMC_shell] start (distance-shell likelihood)\
+[MCMC_shell] init center from MCMC_grid medians\
+[mask] shifted_cube_data binned-sum: (167, 401, 401) -> trimmed (165, 399, 399) -> (55, 133, 133)\
+min/max data = 0.0 0.82787657\
+frac>0 = 0.0055247483027459285\
+frac!=0 = 0.0055247483027459285\
+[bbox] DATA_BBOX = (0, 54, 0, 132, 0, 132)\
+[MCMC_shell] reference shell error E_center = 5.18989904069862\
+[MCMC_shell] reference shell Neff = 3124.9866452927904\
+[MCMC_shell] nwalkers = 32, nsteps = 4000\
+  0%|                                                                                                                                                                                       | 0/4000 [00:00<?, ?it/s]/Users/thchuang/Documents/GitHub/PSSmodel/.conda/lib/python3.12/site-packages/emcee/moves/red_blue.py:99: RuntimeWarning: invalid value encountered in scalar subtract\
+  lnpdiff = f + nlp - state.log_prob[j]\
+100%|\uc0\u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 \u9608 | 4000/4000 [34:58<00:00,  1.91it/s]\
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!\
+N/50 = 80;\
+tau: [ 72.85966181  81.16235515  73.24576303 126.97777    145.17365054]\
+[MCMC_shell] tau: [ 72.85966181  81.16235515  73.24576303 126.97777    145.17365054], burnin=290, thin=7\
+chain shape: (4000, 32, 5)\
+mean acceptance: 0.29339843749999994\
+non-finite log_prob fraction = 0.000234375\
+\{'Theta zero': (np.float64(0.6283185307179586), 3.141592653589793), 'Phi zero': (-3.141592653589793, 3.141592653589793), 'Inclination': (-1.5707963267948966, 1.5707963267948966), 'Time': (0.0, np.float64(1.465802)), 'Omega': (0.0, 1.0)\}\
+\
+[MCMC_shell] median \'b168%:\
+Theta zero  : 69.642679 (+2.391702/-2.587425) deg\
+Phi zero    : -164.752222 (+13.313967/-10.051894) deg\
+Inclination : -84.086603 (+3.329061/-3.393302) deg\
+Time        : 0.801887 (+0.444807/-0.463864) Myr\
+Omega       : 0.088558 (+0.027798/-0.014987) \
+\
+[MCMC_shell] 1D posterior \uc0\u24418 \u29376 \u21028 \u26039 \u65306 \
+  Theta zero  : unimodal\
+  Phi zero    : unimodal\
+  Inclination : unimodal\
+  Time        : multimodal\
+  Omega       : unimodal\
+\
+[MCMC_grid] 2D smoothed-peak (aggregated from pairwise 2D marginals):\
+Theta = 69.404 deg\
+Phi   = -172.603 deg\
+Incl  = -84.248 deg\
+T     = 0.845503 Myr\
+Omega = 0.0773\
+[cache] Saved MCMC shell results to HLTau_results/cache/HLTau_mcmc_shell_results.npz\
+[cache] Saved FINAL best-fit to HLTau_results/cache/HLTau_fit_results_final.npz\
+[cache] Loaded for overlay (mcmc_shell): HLTau_results/cache/HLTau_mcmc_shell_results.npz\
+[overlay] Loaded streamer cube for z\'96v diagram\
+[z\'96v] Saved HLTau_z_v_data_overlay_best.png\
+[overlay] Generated best-fit z\'96v, moment0, and moment1 overlay plots from cache.\
+\
+\uc0\u20840 \u37096 \u27573 \u33853 \u22519 \u34892 \u23436 \u25104 \u12290 }

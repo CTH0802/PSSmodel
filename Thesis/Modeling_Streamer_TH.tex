@@ -1,5 +1,4 @@
 \documentclass[master]{NTNUthesis}
-\usepackage[utf8]{inputenc}   % Not needed with XeLaTeX
 % \usepackage{times}            % Not needed with XeLaTeX
 \usepackage{xeCJK}
 \setCJKmainfont{TW-Kai-98_1}[
@@ -13,8 +12,6 @@
 \usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{makecell}
-\usepackage{caption}
-\usepackage{subcaption}
 \usepackage{units}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{cancel}
@@ -22,13 +19,19 @@
 \usepackage{booktabs}           % tables
 \usepackage{pdflscape}
 \usepackage{citeall}
-% \usepackage{hyperref}
+\usepackage{hyperref}
 \usepackage[authoryear]{natbib}
 \usepackage{import}
 \usepackage{color}
 \usepackage{authblk}
 \usepackage{xspace}
 \usepackage{fontspec}
+\usepackage{caption}
+\usepackage{subcaption}
+\hypersetup{
+  hidelinks
+}
+\captionsetup{compatibility=false}
 \def\YN#1{ \noindent{\color{olive}\textbf{[(YN) #1]}}}
 \newcommand{\farcs}{\mbox{$.\!\!^{\prime\prime}$}}
 \newcommand{\arcsec}{\mbox{$^{\prime\prime}$}}
@@ -107,7 +110,7 @@
 \monthZH{1}
 \yearEN{2026}
 \monthEN{January}
-
+\listfiles
 \begin{document}
 
 \makecover
@@ -115,14 +118,13 @@
 \pagenumbering{Roman}
 
 %%% Necessary %%%
-\begin{abstractZH}
-    \import{./}{Abstract.tex}
-\end{abstractZH}
-
-%%% Necessary %%%
 \begin{abstractEN}
     \import{./}{Abstract.tex}
 \end{abstractEN}
+
+\begin{abstractZH}
+    \import{./}{AbstractZH.tex}
+\end{abstractZH}
 
 %%% Necessary %%%
 \maketoc
@@ -141,11 +143,12 @@
 \chapter{Discussion}
 \import{./}{Discussion.tex}
 
-\chapter{Conclusion}
+\chapter{Conclusions}
 \import{./}{Conclusion.tex}
-\import{./}{Appendix.tex}
+
 \bibliographystyle{aasjournal}
 \bibliography{reference}
+\import{./}{Appendix.tex}
 
 % Ensure all \cite commands in your chapters reference entries that exist in Reference.bib.
 % Remove or correct any undefined citations to avoid natbib errors.

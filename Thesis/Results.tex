@@ -1,307 +1,550 @@
-\section{Grid Search Parameter Constraints}
-\section{MCMC Posterior Distributions}
-\section{Best-fit Streamer Models}
-\section{Physical Implications for Each Target}
+\section{Overview of fitting performance across methods}
+We adopt a hierarchical fitting strategy to constrain the five model parameters $(\theta,\phi_0,i,t_{\rm s},\omega)$, combining complementary information from centroid-based and cube-based representations of the data. The initial five-dimensional grid search provides a robust and efficient identification of viable regions in parameter space and typically recovers the correct large-scale streamer orientation and curvature, serving as a reliable starting point for subsequent refinement. We then perform an MCMC exploration using a centroid-based likelihood to tighten the constraints around these viable regions and to quantify parameter uncertainties and correlations. Because the centroid representation compresses the emission at each projected position into a single characteristic velocity, it efficiently captures the global streamer morphology and the dominant line-of-sight velocity gradient. However, this representation does not retain the full velocity distribution along the line of sight. As a result, centroid-based fits do not always provide a clear improvement over the grid-search results, particularly when different parameter combinations produce similar projected trajectories and velocity trends. This limitation motivates the use of fitting approaches that incorporate the full data set, as discussed below.
+
+For datasets with full spectral cubes, we further apply a shell-based likelihood that compares the model against the complete PPV structure. By incorporating the spatially and spectrally resolved information beyond the moment- or centroid-level compression, the cube-based fits generally yield tighter and more stable posterior constraints, reduce the impact of centroid-related information loss, and improve the overall consistency between spatial and line of sight velocity. In several targets, the shell-based likelihood also leads to closer agreement between representative posterior summaries (e.g., peak versus median solutions), indicating that the posterior is better localized when the full PPV information is used.
+
+Across the sample, parameters tied primarily to viewing geometry (e.g., inclination angles $i$) are often relatively well constrained, while the collapse timescale $t_{\rm s}$ and the rotational parameter $\omega$ can show a pronounced trade-off, reflecting that similar projected velocity gradients can be produced by different combinations of infall timescale and rotational support. We assess convergence using standard ensemble-sampler diagnostics and retain only chains with stable sampling behavior and well-defined autocorrelation times. Overall, the agreement among grid, centroid-based MCMC, and cube-based MCMC results supports the robustness of the inferred large-scale kinematic description, while highlighting that incorporating full PPV information provides the strongest and most internally consistent constraints.
+
+\section{Summary of best-fit parameters}
 \subsection{Per-emb-2}
+For Per-emb-2, we focus on the results obtained from the MCMC-points analysis, which provides the most consistent representation of the streamer morphology and kinematics for this target. The best-fit models reproduce the projected streamer structure well in both the moment--0 and moment--1 maps (Figs.~\ref{fig:per2_results_mom0} and \ref{fig:per2_results_mom1}), indicating that the large-scale spatial geometry and the global line-of-sight velocity gradient are robustly captured.
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png}
         \caption{}
-        \label{fig:per2_mom0_grid}
+        \label{fig:per2_mcmc_mom0_peak_grid}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png}
         \caption{}
-        \label{fig:per2_mcmc_mom0_grid}
+        \label{fig:per2_mcmc_mom0_median_grid}
     \end{subfigure}
-    \caption{Streamers in Per-emb-2.}
+    \caption{
+    Moment--0 maps of the Per-emb-2 streamer with overlaid best-fit models from the MCMC-points analysis.
+    From left to right, the panels show the posterior peak solution (\ref{fig:per2_mcmc_mom0_peak_grid})
+    and the posterior median solution (\ref{fig:per2_mcmc_mom0_median_grid}).
+    In both cases, the solid curve traces the projected model streamer overlaid on the observed moment--0 emission,
+    while the dots indicate the centroid positions extracted from the data and used in the centroid-based fitting.
+    }
     \label{fig:per2_results_mom0}
 \end{figure}
+Both the posterior peak and posterior median solutions from the MCMC-points analysis yield very similar projected streamer trajectories and velocity patterns. Their close agreement in the moment maps suggests that the inferred geometry is not sensitive to the specific choice of representative posterior parameters for this source.
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png}
         \caption{}
-        \label{fig:per2_mom1_grid}
+        \label{fig:per2_mcmc_mom1_peak_grid}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png}
         \caption{}
-        \label{fig:per2_mcmc_mom1_grid}
+        \label{fig:per2_mcmc_mom1_median_grid}
     \end{subfigure}
-    \caption{Streamers in Per-emb-2.}
+    \caption{
+    Moment--1 maps of the Per-emb-2 streamer corresponding to the MCMC-points solutions shown in Fig.~\ref{fig:per2_results_mom0}.
+    From left to right, the panels display the posterior peak and posterior median solutions.
+    The color scale represents the line-of-sight velocity field, and the overlaid curves indicate the projected model streamer.
+    The close similarity between the two panels highlights the robustness of the inferred velocity structure.
+    }
     \label{fig:per2_results_mom1}
 \end{figure}
+
+Because the fitting is performed using moment maps, each projected position contributes only a single characteristic velocity. Consequently, the comparison in the position--velocity ($z$--$v$) diagram (Fig.~\ref{fig:per2_results_z-v}) is not intended to reproduce a full velocity distribution at a given location. Nevertheless, both the peak and median models follow the overall trend of the observed emission in the $z$--$v$ plane, demonstrating consistency with the global kinematic behavior of the streamer.
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png}
+        \caption{}
+        \label{fig:per2_mcmc_z-v_peak_grid}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png}
+        \caption{}
+        \label{fig:per2_mcmc_z-v_median_grid}
+    \end{subfigure}
+    \caption{
+    Position--velocity ($z$--$v$) diagrams of the Per-emb-2 streamer comparing the observed emission with the MCMC-points model predictions.
+    From left to right, the panels show the posterior peak and posterior median solutions.
+    The background color map and contours represent the observed intensity distribution,
+    while the solid curve traces the line-of-sight velocity along the model streamer.
+    Because the fitting is based on moment maps, the model is expected to reproduce the global velocity trend rather than the full velocity distribution at each position.
+    }
+    \label{fig:per2_results_z-v}
+\end{figure}
+The posterior distributions (Fig.~\ref{fig:per2_results_cornerplot}) reveal a pronounced correlation between the collapse timescale $t_{\rm s}$ and the rotational parameter $\omega$, reflecting the intrinsic trade-off between infall timescale and rotational support when only moment-based constraints are used. Despite this correlation, the peak and posterior median values are closely aligned, indicating that the inferred streamer geometry and kinematics are stable within the limitations imposed by moment-map-based fitting.
+
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/Per-emb-2_mcmc_corner.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png}
         \caption{}
-        \label{fig:per2_mcmc_grid_cornerplot}
+        \label{fig:per2_mcmc_grid_peak_cornerplot}
     \end{subfigure}
-    \caption{MCMC corner plot of Per-emb-2.}
+    \caption{
+    Posterior distributions of the model parameters for the Per-emb-2 streamer derived from the MCMC-points analysis.
+    The panels show the posterior peak solution, with the corresponding posterior median solution presented in the continued figure.
+    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations.
+    The solid blue lines mark the locations of the posterior peak and median values,
+    while the dashed black lines indicate the $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
+    }
     \label{fig:per2_results_cornerplot}
 \end{figure}
+
+\begin{figure}[htbp]
+    \begin{subfigure}{0.96\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png}
+        \caption{}
+        \label{fig:per2_mcmc_grid_median_cornerplot}
+    \end{subfigure}
+    \caption[]{
+    Posterior distributions of the model parameters for the Per-emb-2 streamer derived from the MCMC-points analysis (continued),
+    showing the posterior median solution.
+    }
+\end{figure}
+
+
 \subsection{Per-emb-50}
-The streamer associated with Per-emb-50 exhibits a coherent, curved morphology extending from large radii toward the central protostar, together with a smooth and monotonic velocity gradient in the moment~1 map. These characteristics indicate a dynamically organized flow rather than a collection of isolated clumps.
 
-All three fitting approaches—grid search, MCMC-grid, and MCMC-shell—are able to reproduce the overall projected morphology of the streamer in the moment~0 map (Fig.~\ref{fig:per50_results_mom0}). The grid search already recovers the main curvature and orientation of the streamer, demonstrating that it efficiently identifies the relevant region of parameter space. The subsequent MCMC-based refinements primarily serve to narrow the parameter ranges and improve the consistency with the observed structure, rather than altering the global morphology inferred from the grid search.
+The streamer associated with Per-emb-50 exhibits a coherent and smoothly curved morphology extending from large radii toward the central protostar, accompanied by a monotonic line-of-sight velocity gradient in the moment--1 map. These characteristics indicate a dynamically organized flow consistent with large-scale infall and rotation.
 
-In the velocity domain, all fitting approaches recover the global trend of increasing line-of-sight velocity toward smaller radii, consistent with an infalling and rotating flow (Fig.~\ref{fig:per50_results_mom1}). The MCMC-based solutions provide a smoother and more continuous representation of the velocity field, particularly in regions where the velocity gradient becomes steeper, while small discrepancies remain at the innermost radii where the emission is weaker and the velocity field is less well constrained.
+In the following, we focus exclusively on the results obtained from the MCMC-global analysis, which incorporates the full position--position--velocity (PPV) information and provides the most self-consistent description of the streamer kinematics for this source. Both the posterior peak and posterior median solutions reproduce the overall projected morphology of the streamer in the moment--0 map (Fig.~\ref{fig:per50_results_mom0}), demonstrating that the large-scale geometry is robustly constrained.
 
-The posterior distributions show that the inclination angle $i$, the initial polar angle $\theta$, and the initial azimuthal angle $\phi_0$ are relatively well constrained, with consistent values obtained across all fitting methods (Fig.~\ref{fig:per50_results_cornerplot}). In contrast, the characteristic collapse time $t_{\rm s}$ and the rotational parameter $\omega$ exhibit a clear degeneracy, reflecting a trade-off between the collapse timescale and the strength of rotational motion in reproducing the observed kinematics.
-
-Taken together, the results for Per-emb-50 demonstrate that the streamer kinematics can be well described by a model combining radial infall and moderate rotational motion. The agreement between independent fitting approaches supports the robustness of the inferred large-scale dynamical structure.
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mom0_grid}
+        \label{fig:per50_mcmc_shell_peak_mom0}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/Per-emb-50_mom0_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_mom0_grid}
+        \label{fig:per50_mcmc_shell_median_mom0}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/Per-emb-50_mom0_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mcmc_shell_mom0}
-    \end{subfigure}
-    \caption{Streamers in Per-emb-50.}
+    \caption{
+    Moment--0 maps of the Per-emb-50 streamer with overlaid best-fit models from the MCMC-global analysis.
+    From left to right, the panels show the posterior peak solution (\ref{fig:per50_mcmc_shell_peak_mom0})
+    and the posterior median solution (\ref{fig:per50_mcmc_shell_median_mom0}).
+    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission.
+    The posterior peak solution provides a closer match to the inner streamer structure,
+    while the posterior median solution better traces the outer streamer morphology.
+    }
     \label{fig:per50_results_mom0}
 \end{figure}
-\begin{figure}[htbp]
-    \centering
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/Per-emb-50_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mom1_grid}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/Per-emb-50_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mcmc_mom1_grid}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/Per-emb-50_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mcmc_shell_mom1}
-    \end{subfigure}
-    \caption{Streamers in Per-emb-50.}
-    \label{fig:per50_results_mom1}
-\end{figure}
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_peak2d_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_grid_map_cornerplot}
+        \label{fig:per50_mcmc_shell_peak_mom1}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_median_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_grid_median_cornerplot}
+        \label{fig:per50_mcmc_shell_median_mom1}
+    \end{subfigure}
+    \caption{
+    Moment--1 maps of the Per-emb-50 streamer corresponding to the MCMC-global solutions shown in Fig.~\ref{fig:per50_results_mom0}.
+    From left to right, the panels display the posterior peak and posterior median solutions.
+    The color scale represents the line-of-sight velocity field, while the overlaid curves indicate the projected model streamer trajectories.
+    The peak solution better reproduces the steep velocity gradient in the inner streamer,
+    whereas the median solution provides a smoother match to the outer velocity field.
+    }
+    \label{fig:per50_results_mom1}
+\end{figure}
+A closer comparison reveals systematic but physically meaningful differences between the two representative solutions. The posterior peak solution provides a better match to the inner part of the streamer, where the emission is brighter and the velocity gradients are steeper, indicating that it more accurately captures the kinematics close to the central protostar. In contrast, the posterior median solution yields a closer correspondence to the outer streamer structure at larger radii, where the emission is more diffuse and the velocity field is smoother.
+
+In the velocity domain, both MCMC-global solutions recover the global trend of increasing line-of-sight velocity toward smaller radii, consistent with an infalling and rotating flow (Fig.~\ref{fig:per50_results_mom1}). The $z$--$v$ diagrams further demonstrate that the two solutions bracket the observed velocity distribution, with the peak solution better reproducing the high-velocity inner component and the median solution providing a better match to the lower-velocity outer emission (Fig.~\ref{fig:per50_results_z-v}).
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png}
+        \caption{}
+        \label{fig:per50_mcmc_shell_peak_z-v}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/corner_mcmc_shell_peak2d_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png}
+        \caption{}
+        \label{fig:per50_mcmc_shell_median_z-v}
+    \end{subfigure}
+    \caption{
+    Position--velocity ($z$--$v$) diagrams of the Per-emb-50 streamer comparing the observed emission with the MCMC-global model predictions.
+    From left to right, the panels show the posterior peak solution (\ref{fig:per50_mcmc_shell_peak_z-v})
+    and the posterior median solution (\ref{fig:per50_mcmc_shell_median_z-v}).
+    The background color map and contours represent the average intensity distribution,
+    while the solid curve traces the line-of-sight velocity along the model streamer.
+    The peak solution more closely follows the high-velocity inner component,
+    whereas the median solution better reproduces the lower-velocity outer emission.
+    }
+    \label{fig:per50_results_z-v}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.96\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak2d_cacheonly.png}
         \caption{}
         \label{fig:per50_mcmc_shell_map_cornerplot}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/corner_mcmc_shell_median_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mcmc_shell_median_cornerplot}
-    \end{subfigure}
-    \caption{MCMC corner plot of Per-emb-50.}
+    \caption{
+    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC-global analysis.
+    The panels show the posterior peak solution, with the posterior median solution presented in the continued figure.
+    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations.
+    The solid blue lines mark the locations of the posterior peak and median values,
+    while the dashed black lines indicate the $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
+    }
     \label{fig:per50_results_cornerplot}
 \end{figure}
 
+\begin{figure}[htbp]
+    \begin{subfigure}{0.96\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png}
+        \caption{}
+        \label{fig:per50_mcmc_shell_median_cornerplot}
+    \end{subfigure}
+    \caption[]{
+    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC-global analysis (continued),
+    showing the posterior median solution.
+    }
+\end{figure}
+The posterior distributions derived from the MCMC-global analysis (Fig.~\ref{fig:per50_results_cornerplot}) show that the streamer orientation parameters are well constrained, while the collapse timescale $t_{\rm s}$ and the rotational parameter $\omega$ exhibit a correlated behavior. This reflects an intrinsic trade-off in the model between radial infall and rotational support when fitting the full PPV structure of the streamer.
+
+Overall, the MCMC-global results demonstrate that the Per-emb-50 streamer kinematics can be consistently described by a model combining radial infall with moderate rotation. The complementary behavior of the peak and median solutions highlights the sensitivity of the inner and outer streamer regions to different aspects of the parameter space, while confirming the robustness of the inferred large-scale dynamical structure.
 \subsection{S CrA}
+For S~CrA, we focus on the posterior peak solutions obtained from two MCMC-based fitting approaches: MCMC-points and MCMC-global. In both cases, the fitting is performed after masking the central region containing the close binary system, with a mask diameter of approximately 560~au. This masking is applied to exclude emission dominated by the binary system and to enable a more direct and reliable comparison between the model and the streamer component.
 
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mom0_grid}
+        \label{fig:SCrA_mcmc_mom0_peak_grid}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/SCrA_mom0_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_mom0_grid}
+        \label{fig:SCrA_mcmc_shell_peak_mom0}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/SCrA_mom0_cacheonly.png}
-        \caption{}
-        \label{fig:SCrA_mcmc_shell_mom0}
-    \end{subfigure}
-    \caption{Streamers in S~CrA.}
+    \caption{
+    Moment--0 maps of the S~CrA streamer with overlaid best-fit models from the MCMC-based analyses.
+    From left to right, the panels show the posterior peak solutions obtained using MCMC-points
+    (\ref{fig:SCrA_mcmc_mom0_peak_grid}) and MCMC-global (\ref{fig:SCrA_mcmc_shell_peak_mom0}).
+    In both cases, the projected model streamer closely follows the observed moment--0 emission,
+    indicating that the large-scale spatial morphology is similarly reproduced by the two approaches.
+    }
     \label{fig:SCrA_results_mom0}
 \end{figure}
-\begin{figure}[htbp]
-    \centering
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/SCrA_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:SCrA_mom1_grid}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/SCrA_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:SCrA_mcmc_mom1_grid}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/SCrA_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:SCrA_mcmc_shell_mom1}
-    \end{subfigure}
-    \caption{Streamers in S~CrA.}
-    \label{fig:SCrA_results_mom1}
-\end{figure}
+Both methods provide a comparable reproduction of the projected streamer morphology in the moment--0 map, capturing the overall curvature and large-scale geometry of the streamer. This indicates that the spatial structure of the streamer is robustly constrained and can be reproduced using either centroid-based constraints or full PPV information.
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_grid_cornerplot}
+        \label{fig:SCrA_mcmc_mom1_peak_grid}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/corner_mcmc_shell.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_cornerplot}
+        \label{fig:SCrA_mcmc_shell_peak_mom1}
     \end{subfigure}
-    \caption{MCMC corner plot of S~CrA.}
+    \caption{
+    Moment--1 maps of the S~CrA streamer corresponding to the MCMC-based peak solutions shown in Fig.~\ref{fig:SCrA_results_mom0}.
+    From left to right, the panels display the MCMC-points peak solution
+    (\ref{fig:SCrA_mcmc_mom1_peak_grid}) and the MCMC-global peak solution
+    (\ref{fig:SCrA_mcmc_shell_peak_mom1}).
+    The color scale represents the line-of-sight velocity field, while the overlaid curves indicate the projected model streamer.
+    Both approaches recover the global velocity gradient along the streamer.
+    }
+    \label{fig:SCrA_results_mom1}
+\end{figure}
+In the velocity domain, both MCMC-points and MCMC-global peak solutions recover the main line-of-sight velocity trend seen in the moment--1 map and the $z$--$v$ diagram, demonstrating that the dominant kinematic behavior of the streamer is consistently described by the model. The agreement between the two approaches suggests that the inferred infall and rotational motions are not strongly sensitive to the specific likelihood formulation at the global level when the analysis is restricted to the streamer-dominated region.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png}
+        \caption{}
+        \label{fig:SCrA_mcmc_z-v_peak_grid}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png}
+        \caption{}
+        \label{fig:SCrA_mcmc_shell_peak_z-v}
+    \end{subfigure}
+    \caption{
+    Position--velocity ($z$--$v$) diagrams of the S~CrA streamer comparing the observed emission with the MCMC-based model predictions.
+    From left to right, the panels show the posterior peak solutions from MCMC-points
+    (\ref{fig:SCrA_mcmc_z-v_peak_grid}) and MCMC-global
+    (\ref{fig:SCrA_mcmc_shell_peak_z-v}).
+    The background color map and contours represent the observed intensity distribution,
+    while the solid curve traces the line-of-sight velocity along the model streamer.
+    Both models follow the overall velocity trend, but exhibit a systematic offset of
+    $\sim$0.5~km~s$^{-1}$ in the outer streamer region, where the model predicts slightly slower
+    line-of-sight velocities than observed.
+    }
+    \label{fig:SCrA_results_z-v}
+\end{figure}
+Nevertheless, a systematic difference is observed in the outer part of the streamer. In the $z$--$v$ diagram (Fig.~\ref{fig:SCrA_results_z-v}), both MCMC-based peak solutions exhibit a velocity offset of approximately $\sim$0.5~km~s$^{-1}$ at large projected distances, where the model predicts slightly slower line-of-sight velocities compared to the observed emission. This offset is most apparent in the outer streamer region and likely reflects limitations in constraining the kinematics where the emission becomes weaker and more spatially extended.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.96\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png}
+        \caption{}
+        \label{fig:SCrA_mcmc_grid_peak_cornerplot}
+    \end{subfigure}
+    \caption{
+    Posterior distributions of the model parameters for the S~CrA streamer obtained from the MCMC-based analyses.
+    The panels show the posterior peak solutions from MCMC-points
+    (\ref{fig:SCrA_mcmc_grid_peak_cornerplot}) and MCMC-global
+    (\ref{fig:SCrA_mcmc_shell_peak_cornerplot}).
+    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations,
+    demonstrating that the two approaches converge to similar regions of parameter space.
+    The solid blue lines mark the posterior peak values, while the dashed black lines indicate the
+    $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
+    }
     \label{fig:SCrA_results_cornerplot}
 \end{figure}
 
-\subsection{HL Tau}
 \begin{figure}[htbp]
-    \centering
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/HLTau_mom0_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mom0_grid}
+        \label{fig:SCrA_mcmc_shell_peak_cornerplot}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/HLTau_mom0_cacheonly.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_mom0_grid}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/HLTau_mom0_cacheonly.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_shell_mom0}
-    \end{subfigure}
-    \caption{Streamers in HL~Tau.}
-    \label{fig:HLTau_results_mom0}
+    \caption[]{
+    Posterior distributions of the model parameters for the S~CrA streamer derived from the MCMC-global analysis (peak solution),
+    which incorporates the full position--position--velocity information.
+    }
 \end{figure}
+The posterior distributions derived from the two MCMC approaches show similar parameter constraints and correlations (Fig.~\ref{fig:SCrA_results_cornerplot}), indicating that both methods converge to closely related regions of parameter space. Overall, the consistency between the MCMC-points and MCMC-global peak solutions demonstrates that the main streamer geometry and kinematics of S~CrA are robustly recovered, while the residual velocity offset in the outer region highlights the sensitivity of the model to low-level kinematic structure at large radii.
+
+\subsection{HL Tau}
+
+For HL~Tau, we present the results obtained from the posterior median solutions of the two MCMC-based fitting approaches: MCMC-points and MCMC-global. In this source, the model fitting is performed using only the redshifted emission associated with the streamer, relative to the systemic velocity, in order to isolate the infalling streamer component from the dominant disk emission.
+
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/HLTau_mom1_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mom1_grid}
+        \label{fig:HLTau_mcmc_mom0_median_grid}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.32\textwidth}
+    \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/HLTau_mom1_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_mom1_grid}
+        \label{fig:HLTau_mcmc_shell_median_mom0}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/HLTau_mom1_cacheonly.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_shell_mom1_mom0}
-    \end{subfigure}
-    \caption{Streamers in HL~Tau.}
-    \label{fig:HLTau_results_mom1}
+    \caption{
+    Moment--0 maps of the HL~Tau streamer with overlaid best-fit models obtained from the posterior median solutions.
+    From left to right, the panels show the results from the MCMC-points approach
+    (\ref{fig:HLTau_mcmc_mom0_median_grid}) and the MCMC-global approach
+    (\ref{fig:HLTau_mcmc_shell_median_mom0}).
+    In both cases, the projected model streamer closely follows the redshifted streamer emission,
+    indicating a good agreement between the model and the observed plane-of-sky morphology.
+    }
+    \label{fig:HLTau_results_mom0}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_map.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/HLTau_mom1_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_grid_map_cornerplot}
+        \label{fig:HLTau_mcmc_mom1_median_grid}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_median.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/HLTau_mom1_cacheonly.png}
+        \caption{}
+        \label{fig:HLTau_mcmc_shell_median_mom1}
+    \end{subfigure}
+    \caption{
+    Moment--1 maps of the HL~Tau streamer corresponding to the same median solutions shown in Fig.~\ref{fig:HLTau_results_mom0}.
+    From left to right, the panels display the MCMC-points median solution
+    (\ref{fig:HLTau_mcmc_mom1_median_grid}) and the MCMC-global median solution
+    (\ref{fig:HLTau_mcmc_shell_median_mom1}).
+    The color scale represents the line-of-sight velocity field, while the overlaid curves indicate the projected model streamer.
+    Both approaches recover the global velocity gradient along the streamer.
+    }
+    \label{fig:HLTau_results_mom1}
+\end{figure}
+In the moment--0 and moment--1 maps (Figs.~\ref{fig:HLTau_results_mom0} and \ref{fig:HLTau_results_mom1}), both MCMC-points and MCMC-global median solutions show a close agreement with the observed streamer morphology when projected onto the plane of the sky. The projected model streamers closely trace the spatial distribution of the redshifted emission, indicating that the large-scale geometry and global velocity gradient of the streamer are well reproduced by both approaches.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png}
+        \caption{}
+        \label{fig:HLTau_mcmc_z-v_median_grid}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png}
+        \caption{}
+        \label{fig:HLTau_mcmc_shell_median_z-v}
+    \end{subfigure}
+    \caption{
+    Position--velocity ($z$--$v$) diagrams of the HL~Tau streamer comparing the observed emission with the model predictions.
+    From left to right, the panels show the posterior median solutions from the MCMC-points
+    (\ref{fig:HLTau_mcmc_z-v_median_grid}) and MCMC-global
+    (\ref{fig:HLTau_mcmc_shell_median_z-v}) approaches.
+    The background color map and contours represent the observed intensity distribution,
+    while the solid curve traces the line-of-sight velocity along the model streamer.
+    Differences between the two models are apparent in the inner regions dominated by disk emission,
+    which is not included in the streamer model, whereas in the outer regions both approaches
+    successfully reproduce the observed streamer kinematics.
+    }
+    \label{fig:HLTau_results_z-v}
+\end{figure}
+The position--velocity ($z$--$v$) diagrams (Fig.~\ref{fig:HLTau_results_z-v}) further illustrate the consistency of the inferred streamer kinematics in the outer regions. While noticeable differences appear in the inner regions associated with the disk, where the two methods predict different velocity profiles, such discrepancies are expected given that the adopted streamer model does not include a prescription for disk kinematics. In contrast, at larger projected distances, both MCMC-based median solutions successfully follow the observed velocity trend of the streamer, demonstrating that the outer streamer kinematics are robustly constrained.
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.96\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png}
         \caption{}
         \label{fig:HLTau_mcmc_grid_median_cornerplot}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/corner_mcmc_shell_map.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_shell_map_cornerplot}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/corner_mcmc_shell_median.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_shell_median_cornerplot}
-    \end{subfigure}
-    \caption{MCMC corner plot of HL~Tau.}
+    \caption{
+    Posterior distributions of the model parameters for the HL~Tau streamer derived from the posterior median solutions.
+    From left to right, the panels show the results from the MCMC-points approach
+    (\ref{fig:HLTau_mcmc_grid_median_cornerplot}) and the MCMC-global approach
+    (\ref{fig:HLTau_mcmc_shell_median_cornerplot}).
+    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations,
+    demonstrating that both approaches yield consistent estimates of the streamer geometry and kinematics when fitting is restricted
+    to the redshifted streamer emission.
+    The solid blue lines mark the posterior median values, while the dashed black lines indicate the $\pm34\%$ confidence intervals
+    derived from the marginalized posterior distributions.
+    }
     \label{fig:HLTau_results_cornerplot}
 \end{figure}
 
-\subsection{SVS 13A}
+\begin{figure}[htbp]
+    \begin{subfigure}{0.96\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png}
+        \caption{}
+        \label{fig:HLTau_mcmc_shell_median_cornerplot}
+    \end{subfigure}
+    \caption[]{
+    Posterior distributions of the model parameters for the HL~Tau streamer derived from the MCMC-global analysis (posterior median solution).
+    }
+\end{figure}
+The posterior distributions (Fig.~\ref{fig:HLTau_results_cornerplot}) show similar parameter constraints for the two methods, indicating that incorporating full PPV information through the MCMC-global approach does not significantly alter the inferred streamer geometry compared to the centroid-based MCMC-points method for this source. Overall, the results suggest that, when restricted to the redshifted streamer emission, both approaches provide a consistent and reliable description of the large-scale streamer structure and kinematics in HL~Tau.
+
+\begin{table}[htbp]
+\centering
+\caption{
+Best-fit kinematic model parameters for all targets.
+For each source, peak and median values from the MCMC analysis are listed.
+}
+\label{table:best_fit_parameters}
+\scriptsize
+\begin{tabular}{lcccccccc}
+\toprule
+Source &
+$\theta$ &
+$\phi_0$ &
+$i$ &
+$t_s$ &
+$\omega$ &
+$r_s$ &
+$\dot{M}_{env}$ &
+$i_{Disk}$ \\
+&
+(deg) &
+(deg) &
+(deg) &
+(Myr) &
+&
+(AU) &
+($M_\odot$/yr) &
+(deg) \\
+\midrule
+Per-emb-2 (peak)   & 76.303 & 248.937 & $-79.655$ & 0.257 & 0.601 & 10878 & $8.17\times10^{-6}$ & -- \\
+Per-emb-2 (median) & 76.262 & 249.706 & $-79.652$ & 0.265 & 0.595 & 11217 & $7.93\times10^{-6}$ & -- \\
+\midrule
+Per-emb-50 (peak)   & 82.464 & 10.573 & $-68.676$ & 0.735 & 0.066 & 31112 & $2.86\times10^{-6}$ & $-23$ \\
+Per-emb-50 (median) & 86.160 & 12.080 & $-69.558$ & 0.833 & 0.062 & 35261 & $2.52\times10^{-6}$ & -- \\
+\midrule
+S~CrA (peak)   & 89.614 & 22.610 & $-81.219$ & 0.792 & 0.217 & 33525 & $2.65\times10^{-6}$ & $-25$ \\
+S~CrA (median) & 89.709 & 7.134  & $-81.591$ & 0.940 & 0.230 & 39790 & $2.23\times10^{-6}$ & -- \\
+\midrule
+HL~Tau (peak)   & 68.075 & $-158.493$ & $-87.431$ & 0.664 & 0.092 & 28107 & $3.16\times10^{-6}$ & $-43$ \\
+HL~Tau (median) & 69.643 & $-164.752$ & $-84.087$ & 0.802 & 0.089 & 33948 & $2.62\times10^{-6}$ & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Physical Implications}
+\subsection{Collapse Scale and Evolutionary Stage}
+The best-fit parameters derived from the streamer modeling provide insight into the physical state of collapsing protostellar envelopes and the dynamical role of streamers in the mass assembly process. In the following, we discuss the physical implications of the characteristic scales and parameters constrained by our model. The corresponding numerical values for each target are summarized in Table~\ref{table:best_fit_parameters}.
+
+The characteristic radius $r_{\rm s}$, defined as the product of the isothermal sound speed and the collapse timescale ($r_{\rm s}=c_{\rm s} t_{\rm s}$), can be interpreted as the location of the collapse rarefaction wave front. Within this radius, material has dynamically responded to the formation of the central protostar, while the outer envelope remains closer to its pre-collapse state. The inferred values of $r_{\rm s}$ therefore provide a direct measure of how far the collapse has propagated into the surrounding core. The collapse timescale $t_{\rm s}$ represents the time elapsed since the onset of central star formation, typically of order $\sim10^{5}$--$10^{6}\,\mathrm{yr}$ in our sample (Table~\ref{table:best_fit_parameters}). This places the observed systems in an early protostellar phase, consistent with the presence of extended infalling envelopes and prominent streamer structures. Variations in $t_{\rm s}$ among sources may reflect differences in their evolutionary stage or initial core conditions.
+
+\subsection{Streamer Geometry and System Orientation}
+The inferred streamer geometry further indicates that the infalling material does not necessarily originate from the disk midplane. From the best-fit results, the initial polar angle $\theta$ is consistently found to deviate from the disk midplane value ($\theta = 90^\circ$), indicating that the streamers are launched from envelope material above or below the disk plane. This systematic offset suggests that streamer formation is not confined to the disk midplane, but instead traces accretion flows originating from a range of vertical locations within the collapsing envelope, supporting a three-dimensional picture of mass accretion rather than a purely flattened, disk-like inflow.
+
+The inclination angle $i$ derived from the streamer kinematics provides an independent estimate of the system viewing geometry. We note that the inclination parameter in our model does not correspond directly to the conventional disk inclination, which is defined as the angle between the disk rotation axis and the line of sight. Instead, $i$ describes the geometric rotation applied to the model streamer structure to project it onto the plane of the sky.
+
+Under this definition, $i = 0^\circ$ corresponds to a configuration in which the disk plane lies entirely in the plane of the sky (i.e., an edge-on disk), and increasing $|i|$ tilts the system toward a more face-on orientation. Accordingly, when disk inclinations $i_{\rm disk}$ are available from continuum or molecular-line observations, we convert them to our model inclination using $i = -\left(90^\circ - i_{\rm disk}\right)$. This convention is adopted consistently for all targets analyzed in this work.
+
+When disk inclinations are available from continuum or molecular-line observations, the streamer-derived inclination can therefore be directly compared with the disk orientation after accounting for this geometric conversion. In some cases, discrepancies between the two may indicate a misalignment between the angular momentum of the inner disk and that of the larger-scale envelope, which may arise if the core angular momentum varies with radius or if the system has experienced asymmetric accretion during its formation.
+
+\subsection{Mass Accretion Rate and Angular Momentum Transport}
+Using the inferred collapse timescale, we estimate the characteristic mass accretion rate through the envelope onto the disk as $\dot{M}_{\rm env} \sim M_*/t_{\rm s}$, where $M_*$ is the adopted central stellar mass for each target (Table~\ref{tab:observations}). This quantity represents the average accretion rate associated with the global collapse of the envelope, rather than the instantaneous accretion rate onto the star. The resulting accretion rates are typically of order $10^{-6}$--$10^{-5}\,M_\odot\,\mathrm{yr^{-1}}$, consistent with expectations for embedded protostars. These values imply that streamers can act as dynamically important channels for delivering mass from large envelope scales down to the disk, potentially contributing significantly to disk growth during early evolutionary stages.
+
+Finally, the dimensionless rotational parameter $\omega$ characterizes the strength of rotational motion relative to free-fall collapse and provides a proxy for the initial rotational energy of the collapsing core material feeding the streamer. Larger values of $\omega$ correspond to stronger azimuthal motion and more pronounced curvature in the streamer, whereas smaller values indicate a collapse dominated by radial infall.
+
+
+
+% \subsection{SVS 13A}
 % \begin{figure}[htbp]
 %     \centering
 %     \begin{subfigure}{0.32\textwidth}
