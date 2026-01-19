@@ -40,9 +40,9 @@ MCMC_FIT_CACHE = "Per-emb-2_mcmc_grid_chain.npz" #mcmc result
 USE_CACHED_FIT = True
 FIT_CACHE = MCMC_FIT_CACHE
 
-PLOT_PARAM_MODE = "peak"   # "median" or "peak" or "grid"
+PLOT_PARAM_MODE = "median"   # "median" or "peak" or "grid"
 
-pa_deg = 50
+pa_deg = 50 + 90
 pa_rad = np.deg2rad(pa_deg)
 Local_Standard_Velocity = 7.05  # km/s
 distance_pc = 300
@@ -1126,7 +1126,7 @@ def plot_z_v_imshow(
     )
 
     cbar = fig.colorbar(im, ax=ax)
-    cbar.set_label(r"$\Sigma I_{\rm mom0}$  (Jy beam$^{-1}$ km s$^{-1}$)")
+    cbar.set_label(r"(Jy beam$^{-1}$ km s$^{-1}$)")
 
     # 疊上 model
     ax.plot(z_model, v_model, color="cyan", lw=2.5, label="PSS model")
@@ -1524,7 +1524,13 @@ def run_mcmc_grid(
     )
     fig.savefig(os.path.join(PLOT_DIR, "corner_mcmc_grid_map.png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
-
+    cache = {
+        "target": "Per-emb-2",
+        "distance_pc": distance_pc,
+        "M_star": M_star,
+        "pa_deg": pa_deg,
+        "Local_Standard_Velocity": Local_Standard_Velocity,
+    }
     cache.update({
         "mcmc_grid_used": True,
         "mcmc_grid_median_Theta": float(Theta_med),
@@ -1585,11 +1591,11 @@ if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
         # best_incl  = float(cache["mcmc_grid_peak2d_Incl_deg"])
         # best_T     = float(cache["mcmc_grid_peak2d_T"])
         # best_omega = float(cache["mcmc_grid_peak2d_Omega"])
-        best_theta = 76.303
-        best_phi   = 248.937
-        best_incl  = -79.655 
-        best_T     = 0.257
-        best_omega = 0.601
+        best_theta = 89.802
+        best_phi   = 167.311
+        best_incl  = -85.358
+        best_T     = 0.279
+        best_omega = 0.569 
     elif PLOT_PARAM_MODE == "grid":
         print("[Cache] Using COARSE GRID best-fit parameters for plotting")
 
@@ -1991,7 +1997,7 @@ plot_z_v_imshow(
     xx, zz,
     data_mom0, data_mom1,
     pa_rad, dx_au,
-    label='Per-emb-2 HC3N (Z–V diagram)',
+    label=r'Per-emb-2 $\rm HC_3N$ (Z–V diagram)',
     outname=f"Per-emb-2_z_v_imshow_{pa_deg}.png",
 )
 

@@ -94,7 +94,7 @@ CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "SCrA_mcmc_grid_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "SCrA_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "SCrA_fit_results_final.npz")
 
-USE_CACHE_SOURCE = "mcmc_shell"
+USE_CACHE_SOURCE = "grid"
 sample_from = "Median"
 
 # ---------- corner 重畫模式 ----------
@@ -102,15 +102,15 @@ REBUILD_CORNER_ONLY = False   # True: 不跑資料、不跑MCMC，只從 cache �
 REBUILD_WHICH = ("mcmc_grid", "mcmc_shell")  # 想重畫哪些：可改成只留其中一個"mcmc_grid", "mcmc_shell"
 
 # --- 分析開關 ---
-# RUN_GRID = True               # 5D grid search 找初始解
-# RUN_MCMC_GRID = True          # 32 個質心點 fast likelihood
-# RUN_MCMC_SHELL = True         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
-
-RUN_GRID = False               # 5D grid search 找初始解
+RUN_GRID = True               # 5D grid search 找初始解
 RUN_MCMC_GRID = False          # 32 個質心點 fast likelihood
 RUN_MCMC_SHELL = False         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+
+# RUN_GRID = False               # 5D grid search 找初始解
+# RUN_MCMC_GRID = False          # 32 個質心點 fast likelihood
+# RUN_MCMC_SHELL = False         # distance_cube MCMC
+# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -1027,6 +1027,8 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         cmap="inferno",
         extent=extent,
         norm=norm,
+        # vmin=np.nanmin(mom0),
+        # vmax=np.nanmax(mom0)
     )
 
     divider = make_axes_locatable(ax)
@@ -1079,7 +1081,7 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     #         )
 
     # 中心位置
-    ax.scatter(0, 0, c="C3", s=60, marker="+", zorder=6)
+    ax.scatter(0, 0, c="C0", s=60, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -1105,13 +1107,13 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     scale_range_y = [text_pos_y - 0.2, text_pos_y - 0.2]
 
     # 繪製比例尺與文字
-    ax.plot(scale_range_x, scale_range_y, color='k', lw=3, zorder=10)
+    ax.plot(scale_range_x, scale_range_y, color='w', lw=3, zorder=10)
     ax.text(
         text_pos_x - scale_length_arcsec / 2,
         text_pos_y - 2.0,
         f"{int(scale_length)} AU",
         ha='center', va='bottom',
-        fontsize=14, family='Times New Roman', color='k'
+        fontsize=14, family='Times New Roman', color='w'
     )
     beam = mpl.patches.Ellipse(
         (0, 0),
@@ -1119,7 +1121,7 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         height=70 * dx_arcsec,
         angle=0,
         facecolor="none",
-        edgecolor="k",
+        edgecolor="w",
         linestyle="--",
         lw=1.2,
         zorder=12,
@@ -1216,6 +1218,8 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
         extent=extent,
         vmin=vmin,
         vmax=vmax,
+        # vmin=np.nanmin(mom1),
+        # vmax=np.nanmax(mom1),
     )
 
     divider = make_axes_locatable(ax)
@@ -1266,7 +1270,7 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
     #             s=10, zorder=5,
     #         )
 
-    ax.scatter(0, 0, c="C3", s=70, marker="+", zorder=6)
+    ax.scatter(0, 0, c="C0", s=70, marker="+", zorder=6)
 
     ax.set_xlabel("RA Offset (arcsec)")
     ax.set_ylabel("Dec Offset (arcsec)")
@@ -1616,7 +1620,7 @@ def run_quick_mode_scra():
             float(T_best), float(Omega_best),
             header, pa_rad, dx_au, new_center,
             str_mom1,
-            label="S CrA $^{13}$CO moment-1",
+            label="S CrA $^{13}$CO",
             outname="SCrA_mom1_cacheonly.png",
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
@@ -1628,7 +1632,7 @@ def run_quick_mode_scra():
             float(T_best), float(Omega_best),
             header, pa_rad, dx_au, new_center,
             str_mom0,
-            label="S CrA $^{13}$CO moment-0",
+            label="S CrA $^{13}$CO",
             outname="SCrA_mom0_cacheonly.png",
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
@@ -2831,7 +2835,7 @@ def main():
         run_mcmc_grid()
     if RUN_MCMC_SHELL:
         run_mcmc_shell()
-        run_final_best_fit_and_overlay()
+    run_final_best_fit_and_overlay()
     print("\n全部段落執行完成。")
 
 if __name__ == "__main__":

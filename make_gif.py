@@ -12,9 +12,9 @@ def main():
     # -------------------------
     # 使用者可改的參數
     # -------------------------
-    frames = 25
-    fps = 6
-    interval_ms = 200
+    frames = 29
+    fps = 10
+    interval_ms = 2900
 
     Theta_zero = np.deg2rad(42)
     Phi_zero = np.deg2rad(240)

@@ -867,7 +867,10 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           mom0, label, outname,
                           cen_x_pix=None, cen_z_pix=None, cen_v_LS_km=None,
                           radius_in_au=radius_in_au,
-                          radius_out_au=radius_out_au):
+                          radius_out_au=radius_out_au,
+                          x_array=None, z_array=None,
+                          x_means=None, z_means=None,
+                          weights_array=None,):
     theta = np.deg2rad(theta_deg)
     phi   = np.deg2rad(phi_deg)
     inc   = np.deg2rad(inc_deg)
@@ -919,61 +922,61 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     cbar = fig.colorbar(im, cax=cax)
     cbar.set_label("(K km/s)")
 
-    lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
-    ax.add_collection(lc_edge)
+    # lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
+    # ax.add_collection(lc_edge)
 
     # 用 model v_m + LSR 當顏色（範圍依資料可調）
-    v_model_LSR = v_m + Local_Standard_Velocity
-    v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
-    norm_v = mpl.colors.Normalize(vmin=5.5, vmax=8.0)
-    lc = LineCollection(
-        segments,
-        cmap="coolwarm",
-        norm=norm_v,
-        linewidth=4.5,
-        zorder=3,
-    )
-    lc.set_array(v_seg)
-    ax.add_collection(lc)
+    # v_model_LSR = v_m + Local_Standard_Velocity
+    # v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
+    # norm_v = mpl.colors.Normalize(vmin=5.5, vmax=8.0)
+    # lc = LineCollection(
+    #     segments,
+    #     cmap="coolwarm",
+    #     norm=norm_v,
+    #     linewidth=4.5,
+    #     zorder=3,
+    # )
+    # lc.set_array(v_seg)
+    # ax.add_collection(lc)
     
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
-    # weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
+    # weights_im = ax.scatter( xarray_arc, -z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
     # x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
-    # ax.plot(x_means_arc, z_means_arc, color='w', lw=3, zorder=4)
+    # ax.plot(x_means_arc, -z_means_arc, color='w', lw=3, zorder=4)
     # divider = make_axes_locatable(ax)
     # cax     = divider.append_axes('right', size='3%', pad=0.04)
     # cbar = fig.colorbar(weights_im, cax=cax)
     # cbar.set_label('weight value')
 
     # 質心點（若提供）
-    if cen_x_pix is not None and cen_z_pix is not None:
-        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-        if cen_v_LS_km is not None:
-            cen_v = cen_v_LS_km + Local_Standard_Velocity
-            ax.scatter(
-                cen_ra, cen_dec,
-                c=cen_v,
-                cmap="coolwarm",
-                vmin=5.5, vmax=8.0,
-                s=20,
-                marker="o",
-                edgecolors="black",
-                linewidths=0.6,
-                zorder=5,
-                label="Centroids",
-            )
-        else:
-            ax.scatter(
-                cen_ra, cen_dec,
-                facecolors="none",
-                edgecolors="black",
-                s=36,
-                marker="o",
-                zorder=5,
-                label="Centroids",
-            )
+    # if cen_x_pix is not None and cen_z_pix is not None:
+    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+    #     if cen_v_LS_km is not None:
+    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             c=cen_v,
+    #             cmap="coolwarm",
+    #             vmin=5.5, vmax=8.0,
+    #             s=20,
+    #             marker="o",
+    #             edgecolors="black",
+    #             linewidths=0.6,
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
+    #     else:
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             facecolors="none",
+    #             edgecolors="black",
+    #             s=36,
+    #             marker="o",
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
 
     ax.scatter(0, 0, c="w", s=50, marker="+", zorder=6)
 
@@ -1009,11 +1012,11 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    # ax.quiver(
-    #     0.4, 0.4 * np.tan(np.deg2rad(10)),
-    #     1.4, 1.4 * np.tan(np.deg2rad(10)),
-    #     color='lightgrey', scale=12, zorder=10
-    # )
+    ax.quiver(
+        -0.4, 0.4 * np.tan(np.deg2rad(10)),
+        1.4, -1.4 * np.tan(np.deg2rad(10)),
+        color='grey', scale=12, zorder=10
+    )
     # beam（若有）
     try:
         bmaj = header.get("BMAJ", None)
@@ -1053,7 +1056,10 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           mom1, label, outname,
                           cen_x_pix=None, cen_z_pix=None, cen_v_LS_km=None,
                           radius_in_au=radius_in_au,
-                          radius_out_au=radius_out_au):
+                          radius_out_au=radius_out_au,
+                          x_array=None, z_array=None,
+                          x_means=None, z_means=None,
+                          weights_array=None):
 
     theta = np.deg2rad(theta_deg)
     phi   = np.deg2rad(phi_deg)
@@ -1106,60 +1112,60 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     cbar.set_label("Velocity (km/s)")
 
     # model 線
-    lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
-    ax.add_collection(lc_edge)
+    # lc_edge = LineCollection(segments, colors="black", linewidth=6, zorder=2)
+    # ax.add_collection(lc_edge)
 
-    v_model_LSR = v_m + Local_Standard_Velocity
-    v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-    lc = LineCollection(
-        segments,
-        cmap="coolwarm",
-        norm=norm,
-        linewidth=4.5,
-        zorder=3,
-    )
-    lc.set_array(v_seg)
-    ax.add_collection(lc)
+    # v_model_LSR = v_m + Local_Standard_Velocity
+    # v_seg = 0.5 * (v_model_LSR[:-1] + v_model_LSR[1:])
+    # norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    # lc = LineCollection(
+    #     segments,
+    #     cmap="coolwarm",
+    #     norm=norm,
+    #     linewidth=4.5,
+    #     zorder=3,
+    # )
+    # lc.set_array(v_seg)
+    # ax.add_collection(lc)
     
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
-    # weights_im = ax.scatter( xarray_arc, z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
+    # weights_im = ax.scatter( xarray_arc, -z_array_arc, c=weights_array[num_element], s=8, cmap='YlGn_r')
     # x_means_arc, z_means_arc = x_means * dx_arcsec, z_means * dx_arcsec
-    # ax.plot(x_means_arc, z_means_arc, color='k', lw=3, zorder=4)
+    # ax.plot(x_means_arc, -z_means_arc, color='k', lw=3, zorder=4)
     # divider = make_axes_locatable(ax)
     # cax     = divider.append_axes('right', size='3%', pad=0.04)
     # cbar = fig.colorbar(weights_im, cax=cax)
     # cbar.set_label('weight value')
     
     # 質心
-    if cen_x_pix is not None and cen_z_pix is not None:
-        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-        if cen_v_LS_km is not None:
-            cen_v = cen_v_LS_km + Local_Standard_Velocity
-            ax.scatter(
-                cen_ra, cen_dec,
-                c=cen_v,
-                cmap="coolwarm",
-                vmin=vmin, vmax=vmax,
-                s=20,
-                marker="o",
-                edgecolors="black",
-                linewidths=0.6,
-                zorder=5,
-                label="Centroids",
-            )
-        else:
-            ax.scatter(
-                cen_ra, cen_dec,
-                facecolors="none",
-                edgecolors="black",
-                s=36,
-                marker="o",
-                zorder=5,
-                label="Centroids",
-            )
+    # if cen_x_pix is not None and cen_z_pix is not None:
+    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+    #     if cen_v_LS_km is not None:
+    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             c=cen_v,
+    #             cmap="coolwarm",
+    #             vmin=vmin, vmax=vmax,
+    #             s=20,
+    #             marker="o",
+    #             edgecolors="black",
+    #             linewidths=0.6,
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
+    #     else:
+    #         ax.scatter(
+    #             cen_ra, cen_dec,
+    #             facecolors="none",
+    #             edgecolors="black",
+    #             s=36,
+    #             marker="o",
+    #             zorder=5,
+    #             label="Centroids",
+    #         )
 
     ax.scatter(0, 0, c="b", s=50, marker="+", zorder=6)
 
@@ -1195,11 +1201,11 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    # ax.quiver(
-    #     0.4, 0.4 * np.tan(np.deg2rad(10)),
-    #     1.4, 1.4 * np.tan(np.deg2rad(10)),
-    #     color='grey', scale=12, zorder=10
-    # )
+    ax.quiver(
+        -0.4, 0.4 * np.tan(np.deg2rad(10)),
+        1.4, -1.4 * np.tan(np.deg2rad(10)),
+        color='grey', scale=12, zorder=10
+    )
     # beam（若有）
     try:
         bmaj = header.get("BMAJ", None)
@@ -1494,6 +1500,11 @@ if RUN_FROM_CACHE_ONLY:
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
+            x_means=x_means,
+            z_means=z_means,
+            x_array=x_array,
+            z_array=z_array,
+            weights_array=weights_array
         )
 
         plot_streamer_on_mom0(
@@ -1506,6 +1517,11 @@ if RUN_FROM_CACHE_ONLY:
             cen_x_pix=cen_x_pix,
             cen_z_pix=cen_z_pix,
             cen_v_LS_km=cen_v_LS,
+            x_means=x_means,
+            z_means=z_means,
+            x_array=x_array,
+            z_array=z_array,
+            weights_array=weights_array
         )
         
         plot_r_theta_weights_from_output(x_array, z_array, weights_array, outname="Per-emb-50_weights_cacheonly.png")

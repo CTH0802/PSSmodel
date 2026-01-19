@@ -376,6 +376,8 @@ INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom0_cacheonly.png
 INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png
 INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png
 INPUT ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT ./Methods.tex
 INPUT ././Methods.tex
 INPUT ./Methods.tex
@@ -520,7 +522,6 @@ INPUT ./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cac
 INPUT ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png
 INPUT ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png
 INPUT ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT ./Discussion.tex
 INPUT ././Discussion.tex
 INPUT ./Discussion.tex
@@ -536,7 +537,6 @@ INPUT ./Appendix.tex
 INPUT ././Appendix.tex
 INPUT ./Appendix.tex
 INPUT ././Appendix.tex
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png
 INPUT ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png
 INPUT ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png

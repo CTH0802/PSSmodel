@@ -2,7 +2,7 @@
 We construct a kinematic model to reproduce the observed streamer structures by treating them as density-enhanced material undergoing gravitational collapse toward a central protostar. The model describes the three-dimensional kinematic structure of streamer material undergoing radial infall and rotational motion under the influence of gravity and angular momentum conservation. The streamer morphology and kinematics are then obtained by projecting the model trajectories onto the plane of the sky.
 
 \section{Formalism}\label{Sub-sec:Formalism}
-In this section, we summarize the formalism of the streamer model, including the characteristic spatial and temporal scales of the collapse, the infall and rotational velocity fields, and the accumulated azimuthal rotation along the streamline. The model is parameterized by the initial polar angle of the streamer ($\theta$), the initial azimuthal angle ($\phi_0$), the inclination of the system ($i$), the characteristic collapse time ($t_{\rm s}$), and the dimensionless ratio of the rotational velocity to the Keplerian rotational velocity ($\omega$).
+In this section, we summarize the formalism of the streamer model, including the characteristic spatial and temporal scales of the collapse, the infall and rotational velocity fields, and the accumulated azimuthal rotation along the streamline. The model is parameterized by the initial polar angle of the streamer ($\theta$), the azimuthal angle ($\phi_0$), the inclination of the system ($i$), the characteristic collapse time ($t_{\rm s}$), and the dimensionless ratio of the rotational velocity to the Keplerian rotational velocity ($\omega$).
 
 The characteristic spatial scale of the collapse is defined by the sonic length,
 \begin{align}
@@ -32,15 +32,19 @@ The rotational velocity is parameterized as
 \end{align}
 where the bracketed terms introduce a two-component radial scaling. The $(r/r_{\rm s})^{-1}$ term dominates at small radii and describes the rapidly increasing rotational velocity in the inner free-fall-dominated region, while the shallower $(r/r_{\rm s})^{-1/3}$ term becomes relatively more important at larger radii, corresponding to the more slowly evolving outer envelope. The sonic length $r_{\rm s}$ therefore separates the inner collapse regime from the outer envelope regime. The overall amplitude of the rotational velocity is set by $c_{\rm s}\sqrt{m_0}$ and scaled by the dimensionless factor $\omega$.
 
+% This parameterization is designed to connect an inner and outer regime through the sonic scale $r_{\rm s}$. In particular, the inner component scales as $v_{\rm rot} \propto r^{-1}$, which is consistent with approximately conserved specific angular momentum along infalling streamer. In this regime, the increase of rotational velocity toward small radii reflects the conversion of radial infall into azimuthal motion as material approaches the central potential.
+
+% At larger radii, we include an additional, shallower term ($v_{\rm rot} \propto r^{-1/3}$) to capture the more slowly varying rotational profile expected in the outer envelope of self-similar collapse solutions. As a result, the model does not enforce strict particle-by-particle angular-momentum conservation over the entire streamer. Instead, it adopts an effective description in which the inner region follows an approximately constant specific-angular-momentum behavior, while the outer envelope is allowed to deviate from it. The transition between these two regimes is naturally set by the sonic length $r_{\rm s}$.
+
 The accumulated azimuthal rotation along the streamer is given by
 \begin{align}
     \phi = \phi_0 + \omega
     \left[
     \sqrt{2}\left(\frac{r}{r_{\rm s}}\right)^{-1/2}
     + \sqrt{m_0}\left(\frac{r}{r_{\rm s}}\right)^{-1/3}
-    \right],
+    \right]
 \end{align}
-which represents the cumulative azimuthal advance of material along the streamline as a function of radius. The $(r/r_{\rm s})^{-1/2}$ term increases rapidly toward small radii, leading to a stronger azimuthal winding in the inner region, whereas the $(r/r_{\rm s})^{-1/3}$ term varies more slowly with radius and contributes primarily at larger scales. The parameter $\phi_0$ sets the initial azimuthal phase, while $\omega$ controls the overall magnitude of the accumulated rotation along the streamer.
+which represents the cumulative azimuthal advance of material along the streamer as a function of radius. The $(r/r_{\rm s})^{-1/2}$ term increases rapidly toward small radii, leading to a stronger azimuthal winding in the inner region, whereas the $(r/r_{\rm s})^{-1/3}$ term varies more slowly with radius and contributes primarily at larger scales. The parameter $\phi_0$ sets the azimuthal angle, while $\omega$ controls the overall magnitude of the accumulated rotation along the streamer.
 
 \section{Coordinate Transformation}
 
@@ -107,17 +111,17 @@ The velocity field is transformed in the same manner to obtain the projected vel
 \end{align}
 The line-of-sight velocity $v_z'$ is therefore directly comparable to the observed spectral-line velocity in PPV space.
 
-In this framework, $\theta$ specifies the initial polar angle of the streamer, $\phi_0$ defines its initial azimuthal orientation, $i$ sets the viewing geometry, $\omega$ controls the strength of rotational motion relative to Keplerian rotation, and $t_{\rm s}$ determines the characteristic collapse timescale of material along the streamer.
+In this part, $\theta$ specifies the initial polar angle of the streamer, $\phi_0$ defines its azimuthal orientation, $i$ sets the viewing geometry, $\omega$ controls the strength of rotational motion relative to Keplerian rotation, and $t_{\rm s}$ determines the characteristic collapse timescale of material along the streamer.
 
 \section{Fitting procedure}\label{sec:fitting_procedure}
 The fitting procedure described below is applied to each dataset to constrain the model parameters. The results are compared to the observed streamer morphology and kinematics to assess the validity of the model.
 
-\subsection{Position angle}
-Before fitting the kinematic model, all observational centroids are rotated into the model reference frame, which assumes that the projected angular--momentum axis is aligned with the positive declination direction ($+z$). Because each target possesses a different disk position angle (P.A.), the observed coordinates are rotated by the measured P.A. to ensure a consistent geometric convention across sources. Each data point $(x_{\rm obs}, z_{\rm obs})$ is rotated according to
+\subsection{Position angle}\label{sec:position_angle}
+Before fitting the kinematic model, all observational points are rotated into the model reference frame, which assumes that the projected angular--momentum axis is aligned with the positive declination direction ($+z$). Because each target possesses a different disk position angle (P.A.), the observed coordinates are rotated by the measured P.A. to ensure a consistent geometric convention across sources. Each data point $(x_{\rm obs}, z_{\rm obs})$ is rotated according to
 \[
 \begin{pmatrix}
-x_{\rm mod} \\
-z_{\rm mod}
+x_{\rm model} \\
+z_{\rm model}
 \end{pmatrix}
 =
 \begin{pmatrix}
@@ -129,34 +133,34 @@ x_{\rm obs} \\
 z_{\rm obs}
 \end{pmatrix},
 \]
-and the rotated coordinates $(x_{\rm mod}, z_{\rm mod})$ are used in all subsequent fitting procedures.
+and the rotated coordinates $(x_{\rm model}, z_{\rm model})$ are used in all subsequent fitting procedures.
 
 \subsection{Streamer identification in the PPV cube}
 
-Before performing centroid extraction and model fitting, we isolate the emission associated with the streamer structure directly from the three-dimensional PPV datacube. This step is necessary to minimize contamination from unrelated component such as diffuse background structures.
+Before performing point extraction and model fitting, we isolate the emission associated with the streamer structure directly from the three-dimensional PPV datacube. This step is necessary to minimize contamination from unrelated component such as diffuse background structures.
 
 Starting from the original spectral cube, we apply an intensity-based region-growing procedure to identify the streamer emission. A initial points position is manually selected along the visually identified streamer in PPV space. From each point, neighboring voxels are iteratively included if their intensities exceed a threshold of three times the channel rms noise level ($3\sigma$). This criterion ensures that only statistically significant emission is retained while preserving the extended morphology of the streamer.
 
 The region-growing process is performed in full PPV space, allowing the streamer structure to be traced coherently across spatial and velocity dimensions. The resulting binary mask defines a streamer-only datacube, in which voxels not associated with the streamer are excluded from further analysis.
 
-This masked streamer datacube is subsequently used for both centroid extraction and shell-based MCMC fitting. By restricting the fitting to emission identified through this region-growing procedure, the comparison between the kinematic model and the observations is focused specifically on the streamer component, enabling a more robust assessment of the streamer geometry and kinematics.
+This masked streamer datacube is subsequently used for both point extraction and shell-based MCMC fitting. By restricting the fitting to emission identified through this region-growing procedure, the comparison between the kinematic model and the observations is focused specifically on the streamer component, enabling a more robust assessment of the streamer geometry and kinematics.
 
-\subsection{Centroid Extraction and Observed Streamer Morphology}
+\subsection{Point Extraction and Observed Streamer Morphology}
 
-To characterize the observed streamer morphology, we extract a sequence of position--velocity centroids from moment map. Using the protostar position as the origin, we compute pixel offsets $(x_{\rm rel},z_{\rm rel})$ and convert them into polar coordinates $(r,\theta)$. A set of manually selected streamer points defines an interpolated main direction $\theta_{\rm stream}(r)$.
+To characterize the observed streamer morphology, we extract a sequence of position--velocity points from moment map. Using the protostar position as the origin, we compute pixel offsets $(x_{\rm rel},z_{\rm rel})$ and convert them into polar coordinates $(r,\theta)$. A set of manually selected streamer points defines an interpolated main direction $\theta_{\rm stream}(r)$.
 
 The emission is divided into radial shells. Within each shell, we assign a directional weight
 \[
 w_\theta = \max\!\left[0,\frac{x_{\rm rel}\cos\theta_0 + z_{\rm rel}\sin\theta_0}{r}\right],
 \]
-where $\theta_0=\theta_{\rm stream}(r)$. The preliminary centroid is the intensity-weighted mean position,
+where $\theta_0=\theta_{\rm stream}(r)$. The preliminary point is the intensity-weighted mean position,
 \[
 \langle x\rangle = \frac{\sum(Iw_\theta x_{\rm rel})}{\sum(Iw_\theta)},\qquad
 \langle z\rangle = \frac{\sum(Iw_\theta z_{\rm rel})}{\sum(Iw_\theta)}.
 \]
 The transverse dispersion within the shell provides an estimate of the local lateral width $\sigma_r$.
 
-To obtain the final centroid and velocity, we apply an angular Gaussian weight
+To obtain the final point and velocity, we apply an angular Gaussian weight
 \[
 w(\theta)=I\exp\!\left[-\tfrac12\left(\frac{\Delta\theta}{\sigma_\theta}\right)^2\right],\qquad \Delta\theta=\pi-\big|\pi-|\theta-\theta_{\rm stream}(r)|\big|,
 \]
@@ -166,7 +170,7 @@ where
 \]
 so that a fixed physical width corresponds to a smaller angular dispersion at larger radii. The refined position and line-of-sight velocity are computed as weighted averages and converted to physical units using the observational header information.
 
-These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the streamer direction, providing a noise-suppressed representation for comparison with the kinematic model. The number of centroids extracted for each target is summarized in Table~\ref{table:MCMC_configuration}.
+These points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the streamer direction, providing a noise-suppressed representation for comparison with the kinematic model. The number of points extracted for each target is summarized in Table~\ref{table:MCMC_configuration}.
 
 \begin{figure}[htbp]
     \centering
@@ -193,7 +197,7 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
     \caption{
     Centroid extraction and observed streamer morphology in Per-emb-2.
     The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
-    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    The bottom panels display the extracted points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
     }
     \label{fig:per2_streamer}
 \end{figure}
@@ -223,7 +227,7 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
     \caption{
     Centroid extraction and observed streamer morphology in Per-emb-50.
     The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
-    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    The bottom panels display the extracted points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
     }
     \label{fig:per50_streamer}
 \end{figure}
@@ -253,7 +257,7 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
     \caption{
     Centroid extraction and observed streamer morphology in S~CrA.
     The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
-    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    The bottom panels display the extracted points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
     }
     \label{fig:SCrA_streamer}
 \end{figure}
@@ -283,7 +287,7 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
     \caption{
     Centroid extraction and observed streamer morphology in HL~Tau.
     The top panel shows the distribution in $r$--$\theta$ space, where the color scale represents the normalized angular weight used to identify the main streamer direction as a function of radius.
-    The bottom panels display the extracted centroid points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
+    The bottom panels display the extracted points overlaid on the observed moment--0 (left) and moment--1 (right) maps.
     }
     \label{fig:HLTau_streamer}
 \end{figure}
@@ -313,12 +317,14 @@ These centroid points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the st
 %     \caption{Streamers in SVS~13A.}
 %     \label{fig:SVS13A_streamer}
 % \end{figure}
+The results of the point extraction procedure for all targets are illustrated in Figures~\ref{fig:per2_streamer}--\ref{fig:HLTau_streamer}. For each source, the top panel shows the distribution of emission in $r$--$\theta$ space, where the normalized angular weight highlights the dominant streamer direction as a function of radius. The bottom panels display the corresponding extracted position--velocity points
+overlaid on the observed moment--0 and moment--1 maps. These points trace the large-scale streamer morphology while suppressing small-scale noise and diffuse emission, and are used as the observational input for the subsequent grid-search and MCMC fitting procedures.
 
 \subsection{Grid search parameter estimation}
 We model the streamer kinematics using five parameters ($\theta$, $\phi_0$, $i$, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamer, the inclination of the system, the characteristic collapse time, and the ratio of rotation velocity. 
-For each target, we first perform a coarse five-dimensional grid search to identify reasonable regions of parameter space. The grid covers $\theta \in (0, \pi)$, $\phi \in (-\pi, \pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ is the characteristic time after the central mass singularity formation, and $\omega$ is sampled linearly between 0 and 1.
+For each target, we first perform a coarse five-dimensional grid search with 10 grid per parameter to identify reasonable regions of parameter space. The grid covers $\theta \in (0, \pi)$, $\phi \in (-\pi, \pi)$, and $i \in (-\pi/2, \pi/2)$ with uniform sampling, while the collapse time $t_{\rm s}$ is the characteristic time after the central mass singularity formation, and $\omega$ is sampled linearly between 0 and 1.
 
-The grid search uses the extracted position-velocity centroids to evaluate the model performance. At each grid point, we compute the misfit between the model streamer and the observed centroids using the error metric
+The grid search uses the extracted position-velocity points to evaluate the model performance. At each grid point, we compute the misfit between the model streamer and the observed points using the error metric
 \[
 E = \sqrt{\left\langle \Delta x^2 + \Delta z^2 + w_v\,\Delta v^2 \right\rangle},
 \]
@@ -334,18 +340,18 @@ After constructing data-driven prior ranges from the grid search, we perform Mar
 
 We use the grid results to construct the priors for the subsequent MCMC exploration. Specifically, we select all grid models with $E \le (1 + f)\,E_{\min}$, where $E_{\min}$ is the minimum grid misfit and $f$ is typically 0.05-0.10 (relaxed, if necessary, to include at least several tens of models). For each parameter, we take the 5th-95th percentile range of these "good" models and pad this interval by $\sim30\%$ to define a broad, uniform prior. This procedure yields data-driven prior bounds that are wide enough to avoid artificially constraining the solution but narrow enough to exclude clearly disfavored regions of parameter space.
 
-Each MCMC run begins by initializing an ensemble of walkers within the prior intervals, distributed in a narrow region around the best-performing grid-search solution. For the Points method, which evaluates the misfit using the extracted position--velocity centroids, this stage enables efficient refinement of the parameter space and helps to identify the dominant modes of the posterior distribution. The adopted numbers of walkers and steps for each target are summarized in Table~\ref{table:MCMC_configuration}.
+Each MCMC run begins by initializing an ensemble of walkers within the prior intervals, distributed in a narrow region around the best-performing grid-search solution. For the Points method, which evaluates the misfit using the extracted position--velocity points, this stage enables efficient refinement of the parameter space and helps to identify the dominant modes of the posterior distribution. The adopted numbers of walkers and steps for each target are summarized in Table~\ref{table:MCMC_configuration}.
 
-For the full datacube fitting (the global method), we evaluate the agreement between the model and the observed position-position-velocity structure using a shell-based distance metric. Instead of computing distances for every voxel, we construct a distance cube around the model streamer and compare it with the observed cube through intensity-weighted shell distances. This global method likelihood allows the MCMC to probe the full three-dimensional structure while remaining computationally tractable. The corresponding MCMC configurations (walkers, steps, and whether the shell-based likelihood is used) are also listed in Table~\ref{table:MCMC_configuration}.
+For the full datacube fitting (the global method), we evaluate the agreement between the model and the observed position-position-velocity structure using a distance metric. Instead of computing distances for every voxel, we construct a distance cube around the model streamer and compare it with the observed cube through intensity-weighted distances. This global method likelihood allows the MCMC to probe the full three-dimensional structure while remaining computationally tractable. The corresponding MCMC configurations (walkers and steps) are also listed in Table~\ref{table:MCMC_configuration}.
 
-Convergence of the chains is evaluated using the autocorrelation time of each parameter, as well as visual inspection of walker trajectories. An initial burn-in phase is discarded, and the remaining samples are used to compute posterior medians and credible intervals as the final estimates of the five parameters.
+Convergence of the chains is evaluated using the autocorrelation time of each parameter. An initial burn-in phase is discarded, and the remaining samples are used to compute posterior medians and credible intervals as the final estimates of the five parameters. In addition, the maximum-posterior (peak) values are identified from the same samples.
 
 \begin{table}[h]
 \centering
-\caption{Overview of centroid extraction and MCMC configurations adopted for each target.}\label{table:MCMC_configuration}
+\caption{Overview of point extraction and MCMC configurations adopted for each target.}\label{table:MCMC_configuration}
 \begin{tabular}{lccccc}
 \hline\hline
-Target & Method & $N_{\rm cent}$ & $N_{\rm walkers}$ & $N_{\rm steps}$ \\
+Target & Method & $N_{\rm points}$ & $N_{\rm walkers}$ & $N_{\rm steps}$ \\
 \hline
 \multirow{1}{*}{Per-emb-2}
 & Points & 11 & 20 & $2\times10^{4}$ \\

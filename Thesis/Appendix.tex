@@ -1,6 +1,6 @@
 \appendix
 
-\chapter{Observations} \label{Sub-Sec:Observations}
+\chapter{Observations} \label{appendix:Observations}
 \begin{table}[h]
     \centering
     \caption{Observations}
@@ -8,17 +8,17 @@
     \begin{tabular}{ccccccccc}
         %\tablenum{1}
         \hline
-        \multirow{2}{*}{Target} & \thead{RA (J2000)}& \thead{Decl (J2000)} & \thead{Central mass} & \thead{Systemic velocity} & \thead{Disk inclination} & \thead{Disk position angle} & \thead{$T_{bol}^{(5)}$} & \thead{Reference}\\
+        \multirow{2}{*}{Target} & \thead{RA (J2000)}& \thead{Decl (J2000)} & \thead{Central mass} & \thead{Systemic velocity} & \thead{Disk inclination} & \thead{Disk position angle} & \thead{$T_{bol}$} & \thead{Reference}\\
         \thead{} & \thead{(h m s)} & \thead{($^\circ$ ' ")}& \thead{($\rm M_{\odot}$)} & 
         \thead{(km/s)} & \thead{}& \thead{} & \thead{(K)} & \thead{}\\
         \hline
-        Per-emb-2 & {$\rm{03:32:17.9320}$} & {$\rm{30.49.47.7050}$} & 3.2 & 7.05 & & {$50^\circ$} & 29 & 1\\
+        Per-emb-2 & {$\rm{03:32:17.9320}$} & {$\rm{30.49.47.7050}$} & 3.2 & 7.05 & -- & {$50^\circ$} & 29 & 1, 5\\
         \hline
-        Per-emb-50 & {$\rm{03:29:07.7680}$} & {$\rm{31.21.57.1280}$} & 2.58 & 7.5 & {$67^\circ$} & {$170^\circ$} & 129 & 2\\
+        Per-emb-50 & {$\rm{03:29:07.7680}$} & {$\rm{31.21.57.1280}$} & 2.58 & 7.5 & {$67^\circ$} & {$170^\circ$} & 129 & 2, 5\\
         \hline
-        S CrA & {$\rm{19:01:08.6000}$} & {$\rm{-36.57.20.0000}$} & 2 & 5.86 & {$65^\circ$} & -- & & 3\\        
+        S CrA & {$\rm{19:01:08.6000}$} & {$\rm{-36.57.20.0000}$} & 2 & 5.86 & {$65^\circ$} & -- & -- & 3\\        
         \hline
-        HLTau & {$\rm{04:31:38.4280}$} & {$\rm{18.13.57.1900}$} & 2.1 & 7.14 & {$47^\circ$} & {$138^\circ$} & & 4\\
+        HLTau & {$\rm{04:31:38.4280}$} & {$\rm{18.13.57.1900}$} & 2.1 & 7.14 & {$47^\circ$} & {$138^\circ$} & -- & 4\\
         % \hline
         % SVS 13A & {$\rm{03:29:03.7400}$} & {$\rm{31.16.03.8000}$} &  &  & $^\circ$ & {$^\circ$} & & 5\\ 
     \end{tabular}
@@ -28,7 +28,7 @@
 \end{table}
 
 
-\chapter{Results}
+\chapter{Results}\label{appendix:Results}
 \section{Per-emb-2}
 Figures~\ref{fig:per2_results_mom0_A.}--\ref{fig:per2_results_cornerplot_A.} summarize the model--data comparison for Per-emb-2 using the grid-search and MCMC-points fitting approaches. The results are presented in moment--0 and moment--1 maps, the $z$--$v$ diagram, and the corresponding posterior distributions.
 \begin{figure}[htbp]
@@ -848,7 +848,7 @@ Grid-search results are shown only in the upper row.
  & 70.225 & -164.650 & -83.926 & 0.791 & 0.092 \\
  & -- & -- & -- & -- & --
  & 68.075 & -158.493 & -87.431 & 0.664 & 0.092
- & 69.643 & -164.752 & -84.087 & 0.801887 & 0.089 \\
+ & 69.643 & -164.752 & -84.087 & 0.802 & 0.089 \\
 \midrule
 % ============================== SVS 13A ==============================
 % SVS~13A

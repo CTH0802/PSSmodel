@@ -1007,20 +1007,20 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     cbar.set_label("(Jy/beam km/s)")
 
     # 黑色外框線（提升可見度）
-    lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
-    ax.add_collection(lc_edge)
+    # lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
+    # ax.add_collection(lc_edge)
 
-    # 依 model LOS 速度上色的主線
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-    lc = LineCollection(
-        segments,
-        cmap="coolwarm",
-        norm=norm,
-        linewidth=2.5,
-        zorder=3,
-    )
-    lc.set_array(v_m + Local_Standard_Velocity)
-    ax.add_collection(lc)
+    # # 依 model LOS 速度上色的主線
+    # norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    # lc = LineCollection(
+    #     segments,
+    #     cmap="coolwarm",
+    #     norm=norm,
+    #     linewidth=2.5,
+    #     zorder=3,
+    # )
+    # lc.set_array(v_m + Local_Standard_Velocity)
+    # ax.add_collection(lc)
 
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
@@ -1034,41 +1034,41 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     
 
     # --- 疊加質心點（如果有提供，輸入單位：pixel） ---
-    # if cen_x_pix is not None and cen_z_pix is not None:
-    #     cen_x_pix = np.asarray(cen_x_pix)
-    #     cen_z_pix = np.asarray(cen_z_pix)
+    if cen_x_pix is not None and cen_z_pix is not None:
+        cen_x_pix = np.asarray(cen_x_pix)
+        cen_z_pix = np.asarray(cen_z_pix)
 
-    #     # 轉成 RA/Dec offset
-    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+        # 轉成 RA/Dec offset
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
 
-    #     if cen_v_LS_km is not None:
-    #         cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra,
-    #             cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=vmin,
-    #             vmax=vmax,
-    #             s=20,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.7,
-    #             zorder=5,
-    #             label="Streamer Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra,
-    #             cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=20,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Streamer Centroids",
-    #         )
+        if cen_v_LS_km is not None:
+            cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra,
+                cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=vmin,
+                vmax=vmax,
+                s=20,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.7,
+                zorder=5,
+                label="Streamer Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra,
+                cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=20,
+                marker="o",
+                zorder=5,
+                label="Streamer Centroids",
+            )
 
     # 中心位置
     ax.scatter(0, 0, c="w", s=60, marker="+", zorder=6)
@@ -1209,20 +1209,20 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
     cbar.set_label("Velocity (km/s)")
 
     # 黑色外框線（提升可見度）
-    lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
-    ax.add_collection(lc_edge)
+    # lc_edge = LineCollection(segments, colors="black", linewidth=4, zorder=2)
+    # ax.add_collection(lc_edge)
 
-    # 依 model LOS 速度上色的主線
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
-    lc = LineCollection(
-        segments,
-        cmap="coolwarm",
-        norm=norm,
-        linewidth=2.5,
-        zorder=3,
-    )
-    lc.set_array(v_m + Local_Standard_Velocity)
-    ax.add_collection(lc)
+    # # 依 model LOS 速度上色的主線
+    # norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    # lc = LineCollection(
+    #     segments,
+    #     cmap="coolwarm",
+    #     norm=norm,
+    #     linewidth=2.5,
+    #     zorder=3,
+    # )
+    # lc.set_array(v_m + Local_Standard_Velocity)
+    # ax.add_collection(lc)
 
     # num_element = 8
     # xarray_arc, z_array_arc = x_array[num_element] * dx_arcsec, z_array[num_element] * dx_arcsec
@@ -1236,37 +1236,37 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
     
 
     # --- 疊加質心點（輸入 cen_x_pix, cen_z_pix） ---
-    # if cen_x_pix is not None and cen_z_pix is not None:
-    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+    if cen_x_pix is not None and cen_z_pix is not None:
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
 
-    #     if cen_v_LS_km is not None:
-    #         cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra,
-    #             cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=vmin,
-    #             vmax=vmax,
-    #             s=20,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.7,
-    #             zorder=5,
-    #             label="Streamer Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra,
-    #             cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=20,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Streamer Centroids",
-    #         )
+        if cen_v_LS_km is not None:
+            cen_v = np.asarray(cen_v_LS_km) + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra,
+                cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=vmin,
+                vmax=vmax,
+                s=20,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.7,
+                zorder=5,
+                label="Streamer Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra,
+                cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=20,
+                marker="o",
+                zorder=5,
+                label="Streamer Centroids",
+            )
 
     # 中心位置
     ax.scatter(0, 0, c="C3", s=60, marker="+", zorder=6)

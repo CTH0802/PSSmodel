@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  15 JAN 2026 04:53
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  19 JAN 2026 03:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1084,11 +1084,6 @@ File: UTF8.chr 2021/10/16 4.8.5
 [8]
 
 [9]
-Overfull \hbox (19.8815pt too wide) in paragraph at lines 23--23
- \TU/lmr/m/n/12 solutions from MCMC-points (3.14a) and MCMC-global (3.15a). One-dimensional 
- []
-
-
 
 [10]
 
@@ -1100,21 +1095,19 @@ Overfull \hbox (19.8815pt too wide) in paragraph at lines 23--23
 
 [14]
 
-[15]
-
-[16])
+[15])
 \tf@lof=\write6
 \openout6 = `Modeling_Streamer_TH.lof'.
 
 
 
-[17] (./Modeling_Streamer_TH.lot)
+[16] (./Modeling_Streamer_TH.lot)
 \tf@lot=\write7
 \openout7 = `Modeling_Streamer_TH.lot'.
 
 
 
-[18
+[17
 
 ]
 Chapter 1.
@@ -1152,17 +1145,26 @@ File: ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png Graphic file (typ
 
 [5]
 
-[6])
+[6]
 
-[7]
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+
+[7])
+Overfull \hbox (3.10892pt too wide) in paragraph at lines 190--136
+[]\TU/lmr/m/n/12 In this work, we develop a kinematic modeling framework designed to characterize streamer
+ []
+
+
+
+[8]
 Chapter 2.
 (././Methods.tex
 
-[8
+[9
 
 ]
-
-[9]
 
 [10]
 
@@ -1173,6 +1175,12 @@ Chapter 2.
 [13]
 
 [14]
+
+[15]
+Overfull \hbox (8.71117pt too wide) in paragraph at lines 173--174
+[]\TU/lmr/m/n/12 These points $\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 x[]; z[]; v[]\OT1/cmr/m/n/12 )$ \TU/lmr/m/n/12 that traces the streamer direction, providing a noise-suppressed
+ []
+
 File: ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png>
 File: ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
@@ -1199,8 +1207,6 @@ File: ./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png Graphic fil
 <./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png>
 
 
-[15]
-
 [16]
 
 [17]
@@ -1209,6 +1215,8 @@ File: ./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png Graphic fil
 
 [19]
 
+[20]
+
 Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 (xeCJK)                
 (xeCJK)                Try to use `\setCJKmonofont[<...>]{<...>}' to define
@@ -1216,20 +1224,17 @@ Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 
 
 
-[20])
+[21])
 
-[21]
+[22]
 Chapter 3.
 (././Results.tex
-Overfull \hbox (10.68687pt too wide) in paragraph at lines 2--3
-[]\TU/lmr/m/n/12 We adopt a hierarchical fitting strategy to constrain the five model parameters $\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 ^^R; ^^^[]; i; t[]; !\OT1/cmr/m/n/12 )$\TU/lmr/m/n/12 ,
- []
 
-
-
-[22
+[23
 
 ]
+
+[24]
 File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
@@ -1238,9 +1243,6 @@ File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_o
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png>
-
-
-[23]
 File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
@@ -1251,13 +1253,9 @@ File: ./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median
 <./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png>
 
 
-[24]
-
 [25]
 
 [26]
-
-[27]
 File: ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png>
 File: ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
@@ -1266,9 +1264,6 @@ File: ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom1_cacheonly.pn
 <./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom1_cacheonly.png>
 File: ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom1_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom1_cacheonly.png>
-
-
-[28]
 File: ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png>
 File: ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png Graphic file (type bmp)
@@ -1278,8 +1273,25 @@ File: ./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak2d_cac
 File: ./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
 
+Overfull \hbox (7.17688pt too wide) in paragraph at lines 227--228
+\TU/lmr/m/n/12 show that the streamer orientation parameters are well constrained, while the collapse timescale
+ []
+
+
+
+[27]
+
+[28]
 
 [29]
+
+[30]
+
+[31]
+
+[32]
+
+[33]
 File: ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png>
 File: ./Results_image/SCrA/shell_results/peak/SCrA_mom0_cacheonly.png Graphic file (type bmp)
@@ -1288,13 +1300,6 @@ File: ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom1_cacheonly.png Graphi
 <./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom1_cacheonly.png>
 File: ./Results_image/SCrA/shell_results/peak/SCrA_mom1_cacheonly.png Graphic file (type bmp)
 <./Results_image/SCrA/shell_results/peak/SCrA_mom1_cacheonly.png>
-
-
-[30]
-
-[31]
-
-[32]
 File: ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png>
 File: ./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png Graphic file (type bmp)
@@ -1305,13 +1310,13 @@ File: ./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly
 <./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png>
 
 
-[33]
-
 [34]
 
 [35]
 
 [36]
+
+[37]
 File: ./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png>
 File: ./Results_image/HLTau/shell_results/median/HLTau_mom0_cacheonly.png Graphic file (type bmp)
@@ -1324,9 +1329,6 @@ File: ./Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png 
 <./Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png>
 File: ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png>
-
-
-[37]
 File: ./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png>
 File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
@@ -1343,27 +1345,29 @@ File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheo
 
 [42]
 
-[43])
+[43]
 
-[44]
+[44])
+
+[45]
 Chapter 4.
 (././Discussion.tex
 
-[45
+[46
 
 ])
 
-[46]
-
 [47]
+
+[48]
 Chapter 5.
 (././Conclusion.tex
 
-[48
+[49
 
 ]) (./Modeling_Streamer_TH.bbl
 
-[49]
+[50]
 ! Undefined control sequence.
 l.9 {Cassen}, P., \& {Moosman}, A. 1981, \icarus
                                                 , 48, 353, \dodoi{10.1016/00...
@@ -1465,7 +1469,7 @@ and I'll forget about whatever was undefined.
 
 
 
-[50
+[51
 
 ]
 ! Undefined control sequence.
@@ -1560,11 +1564,11 @@ and I'll forget about whatever was undefined.
 
 ) (././Appendix.tex
 
-[51]
+[52]
 Appendix A.
 
 
-[52
+[53
 
 ]
 Appendix B.
@@ -1698,11 +1702,9 @@ File: ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png Grap
 <./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png>
 
 
-[53
+[54
 
 ]
-
-[54]
 
 [55]
 
@@ -1713,6 +1715,8 @@ File: ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png Grap
 [58]
 
 [59]
+
+[60]
 File: ./Results_image/HLTau/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png>
 File: ./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
@@ -1722,8 +1726,6 @@ File: ./Results_image/HLTau/shell_results/peak/corner_mcmc_shell_peak5d_cacheonl
 File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
 
-
-[60]
 
 [61]
 
@@ -1775,7 +1777,9 @@ File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheo
 
 [85]
 
-[86
+[86]
+
+[87
 
 ]) (./Modeling_Streamer_TH.aux)
  ***********
@@ -2031,15 +2035,15 @@ Modeling_Streamer_TH.bbl
  ***********
 
 Package rerunfilecheck Info: File `Modeling_Streamer_TH.out' has not changed.
-(rerunfilecheck)             Checksum: FA0F1DC1A7EE58DEFFBAFFAF7C01B974;8688.
+(rerunfilecheck)             Checksum: 4483718BC6C7835EC4DF240A317BF52F;8625.
  ) 
 Here is how much of TeX's memory you used:
- 29825 strings out of 473832
- 662770 string characters out of 5729482
- 1121021 words of memory out of 5000000
- 52281 multiletter control sequences out of 15000+600000
+ 29828 strings out of 473832
+ 662856 string characters out of 5729482
+ 1121607 words of memory out of 5000000
+ 52284 multiletter control sequences out of 15000+600000
  564943 words of font info for 80 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  117i,19n,121p,2645b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Modeling_Streamer_TH.xdv (105 pages, 1153816 bytes).
+Output written on Modeling_Streamer_TH.xdv (105 pages, 1160456 bytes).

@@ -1,12 +1,12 @@
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {1.1}{\ignorespaces Summary of the observational datasets used in this work.}}{7}{table.caption.12}%
+\contentsline {table}{\numberline {1.1}{\ignorespaces Summary of the observational datasets used in this work.}}{8}{table.caption.12}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Overview of centroid extraction and MCMC configurations adopted for each target.}}{21}{table.caption.17}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Overview of point extraction and MCMC configurations adopted for each target.}}{22}{table.caption.17}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, peak and median values from the MCMC analysis are listed. }}{39}{table.caption.38}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, peak and median values from the MCMC analysis are listed. }}{40}{table.caption.38}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Observations}}{52}{table.caption.40}%
+\contentsline {table}{\numberline {A.1}{\ignorespaces Observations}}{53}{table.caption.40}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {B.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, the upper row reports the posterior peak values from the MCMC analyses, while the lower row reports the corresponding posterior median values. Grid-search results are shown only in the upper row. }}{86}{table.caption.73}%
+\contentsline {table}{\numberline {B.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, the upper row reports the posterior peak values from the MCMC analyses, while the lower row reports the corresponding posterior median values. Grid-search results are shown only in the upper row. }}{87}{table.caption.73}%
