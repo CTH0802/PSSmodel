@@ -39,8 +39,7 @@
 % \fi
 
 % Default spacing
-\setstretch{1.8}
-
+\setstretch{1.5}
 
 % Declared variables
 \newcommand{\titleZH}[1]{\gdef\@titleZH{#1}}
@@ -53,6 +52,11 @@
 \newcommand{\monthZH}[1]{\gdef\@monthZH{#1}}
 \newcommand{\yearEN}[1]{\gdef\@yearEN{#1}}
 \newcommand{\monthEN}[1]{\gdef\@monthEN{#1}}
+% --- Cover font helpers (NTNU cover spec) ---
+\newcommand{\CJK十八}{\fontsize{18pt}{27pt}\selectfont}  % 18pt, 1.5 line height
+\newcommand{\EN十四}{\fontsize{14pt}{21pt}\selectfont}   % 14pt, 1.5 line height
+\newcommand{\EN十六}{\fontsize{16pt}{24pt}\selectfont}   % 16pt, 1.5 line height
+
 
 % Customized commands
 \newcommand{\makecover}{
@@ -60,49 +64,55 @@
     \begin{center}
     \begin{CJK*}{UTF8}{bkai}
 
-    \begin{spacing}{1}
-        \Large
-        國~~立~~臺~~灣~~師~~範~~大~~學\\
-        理~~學~~院\\
-        地~~球~~科~~學~~系\\
-        \@degreeZH~~士~~論~~文\\
-        Department of Earth Sciences\\
-        College of Science\\
-        National Taiwan Normal University\\
-        Master's Thesis
-    \end{spacing}
-    \vspace{5.5\baselineskip}
+    {\CJK十八
+    國~~立~~臺~~灣~~師~~範~~大~~學\\
+    理~~學~~院\\
+    地~~球~~科~~學~~系\\
+    \@degreeZH~~士~~論~~文\\
+    }
+    {\EN十四
+    Department of Earth Sciences\\
+    College of Science\\
+    }
+    {\EN十六
+    National Taiwan Normal University\\
+    Master's Thesis
+    }
 
-    \begin{spacing}{1}
-    \LARGE
+    \vspace{3.5cm}
+
+    {\CJK十八
     \@titleZH\\
+    }
+    {\fontsize{18pt}{27pt}\selectfont
     \@titleEN
-    \end{spacing}
+    }
+
     \vfill
 
-    \begin{spacing}{1}
-    \Large
+    {\CJK十八
     \@studentZH\\
+    }
+    {\fontsize{18pt}{27pt}\selectfont
     \@studentEN
-    \end{spacing}
+    }
     \vspace{1.5\baselineskip}
 
-    \begin{spacing}{1}
-    \Large
-    指導教授：\@advisorZH\\
-    Advisor: \@advisorEN
-    \end{spacing}
+    {\CJK十八
+    \@advisorZH\\
+    }
+    {\fontsize{18pt}{27pt}\selectfont
+    \@advisorEN
+    }
     \vspace{1.5\baselineskip}
 
-    \begin{spacing}{1}
-    \Large
+    {\CJK十八
     中~~華~~民~~國~~\zhdigits{\@yearZH}~~年~~\zhdigits{\@monthZH}~~月
-    \end{spacing}
+    }
 
-    \begin{spacing}{1}
-    \Large
-    {\@monthEN}~{\@yearEN}
-    \end{spacing}
+    {\fontsize{18pt}{27pt}\selectfont
+    \@monthEN~\@yearEN
+    }
 
     \end{CJK*}
     \end{center}
@@ -138,7 +148,7 @@
 }
 
 % Customized environments
-\makeenvZH{abstractZH}{摘要}{Abstract (Chinese)}
-\makeenvZH{acknowledgementsZH}{致謝}{Acknowledgements (Chinese)}
+\makeenvZH{abstractZH}{摘要}{摘要}
+\makeenvZH{acknowledgementsZH}{致謝}{致謝}
 \makeenv{abstractEN}{Abstract}{Abstract}
 \makeenv{acknowledgementsEN}{Acknowledgements}{Acknowledgements}

@@ -1,26 +1,26 @@
 \section{Build up a model}
-We construct a kinematic model to reproduce the observed streamer structures by treating them as density-enhanced material undergoing gravitational collapse toward a central protostar. The model describes the three-dimensional kinematic structure of streamer material undergoing radial infall and rotational motion under the influence of gravity and angular momentum conservation. The streamer morphology and kinematics are then obtained by projecting the model trajectories onto the plane of the sky.
+We construct a kinematic model to reproduce the observed streamer structures by treating them as density-enhanced material undergoing gravitational collapse toward a central protostar-disk system. The model describes the three-dimensional kinematic structure of streamer material undergoing radial infall and rotational motion under the influence of gravity and angular momentum conservation. The streamer morphology and kinematics are then obtained by projecting the model trajectories onto the plane of the sky.
 
 \section{Formalism}\label{Sub-sec:Formalism}
 In this section, we summarize the formalism of the streamer model, including the characteristic spatial and temporal scales of the collapse, the infall and rotational velocity fields, and the accumulated azimuthal rotation along the streamline. The model is parameterized by the initial polar angle of the streamer ($\theta$), the azimuthal angle ($\phi_0$), the inclination of the system ($i$), the characteristic collapse time ($t_{\rm s}$), and the dimensionless ratio of the rotational velocity to the Keplerian rotational velocity ($\omega$).
 
 The characteristic spatial scale of the collapse is defined by the sonic length,
-\begin{align}
+\begin{align}\label{eq:rs}
     r_{\rm s} = c_{\rm s} t_{\rm s},
 \end{align}
-where $c_{\rm s}$ is the isothermal sound speed. This scale represents the distance traveled by material moving at the sound speed over the collapse timescale and naturally marks the transition between the outer envelope and the inner collapsing region.
+where $c_{\rm s}$ is the isothermal sound speed. The scale corresponds to the distance travelled by the inside-out collapse wave front, and it separates the inner freefalling part and the outer part of the envelope undergoing stationary contraction. 
 
-The gravitational influence of the central protostar is described by the dimensionless mass parameter,
-\begin{align}
-    m_0 = \frac{GM_*}{c_{\rm s}^3 t_{\rm s}},
+The gravitational influence of the central mass ($M_*$, list in Table~\ref{tab:observations}) is described by the dimensionless mass parameter,
+\begin{align}\label{eq:m_0}
+    m_0 = \frac{GM_*}{c_{\rm s}^3 t_{\rm s}}, M_* = M_{protostar} + M_{disk}
 \end{align}
-which characterizes the normalization of the self-similar collapse solution and reflects the degree of mass concentration in the infalling envelope \citep[e.g.,][]{Whitworth_1985}. The value of $m_0$ depends on the specific similarity solution adopted. For the Larson--Penston solution, $m_0$ reaches an upper limit of $m_0 \simeq 46.7$ \citep{Larson_1969,Penston_1969}, corresponding to a dynamically collapsing flow, whereas the inside-out collapse of a singular isothermal sphere yields a substantially smaller value of $m_0 \simeq 0.975$ \citep{Shu_1977}, representing a quasi-static initial configuration. In this work, $m_0$ is treated as an effective parameter that sets the overall mass scale of the collapse.
+which characterizes the normalization of the self-similar collapse solution and reflects the degree of mass concentration in the infalling envelope \citep[e.g.,][]{Whitworth_1985}. The value of $m_0$ depends on the specific similarity solution adopted. For the Larson--Penston solution, $m_0$ reaches an upper limit of $m_0 \simeq 46.7$ \citep{Larson_1969, Penston_1969}, corresponding to a dynamically collapsing flow, whereas the inside-out collapse of a singular isothermal sphere yields a substantially smaller value of $m_0 \simeq 0.975$ \citep{Shu_1977}, representing a quasi-static initial configuration. In this work, $m_0$ is treated as an effective parameter that sets the overall mass scale of the collapse. The current model treats structure formation at scales much larger than the disk, therefore we can treat the star-disk system, or even a binary system, as an unresolved point mass in this context. 
 
 The radial infall velocity is assumed to follow a free-fall-dominated profile with an additional inward offset,
 \begin{align}
     v_{\rm inf} = -\sqrt{\frac{2GM_*}{r}} - 3.3\,c_{\rm s},
 \end{align}
-where the first term represents gravitational free fall toward the central mass and the constant offset term follows the Larson--Penston similarity solution. The latter accounts for the inward motion of the envelope material prior to the formation of a central point mass, capturing the background collapse velocity of the dense core. We adopt a fiducial sound speed of $c_{\rm s} = 200~\mathrm{m\,s^{-1}}$.
+where the first term represents gravitational free fall toward the central mass and the constant offset term follows the Larson--Penston similarity solution. The latter accounts for the stationary outer part of the infalling envelope. In the self-similar frame work, this contracting motion under constant-velocity correspond to either early time or large radius. We adopt a fiducial sound speed of $c_{\rm s} = 200~\mathrm{m\,s^{-1}}$.
 
 The rotational velocity is parameterized as
 \begin{align}
@@ -143,7 +143,7 @@ Starting from the original spectral cube, we apply an intensity-based region-gro
 
 The region-growing process is performed in full PPV space, allowing the streamer structure to be traced coherently across spatial and velocity dimensions. The resulting binary mask defines a streamer-only datacube, in which voxels not associated with the streamer are excluded from further analysis.
 
-This masked streamer datacube is subsequently used for both point extraction and shell-based MCMC fitting. By restricting the fitting to emission identified through this region-growing procedure, the comparison between the kinematic model and the observations is focused specifically on the streamer component, enabling a more robust assessment of the streamer geometry and kinematics.
+This masked streamer datacube is subsequently used for both point extraction and the kinematic model-fitting procedures described in the following sections. By restricting the fitting to emission identified through this region-growing procedure, the comparison between the kinematic model and the observations is focused specifically on the streamer component, enabling a more robust assessment of the streamer geometry and kinematics.
 
 \subsection{Point Extraction and Observed Streamer Morphology}
 
@@ -170,7 +170,7 @@ where
 \]
 so that a fixed physical width corresponds to a smaller angular dispersion at larger radii. The refined position and line-of-sight velocity are computed as weighted averages and converted to physical units using the observational header information.
 
-These points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the streamer direction, providing a noise-suppressed representation for comparison with the kinematic model. The number of points extracted for each target is summarized in Table~\ref{table:MCMC_configuration}.
+These points ($x_{\rm cen}$, $z_{\rm cen}$, $v_{\rm cen}$) that traces the streamer direction, providing a noise-suppressed representation for comparison with the kinematic model. The number of points extracted for each target is summarized in Table~\ref{table:MCMC_configuration}.
 
 \begin{figure}[htbp]
     \centering
@@ -318,7 +318,7 @@ These points $(x_{\rm cen},z_{\rm cen},v_{\rm cen})$ that traces the streamer di
 %     \label{fig:SVS13A_streamer}
 % \end{figure}
 The results of the point extraction procedure for all targets are illustrated in Figures~\ref{fig:per2_streamer}--\ref{fig:HLTau_streamer}. For each source, the top panel shows the distribution of emission in $r$--$\theta$ space, where the normalized angular weight highlights the dominant streamer direction as a function of radius. The bottom panels display the corresponding extracted position--velocity points
-overlaid on the observed moment--0 and moment--1 maps. These points trace the large-scale streamer morphology while suppressing small-scale noise and diffuse emission, and are used as the observational input for the subsequent grid-search and MCMC fitting procedures.
+overlaid on the observed moment--0 and moment--1 maps. These points trace the large-scale streamer morphology while suppressing small-scale noise and diffuse emission, and are used as the observational input for the subsequent model-fitting procedures described in the following sections.
 
 \subsection{Grid search parameter estimation}
 We model the streamer kinematics using five parameters ($\theta$, $\phi_0$, $i$, $t_{\rm s}$, $\omega$), corresponding to the initial polar and azimuthal angles of the streamer, the inclination of the system, the characteristic collapse time, and the ratio of rotation velocity. 

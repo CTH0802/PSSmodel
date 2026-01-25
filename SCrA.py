@@ -94,23 +94,23 @@ CACHE_PATH_MCMC_GRID = os.path.join(CACHE_DIR, "SCrA_mcmc_grid_results.npz")
 CACHE_PATH_MCMC_SHELL = os.path.join(CACHE_DIR, "SCrA_mcmc_shell_results.npz")
 CACHE_PATH_FINAL = os.path.join(CACHE_DIR, "SCrA_fit_results_final.npz")
 
-USE_CACHE_SOURCE = "grid"
+USE_CACHE_SOURCE = "mcmc_shell"
 sample_from = "Median"
 
 # ---------- corner 重畫模式 ----------
-REBUILD_CORNER_ONLY = False   # True: 不跑資料、不跑MCMC，只從 cache 重畫 corner
+REBUILD_CORNER_ONLY = True   # True: 不跑資料、不跑MCMC，只從 cache 重畫 corner
 REBUILD_WHICH = ("mcmc_grid", "mcmc_shell")  # 想重畫哪些：可改成只留其中一個"mcmc_grid", "mcmc_shell"
 
 # --- 分析開關 ---
-RUN_GRID = True               # 5D grid search 找初始解
-RUN_MCMC_GRID = False          # 32 個質心點 fast likelihood
-RUN_MCMC_SHELL = False         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
-
-# RUN_GRID = False               # 5D grid search 找初始解
+# RUN_GRID = True               # 5D grid search 找初始解
 # RUN_MCMC_GRID = False          # 32 個質心點 fast likelihood
 # RUN_MCMC_SHELL = False         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+
+RUN_GRID = False               # 5D grid search 找初始解
+RUN_MCMC_GRID = False          # 32 個質心點 fast likelihood
+RUN_MCMC_SHELL = False         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -746,6 +746,72 @@ def draw_2d_interval_lines(
                        alpha=alpha_side, zorder=zorder_interval)
             ax.axhline(hi[i],      color=interval_color, lw=lw_side, ls=ls_side,
                        alpha=alpha_side, zorder=zorder_interval)
+            
+def draw_2d_truth_points(
+    axes,
+    centers,
+    color="C0",
+    marker="o",
+    ms=4.5,
+    alpha=0.95,
+    zorder=40,
+):
+    """
+    在 corner 的 off-diagonal (i>j) 子圖上畫 truth 的點
+    """
+    ndim = len(centers)
+    for i in range(1, ndim):
+        for j in range(i):
+            ax = axes[i, j]
+            ax.plot(
+                centers[j], centers[i],
+                marker=marker,
+                color=color,
+                ms=ms,
+                alpha=alpha,
+                zorder=zorder,
+                linestyle="none",
+            )
+
+def make_three_line_title(label_tex,
+                          peak_val, peak_lo, peak_hi,
+                          med_val,  med_lo,  med_hi,
+                          nd):
+    """
+    Title format (3 lines):
+      line 1: parameter name
+      line 2: peak value ± error
+      line 3: median value ± error
+
+    nd:
+      - int
+      - (nd_val, nd_err)
+      - {"val": nd_val, "err": nd_err}
+    """
+
+    # ---- 決定位數 ----
+    if isinstance(nd, dict):
+        nd_val = nd.get("val", 3)
+        nd_err = nd.get("err", nd_val)
+    elif isinstance(nd, (tuple, list)):
+        nd_val, nd_err = nd
+    else:
+        nd_val = nd_err = nd
+
+    # ---- 三行 title ----
+    line0 = rf"${label_tex}$"
+
+    line1 = (
+        rf"$\mathrm{{peak}} = {peak_val:.{nd_val}f}"
+        + rf"^{{+{peak_hi:.{nd_err}f}}}_{{-{peak_lo:.{nd_err}f}}}$"
+    )
+
+    line2 = (
+        rf"$\mathrm{{median}} = {med_val:.{nd_val}f}"
+        + rf"^{{+{med_hi:.{nd_err}f}}}_{{-{med_lo:.{nd_err}f}}}$"
+    )
+
+    return line0 + "\n" + line1 + "\n" + line2
 
 def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="replot"):
     """
@@ -958,6 +1024,154 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
     fig.savefig(out2, dpi=200, bbox_inches="tight")
     plt.close(fig)
     print(f"[corner-replot] Saved: {out2}")
+    
+    fig = corner.corner(
+        samples_plot,
+        labels=labels_plot,
+        range=ranges,
+        show_titles=False,
+        plot_contours=True,
+        title_fmt=".3f",
+        smooth=smooth_corner,
+    )
+
+    axes = np.array(fig.axes).reshape((5, 5))
+
+    # 這裡沿用你現行：peak-centered 的左右各取 frac_side=0.68（你原碼就是這樣）
+    err_lo = np.zeros(5)
+    err_hi = np.zeros(5)
+    for k in range(5):
+        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_5d_rad[k], frac_side=0.68)
+
+    err_lo = clip_zero(err_lo)
+    err_hi = clip_zero(err_hi)
+
+    err_lo_deg = err_lo.copy()
+    err_hi_deg = err_hi.copy()
+    for i in [0, 1, 2]:
+        err_lo_deg[i] = np.rad2deg(err_lo[i])
+        err_hi_deg[i] = np.rad2deg(err_hi[i])
+    err_lo_deg = clip_zero(err_lo_deg)
+    err_hi_deg = clip_zero(err_hi_deg)
+    
+    # --- median errors in "plot units" (deg, Myr, ...) ---
+    med_err_lo = cent_med - lo_med
+    med_err_hi = hi_med - cent_med
+
+    # --- peak errors in "plot units" already prepared as err_lo_deg/err_hi_deg for angles,
+    #     and err_lo/err_hi for T, omega. Let's pack them into arrays matching peak_plot ---
+    peak_err_lo_plot = np.array([err_lo_deg[0], err_lo_deg[1], err_lo_deg[2], err_lo[3], err_lo[4]], float)
+    peak_err_hi_plot = np.array([err_hi_deg[0], err_hi_deg[1], err_hi_deg[2], err_hi[3], err_hi[4]], float)
+
+    label_tex = [
+        r"\theta\ (\mathrm{deg})",
+        r"\phi_0\ (\mathrm{deg})",
+        r"i\ (\mathrm{deg})",
+        r"t_{\rm s}\ (\mathrm{Myr})",
+        r"\omega",
+    ]
+    nd_cfg = {
+        0: {"val": 1, "err": 1},  # theta_0 (deg)
+        1: {"val": 1, "err": 1},  # phi_0   (deg)
+        2: {"val": 1, "err": 1},  # inclination (deg)
+        3: {"val": 2, "err": 2},  # t_s (Myr)
+        4: {"val": 3, "err": 3},  # omega
+    }
+
+    for k in range(5):
+        axes[k, k].set_title(
+            make_three_line_title(
+                label_tex[k],
+                peak_val=peak_plot[k],
+                peak_lo=peak_err_lo_plot[k],
+                peak_hi=peak_err_hi_plot[k],
+                med_val=cent_med[k],
+                med_lo=med_err_lo[k],
+                med_hi=med_err_hi[k],
+                nd=nd_cfg[k],   # ⭐ 每個參數自己決定位數
+            ),
+            fontsize=10,   # ⬅ 建議稍微小一點
+            pad=10,
+        )
+        
+    peak_plot = np.array([Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d], float)    
+    err_lo_plot = err_lo.copy()
+    err_hi_plot = err_hi.copy()
+    for i in [0, 1, 2]:
+        err_lo_plot[i] = np.rad2deg(err_lo_plot[i])
+        err_hi_plot[i] = np.rad2deg(err_hi_plot[i])
+
+    lo_plot = peak_plot - err_lo_plot
+    hi_plot = peak_plot + err_hi_plot
+    # 先把 median interval 端點算出來（建議放在 for 迴圈外）
+    med_lo_plot = lo_med
+    med_hi_plot = hi_med
+
+    for i in range(5):
+        ax = axes[i, i]
+
+        # --- peak interval (C1) ---
+        ax.axvline(lo_plot[i], ls="--", lw=2, color="C1", alpha=0.9, zorder=25)
+        ax.axvline(hi_plot[i], ls="--", lw=2, color="C1", alpha=0.9, zorder=25)
+
+        # --- median interval (C0) ---
+        ax.axvline(med_lo_plot[i], ls="--", lw=1.2, color="C0", alpha=0.9, zorder=24)
+        ax.axvline(med_hi_plot[i], ls="--", lw=1.2, color="C0", alpha=0.9, zorder=24)
+
+        # --- median center (C0) ---
+        ax.axvline(cent_med[i], color="C0", lw=1.5, alpha=0.9, zorder=30)
+
+        # --- peak center (C1) ---
+        ax.axvline(peak_plot[i], color="C1", lw=2, alpha=0.9, zorder=30)
+
+    draw_2d_interval_lines(
+        axes,
+        centers=peak_plot,
+        lo=lo_plot,
+        hi=hi_plot,
+        center_color="C1",      # 你說 center 想維持藍色
+        interval_color="C1",
+        lw_main=2,
+        lw_side=2,
+        alpha_main=0.9,
+        alpha_side=0.75,
+        ls_main="-",
+        ls_side="--",
+    )
+    draw_2d_interval_lines(
+        axes,
+        centers=cent_med,   # q50p
+        lo=lo_med,          # q16p
+        hi=hi_med,          # q84p
+        center_color="C0",
+        interval_color="C0",
+        lw_main=1.3,
+        lw_side=1.0,
+        alpha_main=0.9,
+        alpha_side=0.75,
+        ls_main="-",
+        ls_side="--",
+    )
+    # --- peak: 點 ---
+    draw_2d_truth_points(
+        axes,
+        centers=peak_plot,
+        color="C1",
+        marker="o",
+    )
+
+    # --- median: 點 ---
+    draw_2d_truth_points(
+        axes,
+        centers=cent_med,
+        color="C0",
+        marker="s",   # 建議不同形狀
+    )
+
+    out3 = os.path.join(PLOT_DIR, f"corner_{which}_all_{out_tag}.png")
+    fig.savefig(out3, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[corner-replot] Saved: {out3}")
 
 def _compute_extent(header, im_center, ny, nx):
     dx_arcsec = header["CDELT1"] * 3600.0
@@ -1026,9 +1240,9 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         origin="lower",
         cmap="inferno",
         extent=extent,
-        norm=norm,
-        # vmin=np.nanmin(mom0),
-        # vmax=np.nanmax(mom0)
+        # norm=norm,
+        vmin=np.nanmin(mom0),
+        vmax=np.nanmax(mom0)
     )
 
     divider = make_axes_locatable(ax)
@@ -1107,13 +1321,13 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
     scale_range_y = [text_pos_y - 0.2, text_pos_y - 0.2]
 
     # 繪製比例尺與文字
-    ax.plot(scale_range_x, scale_range_y, color='w', lw=3, zorder=10)
+    ax.plot(scale_range_x, scale_range_y, color='k', lw=3, zorder=10)
     ax.text(
         text_pos_x - scale_length_arcsec / 2,
         text_pos_y - 2.0,
         f"{int(scale_length)} AU",
         ha='center', va='bottom',
-        fontsize=14, family='Times New Roman', color='w'
+        fontsize=14, family='Times New Roman', color='k'
     )
     beam = mpl.patches.Ellipse(
         (0, 0),
@@ -1121,7 +1335,7 @@ def plot_streamer_on_mom0(theta, phi, inc, T_Myr, omega,
         height=70 * dx_arcsec,
         angle=0,
         facecolor="none",
-        edgecolor="w",
+        edgecolor="k",
         linestyle="--",
         lw=1.2,
         zorder=12,
@@ -1216,10 +1430,10 @@ def plot_streamer_on_mom1(theta, phi, inc, T_Myr, omega,
         origin="lower",
         cmap="coolwarm",
         extent=extent,
-        vmin=vmin,
-        vmax=vmax,
-        # vmin=np.nanmin(mom1),
-        # vmax=np.nanmax(mom1),
+        # vmin=vmin,
+        # vmax=vmax,
+        vmin=np.nanmin(mom1),
+        vmax=np.nanmax(mom1),
     )
 
     divider = make_axes_locatable(ax)
@@ -1522,14 +1736,14 @@ def run_quick_mode_scra():
         # Omega_best     = 0.217 
         
         # shell peak
-        Theta_best_deg = 89.709
-        Phi_best_deg   = 7.134 
-        Incl_best_deg  = -81.591 
-        Theta_best     = np.deg2rad(Theta_best_deg) 
-        Phi_best       = np.deg2rad(Phi_best_deg)
-        Incl_best      = np.deg2rad(Incl_best_deg)
-        T_best         = 0.940 
-        Omega_best     = 0.230 
+        # Theta_best_deg = 89.709
+        # Phi_best_deg   = 7.134 
+        # Incl_best_deg  = -81.591 
+        # Theta_best     = np.deg2rad(Theta_best_deg) 
+        # Phi_best       = np.deg2rad(Phi_best_deg)
+        # Incl_best      = np.deg2rad(Incl_best_deg)
+        # T_best         = 0.940 
+        # Omega_best     = 0.230 
         # ★ A-mode center: 必須從 cache 讀 ★
         if "new_center_yx" not in c:
             raise RuntimeError("Cache missing new_center_yx (A-mode requires this).")
@@ -1683,7 +1897,9 @@ def prepare_data():
     # --------------------------------------------------
     cube = SpectralCube.read(cube_fname)
     header = fits.getheader(cube_fname)
-
+    header["BMAJ"] = 2.809657961677E-04
+    header["BMIN"] = 2.168933225115E-04
+    header["BPA"]  = -8.850411395522E+01
     # --- Ensure spectral axis is in km/s (do NOT subtract Vsys) ---
     cube = cube.with_spectral_unit(
         u.km / u.s,
@@ -1735,6 +1951,9 @@ def prepare_data():
     # --- Use 3D header from masked_cube (REQUIRED) ---
     header_stream = masked_cube.hdu.header.copy()
     # Keep A-mode center (CRPIX is 1-based in FITS)
+    header_stream["BMAJ"] = 2.809657961677E-04
+    header_stream["BMIN"] = 2.168933225115E-04
+    header_stream["BPA"]  = -8.850411395522E+01
     header_stream["CRPIX1"] = float(new_center[1]) + 1.0
     header_stream["CRPIX2"] = float(new_center[0]) + 1.0
     # Explicitly declare velocity unit

@@ -1,15 +1,15 @@
 \contentsline {chapter}{Abstract}{I}{section*.2}%
-\contentsline {chapter}{Abstract (Chinese)}{II}{section*.4}%
+\contentsline {chapter}{摘要}{II}{section*.4}%
 \contentsline {chapter}{Contents}{III}{chapter*.5}%
 \contentsline {chapter}{List of Figures}{VI}{chapter*.6}%
-\contentsline {chapter}{List of Tables}{XVII}{chapter*.7}%
+\contentsline {chapter}{List of Tables}{XV}{chapter*.7}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}The formation of cores}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}The streamer in observations}{2}{section.1.2}%
 \contentsline {section}{\numberline {1.3}Current Limitations}{3}{section.1.3}%
 \contentsline {section}{\numberline {1.4}Overview of Targets Used in This Study}{3}{section.1.4}%
 \contentsline {subsection}{\numberline {1.4.1}Per-emb-2}{4}{subsection.1.4.1}%
-\contentsline {subsection}{\numberline {1.4.2}Per-emb-50}{7}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.2}Per-emb-50}{4}{subsection.1.4.2}%
 \contentsline {subsection}{\numberline {1.4.3}S~CrA}{7}{subsection.1.4.3}%
 \contentsline {subsection}{\numberline {1.4.4}HL~Tau}{7}{subsection.1.4.4}%
 \contentsline {section}{\numberline {1.5}Our work overview}{7}{section.1.5}%
@@ -19,34 +19,34 @@
 \contentsline {section}{\numberline {2.3}Coordinate Transformation}{11}{section.2.3}%
 \contentsline {section}{\numberline {2.4}Projection onto the Sky and PPV Space}{12}{section.2.4}%
 \contentsline {section}{\numberline {2.5}Fitting procedure}{13}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Position angle}{14}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.1}Position angle}{13}{subsection.2.5.1}%
 \contentsline {subsection}{\numberline {2.5.2}Streamer identification in the PPV cube}{14}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}Point Extraction and Observed Streamer Morphology}{15}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.5.4}Grid search parameter estimation}{16}{subsection.2.5.4}%
-\contentsline {subsection}{\numberline {2.5.5}Markov Chain Monte Carlo exploration}{21}{subsection.2.5.5}%
-\contentsline {chapter}{\numberline {3}Results}{23}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Overview of fitting performance across methods}{23}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Summary of best-fit parameters}{24}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Per-emb-2}{25}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Per-emb-50}{27}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}S CrA}{31}{subsection.3.2.3}%
-\contentsline {subsection}{\numberline {3.2.4}HL Tau}{38}{subsection.3.2.4}%
-\contentsline {section}{\numberline {3.3}Physical Implications}{43}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Collapse Scale and Evolutionary Stage}{43}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}Streamer Geometry and System Orientation}{43}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}Mass Accretion Rate and Rotational Energy}{44}{subsection.3.3.3}%
-\contentsline {chapter}{\numberline {4}Discussion}{46}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Discussion}{46}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}MCMC convergence behavior and quality control}{46}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}Envelope accretion rates and the role of streamers}{47}{subsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.1.3}Treatment of partially constrained geometric parameters}{47}{subsection.4.1.3}%
-\contentsline {subsection}{\numberline {4.1.4}Moment-based versus full PPV fitting}{47}{subsection.4.1.4}%
-\contentsline {subsection}{\numberline {4.1.5}Model limitations and alternative interpretations}{48}{subsection.4.1.5}%
-\contentsline {chapter}{\numberline {5}Conclusions}{49}{chapter.5}%
-\contentsline {chapter}{Bibliography}{51}{chapter*.39}%
-\contentsline {chapter}{\numberline {A}Observations}{53}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Results}{54}{appendix.B}%
-\contentsline {section}{\numberline {B.1}Per-emb-2}{54}{section.B.1}%
-\contentsline {section}{\numberline {B.2}Per-emb-50}{54}{section.B.2}%
-\contentsline {section}{\numberline {B.3}S CrA}{54}{section.B.3}%
-\contentsline {section}{\numberline {B.4}HL Tau}{61}{section.B.4}%
+\contentsline {subsection}{\numberline {2.5.3}Point Extraction and Observed Streamer Morphology}{14}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Grid search parameter estimation}{15}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.5}Markov Chain Monte Carlo exploration}{20}{subsection.2.5.5}%
+\contentsline {chapter}{\numberline {3}Results}{22}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Overview of fitting performance across methods}{22}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Summary of best-fit parameters}{23}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Per-emb-2}{23}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Per-emb-50}{25}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}S CrA}{26}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}HL Tau}{29}{subsection.3.2.4}%
+\contentsline {section}{\numberline {3.3}Physical Implications}{32}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Collapse Scale and Evolutionary Stage}{32}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Streamer Geometry and System Orientation}{39}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Underlying core density}{40}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Mass Accretion Rate and Rotational Energy}{40}{subsection.3.3.4}%
+\contentsline {chapter}{\numberline {4}Discussion}{42}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Methodological considerations}{42}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Implications of inconsistent inclination}{43}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Global motion inferred from the streamer}{43}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Envelope accretion rates and the role of streamers}{44}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Model limitations and alternative interpretations}{44}{section.4.5}%
+\contentsline {chapter}{\numberline {5}Conclusions}{45}{chapter.5}%
+\contentsline {chapter}{Bibliography}{47}{chapter*.38}%
+\contentsline {chapter}{\numberline {A}Observations}{49}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Results}{50}{appendix.B}%
+\contentsline {section}{\numberline {B.1}Per-emb-2}{50}{section.B.1}%
+\contentsline {section}{\numberline {B.2}Per-emb-50}{50}{section.B.2}%
+\contentsline {section}{\numberline {B.3}S CrA}{50}{section.B.3}%
+\contentsline {section}{\numberline {B.4}HL Tau}{50}{section.B.4}%

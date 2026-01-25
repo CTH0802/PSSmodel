@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  19 JAN 2026 03:53
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.9.3)  25 JAN 2026 20:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1089,31 +1089,25 @@ File: UTF8.chr 2021/10/16 4.8.5
 
 [11]
 
-[12]
-
-[13]
-
-[14]
-
-[15])
+[12])
 \tf@lof=\write6
 \openout6 = `Modeling_Streamer_TH.lof'.
 
 
 
-[16] (./Modeling_Streamer_TH.lot)
+[13]
+
+[14] (./Modeling_Streamer_TH.lot)
 \tf@lot=\write7
 \openout7 = `Modeling_Streamer_TH.lot'.
 
 
 
-[17
+[15
 
 ]
 Chapter 1.
 (././Introduction.tex
-Missing character: There is no ≳ (U+2273) in font [lmroman12-regular]:mapping=tex-text;!
-
 
 [1
 
@@ -1147,12 +1141,8 @@ File: ./Results_image/HLTau/mom0&mom1/HLTau_mom1_cacheonly.png Graphic file (typ
 
 [6]
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
-
 [7])
-Overfull \hbox (3.10892pt too wide) in paragraph at lines 190--136
+Overfull \hbox (3.10892pt too wide) in paragraph at lines 193--136
 []\TU/lmr/m/n/12 In this work, we develop a kinematic modeling framework designed to characterize streamer
  []
 
@@ -1175,12 +1165,6 @@ Chapter 2.
 [13]
 
 [14]
-
-[15]
-Overfull \hbox (8.71117pt too wide) in paragraph at lines 173--174
-[]\TU/lmr/m/n/12 These points $\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 x[]; z[]; v[]\OT1/cmr/m/n/12 )$ \TU/lmr/m/n/12 that traces the streamer direction, providing a noise-suppressed
- []
-
 File: ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_weights_cacheonly.png>
 File: ./Results_image/Per_emb_2/mom0&1_centroid/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
@@ -1207,6 +1191,8 @@ File: ./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png Graphic fil
 <./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png>
 
 
+[15]
+
 [16]
 
 [17]
@@ -1215,8 +1201,6 @@ File: ./Results_image/HLTau/mom0&1_centroid/HLTau_mom1_cacheonly.png Graphic fil
 
 [19]
 
-[20]
-
 Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 (xeCJK)                
 (xeCJK)                Try to use `\setCJKmonofont[<...>]{<...>}' to define
@@ -1224,17 +1208,17 @@ Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 
 
 
-[21])
+[20])
 
-[22]
+[21]
 Chapter 3.
 (././Results.tex
 
-[23
+[22
 
 ]
 
-[24]
+[23]
 File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
@@ -1243,19 +1227,15 @@ File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_o
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png>
+
+
+[24]
 File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png>
-
-
-[25]
-
-[26]
+File: ./Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png>
 File: ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png>
 File: ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
@@ -1268,30 +1248,22 @@ File: ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.
 <./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png>
 File: ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png>
-File: ./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak2d_cacheonly.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak2d_cacheonly.png>
-File: ./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
+File: ./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png>
 
-Overfull \hbox (7.17688pt too wide) in paragraph at lines 227--228
+Overfull \hbox (7.17688pt too wide) in paragraph at lines 199--200
 \TU/lmr/m/n/12 show that the streamer orientation parameters are well constrained, while the collapse timescale
  []
 
 
 
+[25]
+
+[26]
+
 [27]
 
 [28]
-
-[29]
-
-[30]
-
-[31]
-
-[32]
-
-[33]
 File: ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png>
 File: ./Results_image/SCrA/shell_results/peak/SCrA_mom0_cacheonly.png Graphic file (type bmp)
@@ -1304,19 +1276,17 @@ File: ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png Grap
 <./Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png>
 File: ./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png>
-File: ./Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png>
-File: ./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png>
+File: ./Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png>
+File: ./Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png>
 
 
-[34]
+[29]
 
-[35]
+[30]
 
-[36]
-
-[37]
+[31]
 File: ./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png>
 File: ./Results_image/HLTau/shell_results/median/HLTau_mom0_cacheonly.png Graphic file (type bmp)
@@ -1329,45 +1299,54 @@ File: ./Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png 
 <./Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png>
 File: ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png>
-File: ./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png>
-File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
+File: ./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png>
+File: ./Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png>
 
+Overfull \hbox (10.04002pt too wide) in paragraph at lines 421--449
+ [][] 
+ []
+
+
+
+[32]
+
+[33]
+
+[34]
+
+[35]
+
+[36]
+
+[37]
 
 [38]
 
 [39]
 
-[40]
+[40])
 
 [41]
-
-[42]
-
-[43]
-
-[44])
-
-[45]
 Chapter 4.
 (././Discussion.tex
 
-[46
+[42
 
-])
+]
 
-[47]
+[43])
 
-[48]
+[44]
 Chapter 5.
 (././Conclusion.tex
 
-[49
+[45
 
 ]) (./Modeling_Streamer_TH.bbl
 
-[50]
+[46]
 ! Undefined control sequence.
 l.9 {Cassen}, P., \& {Moosman}, A. 1981, \icarus
                                                 , 48, 353, \dodoi{10.1016/00...
@@ -1414,7 +1393,16 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.24 ..., A., {Manara}, C.~F., {et~al.} 2023, \aap
+l.24 ...A., {Williams}, J.~P., {et~al.} 2024, \aap
+                                                  , 683, A133, \dodoi{10.105...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.27 ..., A., {Manara}, C.~F., {et~al.} 2023, \aap
                                                   , 670, L8, \dodoi{10.1051/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1423,7 +1411,16 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.27 ....~M., {Pineda}, J.~E., {et~al.} 2023, \aap
+l.30 ...hashi}, N., \& {Miyama}, S.~M. 1993, \apjl
+                                                  , 418, L71, \dodoi{10.1086...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.33 ....~M., {Pineda}, J.~E., {et~al.} 2023, \aap
                                                   , 669, A137, \dodoi{10.105...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1432,7 +1429,16 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.30 {Larson}, R.~B. 1969, \mnras
+l.36 ...uwa}, S., {Saigo}, K., {et~al.} 2023, \apj
+                                                  , 953, 190, \dodoi{10.3847...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.39 {Larson}, R.~B. 1969, \mnras
                                  , 145, 271, \dodoi{10.1093/mnras/145.3.271}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1441,7 +1447,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.33 ... {Tejeda}, E., \& {Nagel}, E. 2009, \mnras
+l.42 ... {Tejeda}, E., \& {Nagel}, E. 2009, \mnras
                                                   , 393, 579, \dodoi{10.1111...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1450,7 +1456,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.36 ..., {Kristensen}, L.~E., {et~al.} 2017, \aap
+l.45 ..., {Kristensen}, L.~E., {et~al.} 2017, \aap
                                                   , 600, A99, \dodoi{10.1051...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1458,8 +1464,13 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
+
+
+[47
+
+]
 ! Undefined control sequence.
-l.39 ...d}, L., {Dzib}, S.~A., {et~al.} 2018, \apj
+l.48 ...d}, L., {Dzib}, S.~A., {et~al.} 2018, \apj
                                                   , 865, 73, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1467,13 +1478,8 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-
-
-[51
-
-]
 ! Undefined control sequence.
-l.42 {Penston}, M.~V. 1969, \mnras
+l.51 {Penston}, M.~V. 1969, \mnras
                                   , 144, 425, \dodoi{10.1093/mnras/144.4.425}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1482,7 +1488,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.48 ....~J., {Tobin}, J.~J., {et~al.} 2016, \apjl
+l.57 ....~J., {Tobin}, J.~J., {et~al.} 2016, \apjl
                                                   , 817, L14, \dodoi{10.3847...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1491,7 +1497,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.51 {Shu}, F.~H. 1977, \apj
+l.60 {Shu}, F.~H. 1977, \apj
                             , 214, 488, \dodoi{10.1086/155274}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1500,7 +1506,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.54 ...~L., {Dunham}, M.~M., {et~al.} 2019, \apjs
+l.63 ...~L., {Dunham}, M.~M., {et~al.} 2019, \apjs
                                                   , 245, 21, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1509,7 +1515,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.57 ...}, L.~W., {Li}, Z.-Y., {et~al.} 2018, \apj
+l.66 ...}, L.~W., {Li}, Z.-Y., {et~al.} 2018, \apj
                                                   , 867, 43, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1518,7 +1524,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.60 {Ulrich}, R.~K. 1976, \apj
+l.69 {Ulrich}, R.~K. 1976, \apj
                                , 210, 377, \dodoi{10.1086/154840}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1527,7 +1533,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.63 ..., {Segura-Cox}, D.~M., {et~al.} 2022, \aap
+l.72 ..., {Segura-Cox}, D.~M., {et~al.} 2022, \aap
                                                   , 667, A12, \dodoi{10.1051...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1536,7 +1542,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.66 ...tworth}, A., \& {Summers}, D. 1985, \mnras
+l.75 ...tworth}, A., \& {Summers}, D. 1985, \mnras
                                                   , 214, 1, \dodoi{10.1093/m...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1545,7 +1551,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.69 ..., P.-G., {Hirano}, N., {et~al.} 2019, \apj
+l.78 ..., P.-G., {Hirano}, N., {et~al.} 2019, \apj
                                                   , 880, 69, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1554,7 +1560,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.72 ...~F., {Speagle}, J.~S., {et~al.} 2018, \apj
+l.81 ...~F., {Speagle}, J.~S., {et~al.} 2018, \apj
                                                   , 869, 83, \dodoi{10.3847/...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -1564,36 +1570,34 @@ and I'll forget about whatever was undefined.
 
 ) (././Appendix.tex
 
-[52]
+[48]
 Appendix A.
 
 
-[53
+[49
 
 ]
 Appendix B.
-File: ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png>
-File: ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_50.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_50.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png>
+File: ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_140.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_140.png>
+File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_140.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_140.png>
+File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_140.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_140.png>
+File: ./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_140.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_140.png>
+File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_140.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_140.png>
+File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_140.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_140.png>
 File: ./Results_image/Per_emb_2/grid_results/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/Per-emb-2_z_v_imshow_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png>
 File: ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png Graphic file (type bmp)
 <./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png>
-File: ./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png Graphic file (type bmp)
-<./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png>
+File: ./Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png Graphic file (type bmp)
+<./Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png>
 File: ./Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png>
 File: ./Results_image/Per_emb_50/grid_results/mcmc/peak/Per-emb-50_mom0_cacheonly.png Graphic file (type bmp)
@@ -1624,14 +1628,10 @@ File: ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.
 <./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png>
 File: ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png>
-File: ./Results_image/Per_emb_50/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png>
-File: ./Results_image/Per_emb_50/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png>
-File: ./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png>
-File: ./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
+File: ./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png>
+File: ./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png>
 File: ./Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png>
 File: ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png Graphic file (type bmp)
@@ -1662,14 +1662,10 @@ File: ./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png Graphic 
 <./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png>
 File: ./Results_image/SCrA/shell_results/median/SCrA_z_v_data_overlay.png Graphic file (type bmp)
 <./Results_image/SCrA/shell_results/median/SCrA_z_v_data_overlay.png>
-File: ./Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png>
-File: ./Results_image/SCrA/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/SCrA/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png>
-File: ./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png>
-File: ./Results_image/SCrA/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/SCrA/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
+File: ./Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png>
+File: ./Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png>
 File: ./Results_image/HLTau/grid_results/HLTau_mom0_cacheonly.png Graphic file (type bmp)
 <./Results_image/HLTau/grid_results/HLTau_mom0_cacheonly.png>
 File: ./Results_image/HLTau/grid_results/mcmc/peak/HLTau_mom0_cacheonly.png Graphic file (type bmp)
@@ -1702,11 +1698,24 @@ File: ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png Grap
 <./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png>
 
 
-[54
+[50
 
 ]
 
+[51]
+
+[52]
+
+[53]
+
+[54]
+
 [55]
+File: ./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png>
+File: ./Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png Graphic file (type bmp)
+<./Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png>
+
 
 [56]
 
@@ -1717,15 +1726,6 @@ File: ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png Grap
 [59]
 
 [60]
-File: ./Results_image/HLTau/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/HLTau/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png>
-File: ./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png>
-File: ./Results_image/HLTau/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png Graphic file (type bmp)
-<./Results_image/HLTau/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png>
-File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png Graphic file (type bmp)
-<./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png>
-
 
 [61]
 
@@ -1756,30 +1756,13 @@ File: ./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheo
 [74]
 
 [75]
+Overfull \hbox (9.68922pt too wide) in paragraph at lines 657--721
+ [][] 
+ []
 
-[76]
 
-[77]
 
-[78]
-
-[79]
-
-[80]
-
-[81]
-
-[82]
-
-[83]
-
-[84]
-
-[85]
-
-[86]
-
-[87
+[76
 
 ]) (./Modeling_Streamer_TH.aux)
  ***********
@@ -1934,47 +1917,44 @@ Modeling_Streamer_TH.out
 ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png
 ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png
 ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png
-./Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png
-./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png
+./Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png
 ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png
 ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom0_cacheonly.png
 ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom1_cacheonly.png
 ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom1_cacheonly.png
 ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png
 ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png
-./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak2d_cacheonly.png
-./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png
+./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png
 ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png
 ./Results_image/SCrA/shell_results/peak/SCrA_mom0_cacheonly.png
 ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom1_cacheonly.png
 ./Results_image/SCrA/shell_results/peak/SCrA_mom1_cacheonly.png
 ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png
 ./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png
-./Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png
-./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png
+./Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png
+./Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png
 ./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png
 ./Results_image/HLTau/shell_results/median/HLTau_mom0_cacheonly.png
 ./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom1_cacheonly.png
 ./Results_image/HLTau/shell_results/median/HLTau_mom1_cacheonly.png
 ./Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png
 ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png
-./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png
-./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png
+./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png
+./Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png
 ././Discussion.tex
 ././Conclusion.tex
 Modeling_Streamer_TH.bbl
 ././Appendix.tex
-./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png
-./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png
-./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png
-./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_50.png
-./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png
-./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png
+./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_140.png
+./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_140.png
+./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_140.png
+./Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_140.png
+./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_140.png
+./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_140.png
 ./Results_image/Per_emb_2/grid_results/Per-emb-2_z_v_imshow_50.png
 ./Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png
 ./Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png
-./Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png
-./Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png
+./Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png
 ./Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png
 ./Results_image/Per_emb_50/grid_results/mcmc/peak/Per-emb-50_mom0_cacheonly.png
 ./Results_image/Per_emb_50/grid_results/mcmc/median/Per-emb-50_mom0_cacheonly.png
@@ -1990,10 +1970,8 @@ Modeling_Streamer_TH.bbl
 ./Results_image/Per_emb_50/grid_results/mcmc/median/Per-emb-50_z_v_data_overlay.png
 ./Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png
 ./Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png
-./Results_image/Per_emb_50/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png
-./Results_image/Per_emb_50/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png
-./Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png
-./Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png
+./Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png
+./Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png
 ./Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png
 ./Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png
 ./Results_image/SCrA/grid_results/mcmc/median/SCrA_mom0_cacheonly.png
@@ -2009,10 +1987,8 @@ Modeling_Streamer_TH.bbl
 ./Results_image/SCrA/grid_results/mcmc/median/SCrA_z_v_data_overlay.png
 ./Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png
 ./Results_image/SCrA/shell_results/median/SCrA_z_v_data_overlay.png
-./Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png
-./Results_image/SCrA/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png
-./Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png
-./Results_image/SCrA/shell_results/median/corner_mcmc_shell_median_cacheonly.png
+./Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png
+./Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png
 ./Results_image/HLTau/grid_results/HLTau_mom0_cacheonly.png
 ./Results_image/HLTau/grid_results/mcmc/peak/HLTau_mom0_cacheonly.png
 ./Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png
@@ -2028,22 +2004,20 @@ Modeling_Streamer_TH.bbl
 ./Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png
 ./Results_image/HLTau/shell_results/peak/HLTau_z_v_data_overlay.png
 ./Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png
-./Results_image/HLTau/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png
-./Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png
-./Results_image/HLTau/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png
-./Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png
+./Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png
+./Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png
  ***********
 
 Package rerunfilecheck Info: File `Modeling_Streamer_TH.out' has not changed.
-(rerunfilecheck)             Checksum: 4483718BC6C7835EC4DF240A317BF52F;8625.
+(rerunfilecheck)             Checksum: C1C029B4492774390A1B22860170D98F;8435.
  ) 
 Here is how much of TeX's memory you used:
- 29828 strings out of 473832
- 662856 string characters out of 5729482
- 1121607 words of memory out of 5000000
- 52284 multiletter control sequences out of 15000+600000
- 564943 words of font info for 80 fonts, out of 8000000 for 9000
+ 29865 strings out of 473832
+ 663498 string characters out of 5729482
+ 1109963 words of memory out of 5000000
+ 52307 multiletter control sequences out of 15000+600000
+ 564959 words of font info for 82 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 117i,19n,121p,2645b,794s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,19n,121p,2645b,781s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Modeling_Streamer_TH.xdv (105 pages, 1160456 bytes).
+Output written on Modeling_Streamer_TH.xdv (92 pages, 1191008 bytes).

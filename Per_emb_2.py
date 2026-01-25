@@ -38,9 +38,9 @@ Grid_FIT_CACHE = "Per-emb-2_fit_grid_results.npz" #grid result
 MCMC_FIT_CACHE = "Per-emb-2_mcmc_grid_chain.npz" #mcmc result
 
 USE_CACHED_FIT = True
-FIT_CACHE = MCMC_FIT_CACHE
+FIT_CACHE = Grid_FIT_CACHE
 
-PLOT_PARAM_MODE = "median"   # "median" or "peak" or "grid"
+PLOT_PARAM_MODE = "grid"   # "median" or "peak" or "grid"
 
 pa_deg = 50 + 90
 pa_rad = np.deg2rad(pa_deg)
@@ -360,7 +360,73 @@ def draw_2d_interval_lines(
             ax.axhline(lo[i],      color=interval_color, lw=lw_side, ls=ls_side,
                        alpha=alpha_side, zorder=zorder_interval)
             ax.axhline(hi[i],      color=interval_color, lw=lw_side, ls=ls_side,
-                       alpha=alpha_side, zorder=zorder_interval)
+                       alpha=alpha_side, zorder=zorder_interval)        
+            
+def draw_2d_truth_points(
+    axes,
+    centers,
+    color="C0",
+    marker="o",
+    ms=4.5,
+    alpha=0.95,
+    zorder=40,
+):
+    """
+    在 corner 的 off-diagonal (i>j) 子圖上畫 truth 的點
+    """
+    ndim = len(centers)
+    for i in range(1, ndim):
+        for j in range(i):
+            ax = axes[i, j]
+            ax.plot(
+                centers[j], centers[i],
+                marker=marker,
+                color=color,
+                ms=ms,
+                alpha=alpha,
+                zorder=zorder,
+                linestyle="none",
+            )
+
+def make_three_line_title(label_tex,
+                          peak_val, peak_lo, peak_hi,
+                          med_val,  med_lo,  med_hi,
+                          nd):
+    """
+    Title format (3 lines):
+      line 1: parameter name
+      line 2: peak value ± error
+      line 3: median value ± error
+
+    nd:
+      - int
+      - (nd_val, nd_err)
+      - {"val": nd_val, "err": nd_err}
+    """
+
+    # ---- 決定位數 ----
+    if isinstance(nd, dict):
+        nd_val = nd.get("val", 3)
+        nd_err = nd.get("err", nd_val)
+    elif isinstance(nd, (tuple, list)):
+        nd_val, nd_err = nd
+    else:
+        nd_val = nd_err = nd
+
+    # ---- 三行 title ----
+    line0 = rf"${label_tex}$"
+
+    line1 = (
+        rf"$\mathrm{{peak}} = {peak_val:.{nd_val}f}"
+        + rf"^{{+{peak_hi:.{nd_err}f}}}_{{-{peak_lo:.{nd_err}f}}}$"
+    )
+
+    line2 = (
+        rf"$\mathrm{{median}} = {med_val:.{nd_val}f}"
+        + rf"^{{+{med_hi:.{nd_err}f}}}_{{-{med_lo:.{nd_err}f}}}$"
+    )
+
+    return line0 + "\n" + line1 + "\n" + line2
 
 def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="replot"):
     """
@@ -571,6 +637,154 @@ def rebuild_corner_from_cache(which="mcmc_grid", cache_source=None, out_tag="rep
     fig.savefig(out2, dpi=200, bbox_inches="tight")
     plt.close(fig)
     print(f"[corner-replot] Saved: {out2}")
+
+    fig = corner.corner(
+        samples_plot,
+        labels=labels_plot,
+        range=ranges,
+        show_titles=False,
+        plot_contours=True,
+        title_fmt=".3f",
+        smooth=smooth_corner,
+    )
+
+    axes = np.array(fig.axes).reshape((5, 5))
+
+    # 這裡沿用你現行：peak-centered 的左右各取 frac_side=0.68（你原碼就是這樣）
+    err_lo = np.zeros(5)
+    err_hi = np.zeros(5)
+    for k in range(5):
+        err_lo[k], err_hi[k] = peak_pm(flat[:, k], peak_5d_rad[k], frac_side=0.68)
+
+    err_lo = clip_zero(err_lo)
+    err_hi = clip_zero(err_hi)
+
+    err_lo_deg = err_lo.copy()
+    err_hi_deg = err_hi.copy()
+    for i in [0, 1, 2]:
+        err_lo_deg[i] = np.rad2deg(err_lo[i])
+        err_hi_deg[i] = np.rad2deg(err_hi[i])
+    err_lo_deg = clip_zero(err_lo_deg)
+    err_hi_deg = clip_zero(err_hi_deg)
+    
+    # --- median errors in "plot units" (deg, Myr, ...) ---
+    med_err_lo = cent_med - lo_med
+    med_err_hi = hi_med - cent_med
+
+    # --- peak errors in "plot units" already prepared as err_lo_deg/err_hi_deg for angles,
+    #     and err_lo/err_hi for T, omega. Let's pack them into arrays matching peak_plot ---
+    peak_err_lo_plot = np.array([err_lo_deg[0], err_lo_deg[1], err_lo_deg[2], err_lo[3], err_lo[4]], float)
+    peak_err_hi_plot = np.array([err_hi_deg[0], err_hi_deg[1], err_hi_deg[2], err_hi[3], err_hi[4]], float)
+
+    label_tex = [
+        r"\theta\ (\mathrm{deg})",
+        r"\phi_0\ (\mathrm{deg})",
+        r"i\ (\mathrm{deg})",
+        r"t_{\rm s}\ (\mathrm{Myr})",
+        r"\omega",
+    ]
+    nd_cfg = {
+        0: {"val": 1, "err": 1},  # theta_0 (deg)
+        1: {"val": 0, "err": 0},  # phi_0   (deg)
+        2: {"val": 1, "err": 1},  # inclination (deg)
+        3: {"val": 2, "err": 2},  # t_s (Myr)
+        4: {"val": 3, "err": 3},  # omega
+    }
+
+    for k in range(5):
+        axes[k, k].set_title(
+            make_three_line_title(
+                label_tex[k],
+                peak_val=peak_plot[k],
+                peak_lo=peak_err_lo_plot[k],
+                peak_hi=peak_err_hi_plot[k],
+                med_val=cent_med[k],
+                med_lo=med_err_lo[k],
+                med_hi=med_err_hi[k],
+                nd=nd_cfg[k],   # ⭐ 每個參數自己決定位數
+            ),
+            fontsize=10,   # ⬅ 建議稍微小一點
+            pad=10,
+        )
+        
+    peak_plot = np.array([Theta_pk5d_deg, Phi_pk5d_deg, Incl_pk5d_deg, T_pk5d, Omega_pk5d], float)    
+    err_lo_plot = err_lo.copy()
+    err_hi_plot = err_hi.copy()
+    for i in [0, 1, 2]:
+        err_lo_plot[i] = np.rad2deg(err_lo_plot[i])
+        err_hi_plot[i] = np.rad2deg(err_hi_plot[i])
+
+    lo_plot = peak_plot - err_lo_plot
+    hi_plot = peak_plot + err_hi_plot
+    # 先把 median interval 端點算出來（建議放在 for 迴圈外）
+    med_lo_plot = lo_med
+    med_hi_plot = hi_med
+
+    for i in range(5):
+        ax = axes[i, i]
+
+        # --- peak interval (C1) ---
+        ax.axvline(lo_plot[i], ls="--", lw=2, color="C1", alpha=0.9, zorder=25)
+        ax.axvline(hi_plot[i], ls="--", lw=2, color="C1", alpha=0.9, zorder=25)
+
+        # --- median interval (C0) ---
+        ax.axvline(med_lo_plot[i], ls="--", lw=1.2, color="C0", alpha=0.9, zorder=24)
+        ax.axvline(med_hi_plot[i], ls="--", lw=1.2, color="C0", alpha=0.9, zorder=24)
+
+        # --- median center (C0) ---
+        ax.axvline(cent_med[i], color="C0", lw=1.5, alpha=0.9, zorder=30)
+
+        # --- peak center (C1) ---
+        ax.axvline(peak_plot[i], color="C1", lw=2, alpha=0.9, zorder=30)
+
+    draw_2d_interval_lines(
+        axes,
+        centers=peak_plot,
+        lo=lo_plot,
+        hi=hi_plot,
+        center_color="C1",      # 你說 center 想維持藍色
+        interval_color="C1",
+        lw_main=2,
+        lw_side=2,
+        alpha_main=0.9,
+        alpha_side=0.75,
+        ls_main="-",
+        ls_side="--",
+    )
+    draw_2d_interval_lines(
+        axes,
+        centers=cent_med,   # q50p
+        lo=lo_med,          # q16p
+        hi=hi_med,          # q84p
+        center_color="C0",
+        interval_color="C0",
+        lw_main=1.3,
+        lw_side=1.0,
+        alpha_main=0.9,
+        alpha_side=0.75,
+        ls_main="-",
+        ls_side="--",
+    )
+    # --- peak: 點 ---
+    draw_2d_truth_points(
+        axes,
+        centers=peak_plot,
+        color="C1",
+        marker="o",
+    )
+
+    # --- median: 點 ---
+    draw_2d_truth_points(
+        axes,
+        centers=cent_med,
+        color="C0",
+        marker="s",   # 建議不同形狀
+    )
+
+    out3 = os.path.join(PLOT_DIR, f"corner_{which}_all_{out_tag}.png")
+    fig.savefig(out3, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[corner-replot] Saved: {out3}")
 
 def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
                           header, pa_rad, dx_au, im_center,
@@ -1137,9 +1351,9 @@ def plot_z_v_imshow(
     ax.set_xlabel("Z offset (AU)")
     ax.set_ylabel("Velocity (km/s)")
     ax.set_title(label)
+    ax.set_xlim(4500, -8500)
     ax.legend()
-    ax.grid(alpha=0.3)
-
+    ax.grid(alpha=0.2)
     plt.tight_layout()
     plt.savefig(os.path.join(PLOT_DIR, outname), dpi=200)
     plt.close()
@@ -1591,11 +1805,11 @@ if USE_CACHED_FIT and os.path.exists(FIT_CACHE):
         # best_incl  = float(cache["mcmc_grid_peak2d_Incl_deg"])
         # best_T     = float(cache["mcmc_grid_peak2d_T"])
         # best_omega = float(cache["mcmc_grid_peak2d_Omega"])
-        best_theta = 89.802
-        best_phi   = 167.311
-        best_incl  = -85.358
-        best_T     = 0.279
-        best_omega = 0.569 
+        best_theta = 89.8
+        best_phi   = 167
+        best_incl  = -85.4
+        best_T     = 0.28
+        best_omega = 0.569
     elif PLOT_PARAM_MODE == "grid":
         print("[Cache] Using COARSE GRID best-fit parameters for plotting")
 

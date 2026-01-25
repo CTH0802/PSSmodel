@@ -8,17 +8,17 @@
     \begin{tabular}{ccccccccc}
         %\tablenum{1}
         \hline
-        \multirow{2}{*}{Target} & \thead{RA (J2000)}& \thead{Decl (J2000)} & \thead{Central mass} & \thead{Systemic velocity} & \thead{Disk inclination} & \thead{Disk position angle} & \thead{$T_{bol}$} & \thead{Reference}\\
-        \thead{} & \thead{(h m s)} & \thead{($^\circ$ ' ")}& \thead{($\rm M_{\odot}$)} & 
-        \thead{(km/s)} & \thead{}& \thead{} & \thead{(K)} & \thead{}\\
+        \multirow{2}{*}{Target} & Protostar & Disk & \thead{Central mass} & \thead{Systemic velocity} & \thead{Disk inclination} & \thead{Disk position angle} & \thead{$T_{bol}$} & \thead{Reference}\\
+        \thead{} & \thead{($\rm M_{\odot}$)} & \thead{($\rm M_{\odot}$)} & \thead{($\rm M_{\odot}$)} & 
+        \thead{(km/s)} & \thead{($i_{\rm disk}$)}& \thead{} & \thead{(K)} & \thead{}\\
         \hline
-        Per-emb-2 & {$\rm{03:32:17.9320}$} & {$\rm{30.49.47.7050}$} & 3.2 & 7.05 & -- & {$50^\circ$} & 29 & 1, 5\\
+        Per-emb-2 & -- & -- & 3.2 & 7.05 & -- & {$50^\circ$} & 29 & 1, 5\\
         \hline
-        Per-emb-50 & {$\rm{03:29:07.7680}$} & {$\rm{31.21.57.1280}$} & 2.58 & 7.5 & {$67^\circ$} & {$170^\circ$} & 129 & 2, 5\\
+        Per-emb-50 & 2 & 0.58 & 2.58 & 7.5 & {$67^\circ$} & {$170^\circ$} & 129 & 2, 5\\
         \hline
-        S CrA & {$\rm{19:01:08.6000}$} & {$\rm{-36.57.20.0000}$} & 2 & 5.86 & {$65^\circ$} & -- & -- & 3\\        
+        S CrA & 2 & -- & 2 & 5.86 & {$65^\circ$} & -- & -- & 3\\        
         \hline
-        HLTau & {$\rm{04:31:38.4280}$} & {$\rm{18.13.57.1900}$} & 2.1 & 7.14 & {$47^\circ$} & {$138^\circ$} & -- & 4\\
+        HLTau & 2.1 & -- & 2.1 & 7.14 & {$47^\circ$} & {$138^\circ$} & -- & 4\\
         % \hline
         % SVS 13A & {$\rm{03:29:03.7400}$} & {$\rm{31.16.03.8000}$} &  &  & $^\circ$ & {$^\circ$} & & 5\\ 
     \end{tabular}
@@ -30,70 +30,65 @@
 
 \chapter{Results}\label{appendix:Results}
 \section{Per-emb-2}
-Figures~\ref{fig:per2_results_mom0_A.}--\ref{fig:per2_results_cornerplot_A.} summarize the model--data comparison for Per-emb-2 using the grid-search and MCMC-points fitting approaches. The results are presented in moment--0 and moment--1 maps, the $z$--$v$ diagram, and the corresponding posterior distributions.
+Figures~\ref{fig:per2_results_mom0_A}--\ref{fig:per2_mcmc_grid_cornerplot_A} summarize the model--data comparison for Per-emb-2 obtained using the grid-search and MCMC point-method fitting approaches.
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom0_overlay_140.png}
         \caption{}
-        \label{fig:per2_mom0_grid_A.}
+        \label{fig:per2_mom0_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom0_overlay_140.png}
         \caption{}
-        \label{fig:per2_mcmc_mom0_peak_grid_A.}
+        \label{fig:per2_mcmc_mom0_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom0_overlay_140.png}
         \caption{}
-        \label{fig:per2_mcmc_mom0_median_grid_A.}
+        \label{fig:per2_mcmc_mom0_median_grid_A}
     \end{subfigure}
     \caption{
     Moment--0 maps of the Per-emb-2 streamer with overlaid best-fit models obtained using different fitting strategies.
-    From left to right, the panels show the results from the grid search (\ref{fig:per2_mom0_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:per2_mcmc_mom0_peak_grid_A.}),
-    and the MCMC-points posterior median solution (\ref{fig:per2_mcmc_mom0_median_grid_A.}).
-    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission,
-    while the dots mark the centroid positions extracted from the data and used for the centroid-based fitting.
+    The panels show the results from the grid search (\ref{fig:per2_mom0_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:per2_mcmc_mom0_peak_grid_A}), and the MCMC point-method posterior median solution (\ref{fig:per2_mcmc_mom0_median_grid_A}).
+    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission, while the dots mark the positions extracted from the data and used for the point method.
     }
-    \label{fig:per2_results_mom0_A.}
+    \label{fig:per2_results_mom0_A}
 \end{figure}
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_model_vs_mom1_overlay_140.png}
         \caption{}
-        \label{fig:per2_mom1_grid_A.}
+        \label{fig:per2_mom1_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_model_vs_mom1_overlay_140.png}
         \caption{}
-        \label{fig:per2_mcmc_mom1_peak_grid_A.}
+        \label{fig:per2_mcmc_mom1_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_50.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_model_vs_mom1_overlay_140.png}
         \caption{}
-        \label{fig:per2_mcmc_mom1_median_grid_A.}
+        \label{fig:per2_mcmc_mom1_median_grid_A}
     \end{subfigure}
     \caption{
-    Moment--1 maps of the Per-emb-2 streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:per2_results_mom0}.
-    From left to right, the panels display the grid-search result (\ref{fig:per2_mom1_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:per2_mcmc_mom1_peak_grid_A.}),
-    and the MCMC-points posterior median solution (\ref{fig:per2_mcmc_mom1_median_grid_A.}).
-    The color scale represents the line-of-sight velocity field,
-    while the overlaid curves indicate the projected model streamer.
+    Moment--1 maps of the Per-emb-2 streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:per2_results_mom0_A}.
+    The panels display the grid-search result (\ref{fig:per2_mom1_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:per2_mcmc_mom1_peak_grid_A}), and the MCMC point-method posterior median solution (\ref{fig:per2_mcmc_mom1_median_grid_A}).
+    The color scale represents the line-of-sight velocity, while the overlaid curves indicate the projected model streamer.
+    The dots indicate the extracted data points.
     }
-    \label{fig:per2_results_mom1_A.}
+    \label{fig:per2_results_mom1_A}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -102,96 +97,75 @@ Figures~\ref{fig:per2_results_mom0_A.}--\ref{fig:per2_results_cornerplot_A.} sum
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/Per-emb-2_z_v_imshow_50.png}
         \caption{}
-        \label{fig:per2_z-v_grid_A.}
+        \label{fig:per2_z-v_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/Per-emb-2_z_v_imshow_50.png}
         \caption{}
-        \label{fig:per2_mcmc_z-v_peak_grid_A.}
+        \label{fig:per2_mcmc_z-v_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/Per-emb-2_z_v_imshow_50.png}
         \caption{}
-        \label{fig:per2_mcmc_z-v_median_grid_A.}
+        \label{fig:per2_mcmc_z-v_median_grid_A}
     \end{subfigure}
     \caption{
-    Position--velocity ($z$--$v$) diagrams of the Per-emb-2 streamer comparing the observed emission with the model predictions.
-    From left to right, the panels show the grid-search result (\ref{fig:per2_z-v_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:per2_mcmc_z-v_peak_grid_A.}),
-    and the MCMC-points posterior median solution (\ref{fig:per2_mcmc_z-v_median_grid_A.}).
-    The background color map and contours represent the observed intensity distribution,
-    while the solid curve traces the line-of-sight velocity along the streamer model.
+    Position--velocity ($z$--$v$) diagrams of the Per-emb-2 streamer comparing the observed emission with the model.
+    The panels show the grid-search result (\ref{fig:per2_z-v_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:per2_mcmc_z-v_peak_grid_A}), and the MCMC point-method posterior median solution (\ref{fig:per2_mcmc_z-v_median_grid_A}).
+    The background color map and contours represent the observed intensity distribution, while the solid curve traces the line-of-sight velocity along the streamer model.
+    The dots indicate the extracted data points.
     }
-    \label{fig:per2_results_z-v_A.}
+    \label{fig:per2_results_z-v_A}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_replot.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/corner_mcmc_grid_all_replot.png}
         \caption{}
-        \label{fig:per2_mcmc_grid_peak_cornerplot_A.}
+        \label{fig:per2_mcmc_grid_cornerplot_A}
     \end{subfigure}
     \caption{
-    Posterior distributions of the model parameters for the Per-emb-2 streamer.
-    The panels show the MCMC-points peak solution (\ref{fig:per2_mcmc_grid_peak_cornerplot_A.})
-    and the MCMC-points posterior median solution (\ref{fig:per2_mcmc_grid_median_cornerplot_A.}).
-    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations.
-    In each panel, the solid blue lines mark the locations of the posterior peak and median values,
-    while the dashed black lines indicate the $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
+    Posterior distributions of the model parameters for the Per-emb-2 streamer derived from the MCMC point-method analysis.
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
-    \label{fig:per2_results_cornerplot_A.}
 \end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_2/grid_results/mcmc/median/corner_mcmc_grid_median_replot.png}
-        \caption{}
-        \label{fig:per2_mcmc_grid_median_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{Posterior distributions of the model parameters for the Per-emb-2 streamer (continued).}
-\end{figure}
+
 \section{Per-emb-50}
-Figures~\ref{fig:per50_results_mom0_A.}--\ref{fig:per50_results_cornerplot_A.} present the model fits for Per-emb-50 obtained with three approaches: grid search, MCMC-points and MCMC-global. The comparisons are shown in the moment--0 and moment--1 maps, the $z$--$v$ diagram, and the posterior distributions for each method.
+Figures~\ref{fig:per50_results_mom0_A}--\ref{fig:per50_mcmc_shell_cornerplot_A} present the model fits for Per-emb-50 obtained with three approaches: grid search, MCMC point-method and MCMC global-method. The comparisons are shown in the moment--0 and moment--1 maps, the $z$--$v$ diagram, and the posterior distributions for each method.
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mom0_grid_A.}
+        \label{fig:per50_mom0_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/peak/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_mom0_peak_grid_A.}
+        \label{fig:per50_mcmc_mom0_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/median/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_mom0_median_grid_A.}
+        \label{fig:per50_mcmc_mom0_median_grid_A}
     \end{subfigure}
     \caption{
     Moment--0 maps of the Per-emb-50 streamer with overlaid best-fit models obtained using different fitting strategies.
-    From left to right, the panels show the results from the grid search (\ref{fig:per50_mom0_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:per50_mcmc_mom0_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:per50_mcmc_mom0_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:per50_mcmc_shell_peak_mom0_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:per50_mcmc_shell_median_mom0_A.}).
-    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission,
-    while the dots mark the centroid positions extracted from the data and used for the centroid-based fitting.
+    The panels show the results from the grid search (\ref{fig:per50_mom0_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:per50_mcmc_mom0_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:per50_mcmc_mom0_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:per50_mcmc_shell_peak_mom0_A}), and the MCMC global-method posterior median solution (\ref{fig:per50_mcmc_shell_median_mom0_A}).
+    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission,while the dots mark the positions extracted from the data and used for the point method.
     }
-    \label{fig:per50_results_mom0_A.}
+    \label{fig:per50_results_mom0_A}
 \end{figure}
 \begin{figure}[htbp]
     \ContinuedFloat
@@ -199,14 +173,14 @@ Figures~\ref{fig:per50_results_mom0_A.}--\ref{fig:per50_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_peak_mom0_A.}
+        \label{fig:per50_mcmc_shell_peak_mom0_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom0_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_median_mom0_A.}
+        \label{fig:per50_mcmc_shell_median_mom0_A}
     \end{subfigure}
     \caption[]{Moment--0 maps of the Per-emb-50 streamer (continued).}
 \end{figure}
@@ -217,33 +191,29 @@ Figures~\ref{fig:per50_results_mom0_A.}--\ref{fig:per50_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mom1_grid_A.}
+        \label{fig:per50_mom1_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/peak/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_mom1_peak_grid_A.}
+        \label{fig:per50_mcmc_mom1_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/median/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_mom1_median_grid_A.}
+        \label{fig:per50_mcmc_mom1_median_grid_A}
     \end{subfigure}
     \caption{
-    Moment--1 maps of the Per-emb-50 streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:per50_results_mom0_A.}.
-    From left to right, the panels display the grid-search result (\ref{fig:per50_mom1_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:per50_mcmc_mom1_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:per50_mcmc_mom1_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:per50_mcmc_shell_peak_mom1_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:per50_mcmc_shell_median_mom1_A.}).
-    The color scale represents the line-of-sight velocity field,
-    while the overlaid curves indicate the projected model streamer trajectories.
+    Moment--1 maps of the Per-emb-50 streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:per50_results_mom0_A}.
+    The panels display the grid-search result (\ref{fig:per50_mom1_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:per50_mcmc_mom1_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:per50_mcmc_mom1_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:per50_mcmc_shell_peak_mom1_A}), and the MCMC global-method posterior median solution (\ref{fig:per50_mcmc_shell_median_mom1_A}).
+    The color scale represents the line-of-sight velocity, while the overlaid curves indicate the projected model streamer.
+    The dots indicate the extracted data points.
     }
-    \label{fig:per50_results_mom1_A.}
+    \label{fig:per50_results_mom1_A}
 \end{figure}
 \begin{figure}[htbp]
     \ContinuedFloat
@@ -251,14 +221,14 @@ Figures~\ref{fig:per50_results_mom0_A.}--\ref{fig:per50_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_peak_mom1_A.}
+        \label{fig:per50_mcmc_shell_peak_mom1_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/Per-emb-50_mom1_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_median_mom1_A.}
+        \label{fig:per50_mcmc_shell_median_mom1_A}
     \end{subfigure}
     \caption[]{Moment--1 maps of the Per-emb-50 streamer (continued).}
 \end{figure}
@@ -269,104 +239,74 @@ Figures~\ref{fig:per50_results_mom0_A.}--\ref{fig:per50_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/Per-emb-50_z_v_data_overlay.png}
         \caption{}
-        \label{fig:per50_z-v_grid_A.}
+        \label{fig:per50_z-v_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/peak/Per-emb-50_z_v_data_overlay.png}
         \caption{}
-        \label{fig:per50_mcmc_z-v_peak_grid_A.}
+        \label{fig:per50_mcmc_z-v_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/median/Per-emb-50_z_v_data_overlay.png}
         \caption{}
-        \label{fig:per50_mcmc_z-v_median_grid_A.}
+        \label{fig:per50_mcmc_z-v_median_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/Per-emb-50_z_v_data_overlay.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_peak_z-v_A.}
+        \label{fig:per50_mcmc_shell_peak_z-v_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/Per-emb-50_z_v_data_overlay.png}
         \caption{}
-        \label{fig:per50_mcmc_shell_median_z-v_A.}
+        \label{fig:per50_mcmc_shell_median_z-v_A}
     \end{subfigure}
     \caption{
-    Position--velocity ($z$--$v$) diagrams of the Per-emb-50 streamer comparing the observed emission with the model predictions.
-    From left to right, the panels show the grid-search result (\ref{fig:per50_z-v_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:per50_mcmc_z-v_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:per50_mcmc_z-v_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:per50_mcmc_shell_peak_z-v_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:per50_mcmc_shell_median_z-v_A.}).
-    The background color map and contours represent the average intensity distribution,
-    while the solid curve traces the line-of-sight velocity along the streamer model.
+    Position--velocity ($z$--$v$) diagrams of the Per-emb-50 streamer comparing the observed emission with the model.
+    The panels show the grid-search result (\ref{fig:per50_z-v_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:per50_mcmc_z-v_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:per50_mcmc_z-v_median_grid_A}), the MCMC global-methd posterior peak solution (\ref{fig:per50_mcmc_shell_peak_z-v_A}), and the MCMC global-method posterior median solution (\ref{fig:per50_mcmc_shell_median_z-v_A}).
+    The background color map and contours represent the observed intensity distribution, while the solid curve traces the line-of-sight velocity along the streamer model.
+    The dots indicate the extracted data points.
     }
-    \label{fig:per50_results_z-v_A.}
+    \label{fig:per50_results_z-v_A}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_grid_map_cornerplot_A.}
+        \label{fig:per50_mcmc_grid_cornerplot_A}
     \end{subfigure}
     \caption{
-    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC-points analysis (peak solution).
-    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations.
-    The solid blue lines mark the locations of the posterior peak and median values,
-    while the dashed black lines indicate the $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
+    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC point-method analysis.
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
-    \label{fig:per50_results_cornerplot_A.}
 \end{figure}
+
 \begin{figure}[htbp]
-    \ContinuedFloat
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/corner_mcmc_shell_all_cacheonly.png}
         \caption{}
-        \label{fig:per50_mcmc_grid_median_cornerplot_A.}
+        \label{fig:per50_mcmc_shell_cornerplot_A}
     \end{subfigure}
     \caption[]{
-    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC-points analysis (posterior median solution).
+    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC global-method analysis, which incorporates the full position--position--velocity information.
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
 \end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mcmc_shell_map_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{
-    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC-global analysis (peak solution),
-    which incorporates the full position--position--velocity information.
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/Per_emb_50/shell_results/median/corner_mcmc_shell_median_cacheonly.png}
-        \caption{}
-        \label{fig:per50_mcmc_shell_median_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{
-    Posterior distributions of the model parameters for the Per-emb-50 streamer derived from the MCMC-global analysis (posterior median solution).
-    }
-\end{figure}
+
 \section{S CrA}
-Figures~\ref{fig:SCrA_results_mom0_A.}--\ref{fig:SCrA_results_cornerplot_A.} show the fitting results for S~CrA from the grid search, MCMC-points and MCMC-global analyses. The appendix includes the moment--0 and moment--1 comparisons, $z$--$v$ diagrams, and posterior distributions for the different fitting strategies.
+Figures~\ref{fig:SCrA_results_mom0_A}--\ref{fig:SCrA_mcmc_shell_cornerplot_A} show the fitting results for S~CrA from the grid search, MCMC point-method and MCMC global-method analyses. Including the moment--0 and moment--1 comparisons, $z$--$v$ diagrams, and posterior distributions for the different fitting strategies.
 
 \begin{figure}[htbp]
     \centering
@@ -374,33 +314,28 @@ Figures~\ref{fig:SCrA_results_mom0_A.}--\ref{fig:SCrA_results_cornerplot_A.} sho
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mom0_grid_A.}
+        \label{fig:SCrA_mom0_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_mom0_peak_grid_A.}
+        \label{fig:SCrA_mcmc_mom0_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/median/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_mom0_median_grid_A.}
+        \label{fig:SCrA_mcmc_mom0_median_grid_A}
     \end{subfigure}
     \caption{
     Moment--0 maps of the S~CrA streamer with overlaid best-fit models obtained using different fitting strategies.
-    From left to right, the panels show the results from the grid search (\ref{fig:SCrA_mom0_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:SCrA_mcmc_mom0_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:SCrA_mcmc_mom0_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:SCrA_mcmc_shell_peak_mom0_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:SCrA_mcmc_shell_median_mom0_A.}).
-    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission,
-    while the dots mark the centroid positions extracted from the data and used for the centroid-based fitting.
+    The panels show the results from the grid search (\ref{fig:SCrA_mom0_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:SCrA_mcmc_mom0_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:SCrA_mcmc_mom0_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:SCrA_mcmc_shell_peak_mom0_A}), and the MCMC global-method posterior median solution (\ref{fig:SCrA_mcmc_shell_median_mom0_A}).
+    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission, while the dots mark the positions extracted from the data and used for the point method.
     }
-    \label{fig:SCrA_results_mom0_A.}
+    \label{fig:SCrA_results_mom0_A}
 \end{figure}
 \begin{figure}[htbp]
     \ContinuedFloat
@@ -408,14 +343,14 @@ Figures~\ref{fig:SCrA_results_mom0_A.}--\ref{fig:SCrA_results_cornerplot_A.} sho
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_peak_mom0_A.}
+        \label{fig:SCrA_mcmc_shell_peak_mom0_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/median/SCrA_mom0_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_median_mom0_A.}
+        \label{fig:SCrA_mcmc_shell_median_mom0_A}
     \end{subfigure}
     \caption[]{Moment--0 maps of the S~CrA streamer (continued).}
 \end{figure}
@@ -425,33 +360,29 @@ Figures~\ref{fig:SCrA_results_mom0_A.}--\ref{fig:SCrA_results_cornerplot_A.} sho
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mom1_grid_A.}
+        \label{fig:SCrA_mom1_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_mom1_peak_grid_A.}
+        \label{fig:SCrA_mcmc_mom1_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/median/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_mom1_median_grid_A.}
+        \label{fig:SCrA_mcmc_mom1_median_grid_A}
     \end{subfigure}
     \caption{
-    Moment--1 maps of the S~CrA streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:SCrA_results_mom0_A.}.
-    From left to right, the panels display the grid-search result (\ref{fig:SCrA_mom1_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:SCrA_mcmc_mom1_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:SCrA_mcmc_mom1_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:SCrA_mcmc_shell_peak_mom1_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:SCrA_mcmc_shell_median_mom1_A.}).
-    The color scale represents the line-of-sight velocity field,
-    while the overlaid curves indicate the projected model streamer.
+    Moment--1 maps of the S~CrA streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:SCrA_results_mom0_A}.
+    The panels display the grid-search result (\ref{fig:SCrA_mom1_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:SCrA_mcmc_mom1_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:SCrA_mcmc_mom1_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:SCrA_mcmc_shell_peak_mom1_A}), and the MCMC global-method posterior median solution (\ref{fig:SCrA_mcmc_shell_median_mom1_A}).
+    The color scale represents the line-of-sight velocity, while the overlaid curves indicate the projected model streamer.
+    The dots indicate the extracted data points.
     }
-    \label{fig:SCrA_results_mom1_A.}
+    \label{fig:SCrA_results_mom1_A}
 \end{figure}
 \begin{figure}[htbp]
     \ContinuedFloat
@@ -459,14 +390,14 @@ Figures~\ref{fig:SCrA_results_mom0_A.}--\ref{fig:SCrA_results_cornerplot_A.} sho
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_peak_mom1_A.}
+        \label{fig:SCrA_mcmc_shell_peak_mom1_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/median/SCrA_mom1_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_median_mom1_A.}
+        \label{fig:SCrA_mcmc_shell_median_mom1_A}
     \end{subfigure}
     \caption[]{Moment--1 maps of the S~CrA streamer (continued).}
 \end{figure}
@@ -476,144 +407,103 @@ Figures~\ref{fig:SCrA_results_mom0_A.}--\ref{fig:SCrA_results_cornerplot_A.} sho
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/SCrA_z_v_data_overlay.png}
         \caption{}
-        \label{fig:SCrA_z-v_grid_A.}
+        \label{fig:SCrA_z-v_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/SCrA_z_v_data_overlay.png}
         \caption{}
-        \label{fig:SCrA_mcmc_z-v_peak_grid_A.}
+        \label{fig:SCrA_mcmc_z-v_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/median/SCrA_z_v_data_overlay.png}
         \caption{}
-        \label{fig:SCrA_mcmc_z-v_median_grid_A.}
+        \label{fig:SCrA_mcmc_z-v_median_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/SCrA_z_v_data_overlay.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_peak_z-v_A.}
+        \label{fig:SCrA_mcmc_shell_peak_z-v_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/median/SCrA_z_v_data_overlay.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_median_z-v_A.}
+        \label{fig:SCrA_mcmc_shell_median_z-v_A}
     \end{subfigure}
     \caption{
     Position--velocity ($z$--$v$) diagrams of the S~CrA streamer comparing the observed emission with the model predictions.
-    From left to right, the panels show the grid-search result (\ref{fig:SCrA_z-v_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:SCrA_mcmc_z-v_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:SCrA_mcmc_z-v_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:SCrA_mcmc_shell_peak_z-v_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:SCrA_mcmc_shell_median_z-v_A.}).
-    The background color map and contours represent the average intensity distribution,
-    while the solid curve traces the line-of-sight velocity along the streamer model.
+    The panels show the grid-search result (\ref{fig:SCrA_z-v_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:SCrA_mcmc_z-v_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:SCrA_mcmc_z-v_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:SCrA_mcmc_shell_peak_z-v_A}), and the MCMC global-method posterior median solution (\ref{fig:SCrA_mcmc_shell_median_z-v_A}).
+    The background color map and contours represent the observed intensity distribution, while the solid curve traces the line-of-sight velocity along the streamer model.
+    The dots indicate the extracted data points.
     }
-    \label{fig:SCrA_results_z-v_A.}
+    \label{fig:SCrA_results_z-v_A}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_grid_peak_cornerplot_A.}
+        \label{fig:SCrA_mcmc_grid_cornerplot_A}
     \end{subfigure}
     \caption{
-    Posterior distributions of the model parameters for the S~CrA streamer.
-    The panels show, from top left to bottom right,
-    the MCMC-points peak solution (\ref{fig:SCrA_mcmc_grid_peak_cornerplot_A.}),
-    the MCMC-points posterior median solution (\ref{fig:SCrA_mcmc_grid_median_cornerplot_A.}),
-    the MCMC-global peak solution (\ref{fig:SCrA_mcmc_shell_map_cornerplot_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:SCrA_mcmc_shell_median_cornerplot_A.}).
-    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations,
-    demonstrating the increased stability and reduced degeneracy achieved when the full PPV information is incorporated through the shell-based likelihood.
-    In each panel, the solid blue lines mark the locations of the posterior median and peak values,
-    while the dashed black lines indicate the $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
-    }
-    \label{fig:SCrA_results_cornerplot_A.}
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png}
-        \caption{}
-        \label{fig:SCrA_mcmc_grid_median_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{
-    Posterior distributions of the model parameters for the S~CrA streamer derived from the MCMC-points analysis (posterior median solution).
+    Posterior distributions of the model parameters for the S~CrA streamer derived from the MCMC point-method analysis.
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
 \end{figure}
+
 \begin{figure}[htbp]
-    \ContinuedFloat
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/corner_mcmc_shell_all_cacheonly.png}
         \caption{}
-        \label{fig:SCrA_mcmc_shell_map_cornerplot_A.}
+        \label{fig:SCrA_mcmc_shell_cornerplot_A}
     \end{subfigure}
     \caption[]{
-    Posterior distributions of the model parameters for the S~CrA streamer derived from the MCMC-global analysis (peak solution),
+    Posterior distributions of the model parameters for the S~CrA streamer derived from the MCMC global-method analysis,
     which incorporates the full position--position--velocity information.
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/SCrA/shell_results/median/corner_mcmc_shell_median_cacheonly.png}
-        \caption{}
-        \label{fig:SCrA_mcmc_shell_median_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{
-    Posterior distributions of the model parameters for the S~CrA streamer derived from the MCMC-global analysis (posterior median solution).
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
 \end{figure}
 
 \section{HL Tau}
-Figures~\ref{fig:HLTau_results_mom0_A.}--\ref{fig:HLTau_results_cornerplot_A.} provide the model--data comparisons for HL~Tau using the grid-search, MCMC-points and MCMC-global fits, including moment maps, $z$--$v$ diagrams, and posterior distributions.
+Figures~\ref{fig:HLTau_results_mom0_A}--\ref{fig:HLTau_mcmc_shell_cornerplot_A} provide the model--data comparisons for HL~Tau using the grid search, MCMC point-method and MCMC global-method fits, including moment maps, $z$--$v$ diagrams, and posterior distributions.
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mom0_grid_A.}
+        \label{fig:HLTau_mom0_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/peak/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_mom0_peak_grid_A.}
+        \label{fig:HLTau_mcmc_mom0_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_mom0_median_grid_A.}
+        \label{fig:HLTau_mcmc_mom0_median_grid_A}
     \end{subfigure}
     \caption{
     Moment--0 maps of the HL~Tau streamer with overlaid best-fit models obtained using different fitting strategies.
-    From left to right, the panels show the results from the grid search (\ref{fig:HLTau_mom0_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:HLTau_mcmc_mom0_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:HLTau_mcmc_mom0_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:HLTau_mcmc_shell_peak_mom0_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:HLTau_mcmc_shell_median_mom0_A.}).
-    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission,
-    while the dots mark the centroid positions extracted from the data and used for the centroid-based fitting.
+    The panels show the results from the grid search (\ref{fig:HLTau_mom0_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:HLTau_mcmc_mom0_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:HLTau_mcmc_mom0_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:HLTau_mcmc_shell_peak_mom0_A}), and the MCMC global-method posterior median solution (\ref{fig:HLTau_mcmc_shell_median_mom0_A}).
+    In each panel, the solid curve denotes the projected model streamer overlaid on the observed moment--0 emission, while the dots mark the positions extracted from the data and used for the point method.
     }
-    \label{fig:HLTau_results_mom0_A.}
+    \label{fig:HLTau_results_mom0_A}
 \end{figure}
 \begin{figure}[htbp]
     \ContinuedFloat
@@ -621,14 +511,14 @@ Figures~\ref{fig:HLTau_results_mom0_A.}--\ref{fig:HLTau_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/peak/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_peak_mom0_A.}
+        \label{fig:HLTau_mcmc_shell_peak_mom0_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/HLTau_mom0_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_median_mom0_A.}
+        \label{fig:HLTau_mcmc_shell_median_mom0_A}
     \end{subfigure}
     \caption[]{Moment--0 maps of the HLTau streamer (continued).}
 \end{figure}
@@ -638,33 +528,29 @@ Figures~\ref{fig:HLTau_results_mom0_A.}--\ref{fig:HLTau_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/HLTau_mom1_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mom1_grid_A.}
+        \label{fig:HLTau_mom1_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/peak/HLTau_mom1_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_mom1_peak_grid_A.}
+        \label{fig:HLTau_mcmc_mom1_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/HLTau_mom1_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_mom1_median_grid_A.}
+        \label{fig:HLTau_mcmc_mom1_median_grid_A}
     \end{subfigure}
     \caption{
-    Moment--1 maps of the HL~Tau streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:HLTau_results_mom0_A.}.
-    From left to right, the panels display the grid-search result (\ref{fig:HLTau_mom1_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:HLTau_mcmc_mom1_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:HLTau_mcmc_mom1_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:HLTau_mcmc_shell_peak_mom1_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:HLTau_mcmc_shell_median_mom1_A.}).
-    The color scale represents the line-of-sight velocity field,
-    while the overlaid curves indicate the projected model streamer.
+    Moment--1 maps of the HL~Tau streamer corresponding to the same set of fitting results shown in Fig.~\ref{fig:HLTau_results_mom0_A}.
+    The panels display the grid-search result (\ref{fig:HLTau_mom1_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:HLTau_mcmc_mom1_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:HLTau_mcmc_mom1_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:HLTau_mcmc_shell_peak_mom1_A}), and the MCMC global-method posterior median solution (\ref{fig:HLTau_mcmc_shell_median_mom1_A}).
+    The color scale represents the line-of-sight velocity, while the overlaid curves indicate the projected model streamer.
+    The dots indicate the extracted data points.
     }
-    \label{fig:HLTau_results_mom1_A.}
+    \label{fig:HLTau_results_mom1_A}
 \end{figure}
 \begin{figure}[htbp]
     \ContinuedFloat
@@ -672,14 +558,14 @@ Figures~\ref{fig:HLTau_results_mom0_A.}--\ref{fig:HLTau_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/peak/HLTau_mom1_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_peak_mom1_A.}
+        \label{fig:HLTau_mcmc_shell_peak_mom1_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/HLTau_mom1_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_median_mom1_A.}
+        \label{fig:HLTau_mcmc_shell_median_mom1_A}
     \end{subfigure}
     \caption[]{Moment--1 maps of the HLTau streamer (continued).}
 \end{figure}
@@ -689,106 +575,71 @@ Figures~\ref{fig:HLTau_results_mom0_A.}--\ref{fig:HLTau_results_cornerplot_A.} p
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/HLTau_z_v_data_overlay.png}
         \caption{}
-        \label{fig:HLTau_z-v_grid_A.}
+        \label{fig:HLTau_z-v_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/peak/HLTau_z_v_data_overlay.png}
         \caption{}
-        \label{fig:HLTau_mcmc_z-v_peak_grid_A.}
+        \label{fig:HLTau_mcmc_z-v_peak_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/HLTau_z_v_data_overlay.png}
         \caption{}
-        \label{fig:HLTau_mcmc_z-v_median_grid_A.}
+        \label{fig:HLTau_mcmc_z-v_median_grid_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/peak/HLTau_z_v_data_overlay.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_peak_z-v_A.}
+        \label{fig:HLTau_mcmc_shell_peak_z-v_A}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/HLTau_z_v_data_overlay.png}
         \caption{}
-        \label{fig:HLTau_mcmc_shell_median_z-v_A.}
+        \label{fig:HLTau_mcmc_shell_median_z-v_A}
     \end{subfigure}
     \caption{
     Position--velocity ($z$--$v$) diagrams of the HL~Tau streamer comparing the observed emission with the model predictions.
-    From left to right, the panels show the grid-search result (\ref{fig:HLTau_z-v_grid_A.}),
-    the MCMC-points peak solution (\ref{fig:HLTau_mcmc_z-v_peak_grid_A.}),
-    the MCMC-points posterior median solution (\ref{fig:HLTau_mcmc_z-v_median_grid_A.}),
-    the MCMC-global peak solution (\ref{fig:HLTau_mcmc_shell_peak_z-v_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:HLTau_mcmc_shell_median_z-v_A.}).
-    The background color map and contours represent the average intensity distribution,
-    while the solid curve traces the line-of-sight velocity along the streamer model. 
+    The panels show the grid-search result (\ref{fig:HLTau_z-v_grid_A}), the MCMC point-method posterior peak solution (\ref{fig:HLTau_mcmc_z-v_peak_grid_A}), the MCMC point-method posterior median solution (\ref{fig:HLTau_mcmc_z-v_median_grid_A}), the MCMC global-method posterior peak solution (\ref{fig:HLTau_mcmc_shell_peak_z-v_A}), and the MCMC global-method posterior median solution (\ref{fig:HLTau_mcmc_shell_median_z-v_A}).
+    The background color map and contours represent the observed intensity distribution, while the solid curve traces the line-of-sight velocity along the streamer model.
+    The dots indicate the extracted data points.
     }
-    \label{fig:HLTau_results_z-v_A.}
+    \label{fig:HLTau_results_z-v_A}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/peak/corner_mcmc_grid_peak5d_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/corner_mcmc_grid_all_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_grid_map_cornerplot_A.}
+        \label{fig:HLTau_mcmc_grid_cornerplot_A}
     \end{subfigure}
     \caption{
-    Posterior distributions of the model parameters for the HL~Tau streamer.
-    The panels show, from top left to bottom right,
-    the MCMC-points peak solution (\ref{fig:HLTau_mcmc_grid_map_cornerplot_A.}),
-    the MCMC-points posterior median solution (\ref{fig:HLTau_mcmc_grid_median_cornerplot_A.}),
-    the MCMC-global peak solution (\ref{fig:HLTau_mcmc_shell_map_cornerplot_A.}),
-    and the MCMC-global posterior median solution (\ref{fig:HLTau_mcmc_shell_median_cornerplot_A.}).
-    One-dimensional histograms and two-dimensional joint distributions illustrate the parameter constraints and correlations,
-    highlighting the impact of incorporating the full PPV information through the shell-based likelihood.
-    In each panel, the solid blue lines mark the locations of the posterior median and peak values,
-    while the dashed black lines indicate the $\pm34\%$ confidence intervals derived from the marginalized posterior distributions.
+    Posterior distributions of the model parameters for the HL~Tau streamer derived from the MCMC point-method analysis.
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
-    \label{fig:HLTau_results_cornerplot_A.}
+    \label{fig:HLTau_results_cornerplot_A}
 \end{figure}
+
 \begin{figure}[htbp]
-    \ContinuedFloat
     \begin{subfigure}{0.96\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/grid_results/mcmc/median/corner_mcmc_grid_median_cacheonly.png}
+        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/corner_mcmc_shell_all_cacheonly.png}
         \caption{}
-        \label{fig:HLTau_mcmc_grid_median_cornerplot_A.}
+        \label{fig:HLTau_mcmc_shell_cornerplot_A}
     \end{subfigure}
     \caption[]{
-    Posterior distributions of the model parameters for the HL~Tau streamer derived from the MCMC-points analysis (posterior median solution).
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/peak/corner_mcmc_shell_peak5d_cacheonly.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_shell_map_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{
-    Posterior distributions of the model parameters for the HL~Tau streamer derived from the MCMC-global analysis (peak solution),
+    Posterior distributions of the model parameters for the HL~Tau streamer derived from the MCMC global-method analysis,
     which incorporates the full position--position--velocity information.
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \begin{subfigure}{0.96\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Results_image/HLTau/shell_results/median/corner_mcmc_shell_median_cacheonly.png}
-        \caption{}
-        \label{fig:HLTau_mcmc_shell_median_cornerplot_A.}
-    \end{subfigure}
-    \caption[]{
-    Posterior distributions of the model parameters for the HL~Tau streamer derived from the MCMC-global analysis (posterior median solution).
+    The solid lines mark the locations of the posterior peak (orange) and median (blue) values, while the dashed lines indicate the $\pm34\%$ confidence intervals derived from the full five-dimensional posterior distributions.
     }
 \end{figure}
 
@@ -803,52 +654,62 @@ Grid-search results are shown only in the upper row.
 }
 \label{table:all_results}
 \scriptsize
-\begin{tabular}{l*{15}{c}}
+\begin{tabular}{l*{16}{c}}
 \toprule
 \multirow{2}{*}{Source}
  & \multicolumn{5}{c}{Grid search}
- & \multicolumn{5}{c}{MCMC-points}
- & \multicolumn{5}{c}{MCMC-global} \\
-\cmidrule(lr){2-6} \cmidrule(lr){7-11} \cmidrule(lr){12-16}
+ & \multirow{2}{*}{Solution}
+ & \multicolumn{5}{c}{MCMC point-method}
+ & \multicolumn{5}{c}{MCMC global-method} \\
+\cmidrule(lr){2-6} \cmidrule(lr){8-12} \cmidrule(lr){13-17}
  & $\theta$ & $\phi_0$ & $i$ & $t_s$ & $\omega$
+ &
  & $\theta$ & $\phi_0$ & $i$ & $t_s$ & $\omega$
  & $\theta$ & $\phi_0$ & $i$ & $t_s$ & $\omega$ \\
 \midrule
 % ============================== Per-emb-2 ==============================
 \multirow{2}{*}{Per-emb-2}
- & 72.000 & 252.000 & -73.636 & 0.224 & 0.600
- & 76.303 & 248.937 & -79.655 & 0.257 & 0.601
+ & \multirow{2}{*}{90} & \multirow{2}{*}{180} & \multirow{2}{*}{-74} & \multirow{2}{*}{0.41} & \multirow{2}{*}{0.50}
+ & Peak
+ & $89.8^{+3.0}_{-2.8}$ & $167^{+16}_{-21}$ & $-85.4^{+3.9}_{-2.9}$ & $0.28^{+0.14}_{-0.13}$ & $0.569^{+0.081}_{-0.061}$
  & -- & -- & -- & -- & -- \\
- & -- & -- & -- & -- & --
- & 76.262 & 249.706 & -79.652 & 0.265 & 0.595
+ &  &  &  &  & 
+ & Median
+ & $90.0^{+2.9}_{-2.9}$ & $164^{+18}_{-20}$ & $-85.0^{+3.8}_{-3.1}$ & $0.27^{+0.15}_{-0.12}$ & $0.580^{+0.075}_{-0.067}$
  & -- & -- & -- & -- & -- \\
 \midrule
 % ============================== Per-emb-50 ==============================
 \multirow{2}{*}{Per-emb-50}
- & 81.818 & 0.000 & -73.636 & 0.383 & 0.100
- & 94.455 & 10.590 & -74.807 & 0.915 & 0.069
- & 82.464 & 10.573 & -68.676 & 0.735 & 0.066 \\
- & -- & -- & -- & -- & --
- & 93.200 & 10.727 & -72.127 & 0.804 & 0.071
- & 86.160 & 12.080 & -69.558 & 0.833 & 0.062 \\
+ & \multirow{2}{*}{82} & \multirow{2}{*}{0.0} & \multirow{2}{*}{-74} & \multirow{2}{*}{0.38} & \multirow{2}{*}{0.10}
+ & Peak
+ & $94^{+10}_{-11}$ & $10.6^{+10.1}_{-8.4}$ & $-74.8^{+9.9}_{-4.3}$ & $0.92^{+0.58}_{-0.61}$ & $0.069^{+0.025}_{-0.016}$
+ & $82^{+14}_{-10}$ & $11^{+11}_{-10}$ & $-68.7^{+10.2}_{-8.0}$ & $0.73^{+0.67}_{-0.49}$ & $0.066^{+0.026}_{-0.022}$ \\
+ &  &  &  &  & 
+ & Median
+ & $93^{+11}_{-10}$ & $10.7^{+10.1}_{-8.4}$ & $-72.1^{+9.1}_{-6.2}$ & $0.80^{+0.65}_{-0.52}$ & $0.071^{+0.024}_{-0.018}$
+ & $86^{+12}_{-12}$ & $12^{+10}_{-11}$ & $-69.6^{+10.6}_{-7.3}$ & $0.83^{+0.61}_{-0.56}$ & $0.062^{+0.027}_{-0.019}$ \\
 \midrule
 % ============================== S CrA ==============================
 \multirow{2}{*}{S~CrA}
- & 98.182 & 36.000 & -73.636 & 0.702 & 0.200
- & 89.614 & 22.610 & -81.219 & 0.792 & 0.217
- & 89.709 & 7.134 & -81.591 & 0.940 & 0.230 \\
- & -- & -- & -- & -- & --
- & 90.018 & 19.841 & -80.177 & 0.729 & 0.223
- & 90.043 & 8.387 & -80.972 & 0.950 & 0.223 \\
+ & \multirow{2}{*}{98} & \multirow{2}{*}{36} & \multirow{2}{*}{-74} & \multirow{2}{*}{0.70} & \multirow{2}{*}{0.20}
+ & Peak
+ & $89.6^{+3.6}_{-3.2}$ & $22.6^{+8.3}_{-11.6}$ & $-81.2^{+3.9}_{-1.5}$ & $0.79^{+0.41}_{-0.46}$ & $0.217^{+0.064}_{-0.032}$
+ & $89.7^{+2.0}_{-1.7}$ & $7.1^{+9.9}_{-5.1}$ & $-81.6^{+2.5}_{-1.2}$ & $0.94^{+0.32}_{-0.37}$ & $0.230^{+0.035}_{-0.027}$ \\
+ &  &  &  &  & 
+ & Median
+ & $90.0^{+3.4}_{-3.3}$ & $19.8^{+9.8}_{-10.1}$ & $-80.2^{+3.7}_{-2.3}$ & $0.73^{+0.45}_{-0.42}$ & $0.223^{+0.063}_{-0.036}$
+ & $90.0^{+1.9}_{-1.8}$ & $8.4^{+9.7}_{-6.0}$ & $-81.0^{+2.3}_{-}1.6$ & $0.95^{+0.31}_{-0.38}$ & $0.223^{+0.037}_{-0.022}$ \\
 \midrule
 % ============================== HL Tau ==============================
-\multirow{2}{*}{HLTau}
- & 65.455 & -144.000 & -73.636 & 0.312 & 0.100
- & 67.591 & -159.246 & --87.712 & 0.736 & 0.092
- & 70.225 & -164.650 & -83.926 & 0.791 & 0.092 \\
- & -- & -- & -- & -- & --
- & 68.075 & -158.493 & -87.431 & 0.664 & 0.092
- & 69.643 & -164.752 & -84.087 & 0.802 & 0.089 \\
+\multirow{2}{*}{HL~Tau}
+ & \multirow{2}{*}{65} & \multirow{2}{*}{-144} & \multirow{2}{*}{-74} & \multirow{2}{*}{0.31} & \multirow{2}{*}{0.10}
+ & Peak
+ & $67.6^{+2.5}_{-2.1}$ & $-159^{+11}_{-11}$ & $-87.7^{+2.5}_{-1.6}$ & $0.74^{+0.47}_{-0.47}$ & $0.092^{+0.035}_{-0.019}$
+ & $70.2^{+2.1}_{-2.9}$ & $-165^{+13}_{-10}$ & $-83.9^{+3.2}_{-3.5}$ & $0.79^{+0.45}_{-0.46}$ & $0.092^{+0.028}_{-0.017}$ \\
+ &  &  &  &  & 
+ & Median
+ & $68.1^{+2.3}_{-2.4}$ & $-158^{+10}_{-11}$ & $-87.4^{+2.4}_{-1.8}$ & $0.66^{+0.52}_{-0.42}$ & $0.092^{+0.035}_{-0.019}$
+ & $69.6^{+2.4}_{-2.6}$ & $-165^{+13}_{-10}$ & $-84.1^{+3.3}_{-3.4}$ & $0.80^{+0.44}_{-0.46}$ & $0.089^{+0.028}_{-0.015}$ \\
 \midrule
 % ============================== SVS 13A ==============================
 % SVS~13A
