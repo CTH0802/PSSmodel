@@ -105,7 +105,7 @@
 \studentZH{莊宗翰}
 \studentEN{Tsung-Han Chuang}
 \advisorZH{指導教授：李悅寧~博士}
-\advisorEN{Advisor Prof.: Yueh-Ning Lee, Ph.D.}
+\advisorEN{Advisor: Yueh-Ning Lee, Ph.D.}
 \yearZH{115}
 \monthZH{1}
 \yearEN{2026}
@@ -117,14 +117,13 @@
 
 \pagenumbering{Roman}
 
+\begin{abstractZH}
+    \import{./}{AbstractZH.tex}
+\end{abstractZH}
 %%% Necessary %%%
 \begin{abstractEN}
     \import{./}{Abstract.tex}
 \end{abstractEN}
-
-\begin{abstractZH}
-    \import{./}{AbstractZH.tex}
-\end{abstractZH}
 
 %%% Necessary %%%
 \maketoc
@@ -146,8 +145,11 @@
 \chapter{Conclusions}
 \import{./}{Conclusion.tex}
 
+\begingroup
+\setstretch{1.2}   % ← 你可以改成 1.1 / 1.3
 \bibliographystyle{aasjournal}
 \bibliography{reference}
+\endgroup
 \import{./}{Appendix.tex}
 
 % Ensure all \cite commands in your chapters reference entries that exist in Reference.bib.

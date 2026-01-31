@@ -5,8 +5,20 @@
 \providecommand{\doeprint}[1]{\href{http://ascl.net/#1}{\nolinkurl{http://ascl.net/#1}}}
 \providecommand{\doarXiv}[1]{\href{https://arxiv.org/abs/#1}{\nolinkurl{https://arxiv.org/abs/#1}}}
 
+\bibitem[{{Andre} {et~al.}(1993){Andre}, {Ward-Thompson}, \& {Barsony}}]{Andre_1993}
+{Andre}, P., {Ward-Thompson}, D., \& {Barsony}, M. 1993, \apj, 406, 122, \dodoi{10.1086/172425}
+
+\bibitem[{{Aso} {et~al.}(2023){Aso}, {Kwon}, {Ohashi}, {J{\o}rgensen}, {Tobin}, {Aikawa}, {de Gregorio-Monsalvo}, {Han}, {Kido}, {Koch}, {Lai}, {Lee}, {Lee}, {Li}, {Lin}, {Looney}, {Narayanan}, {Phuong}, {Sai}, {Saigo}, {Santamar{\'\i}a-Miranda}, {Sharma}, {Takakuwa}, {Thieme}, {Tomida}, {Williams}, \& {Yen}}]{Aso_2023}
+{Aso}, Y., {Kwon}, W., {Ohashi}, N., {et~al.} 2023, \apj, 954, 101, \dodoi{10.3847/1538-4357/ace624}
+
 \bibitem[{{Cassen} \& {Moosman}(1981)}]{Cassen_1981}
 {Cassen}, P., \& {Moosman}, A. 1981, \icarus, 48, 353, \dodoi{10.1016/0019-1035(81)90051-8}
+
+\bibitem[{{Evans} {et~al.}(2009){Evans}, {Dunham}, {J{\o}rgensen}, {Enoch}, {Mer{\'\i}n}, {van Dishoeck}, {Alcal{\'a}}, {Myers}, {Stapelfeldt}, {Huard}, {Allen}, {Harvey}, {van Kempen}, {Blake}, {Koerner}, {Mundy}, {Padgett}, \& {Sargent}}]{Evans_2009}
+{Evans}, II, N.~J., {Dunham}, M.~M., {J{\o}rgensen}, J.~K., {et~al.} 2009, \apjs, 181, 321, \dodoi{10.1088/0067-0049/181/2/321}
+
+\bibitem[{{Flores} {et~al.}(2023){Flores}, {Ohashi}, {Tobin}, {J{\o}rgensen}, {Takakuwa}, {Li}, {Lin}, {van't Hoff}, {Plunkett}, {Yamato}, {Sai (Insa Choi)}, {Koch}, {Yen}, {Aikawa}, {Aso}, {de Gregorio-Monsalvo}, {Kido}, {Kwon}, {Lee}, {Lee}, {Looney}, {Santamar{\'\i}a-Miranda}, {Sharma}, {Thieme}, {Williams}, {Han}, {Narayanan}, \& {Lai}}]{Flores_2023}
+{Flores}, C., {Ohashi}, N., {Tobin}, J.~J., {et~al.} 2023, \apj, 958, 98, \dodoi{10.3847/1538-4357/acf7c1}
 
 \bibitem[{{Foreman-Mackey} {et~al.}(2013){Foreman-Mackey}, {Hogg}, {Lang}, \& {Goodman}}]{Daniel_2013}
 {Foreman-Mackey}, D., {Hogg}, D.~W., {Lang}, D., \& {Goodman}, J. 2013, \pasp, 125, 306, \dodoi{10.1086/670067}
@@ -35,6 +47,9 @@
 \bibitem[{{Kido} {et~al.}(2023){Kido}, {Takakuwa}, {Saigo}, {Ohashi}, {Tobin}, {J{\o}rgensen}, {Aikawa}, {Aso}, {Encalada}, {Flores}, {Gavino}, {de Gregorio-Monsalvo}, {Han}, {Hirano}, {Koch}, {Kwon}, {Lai}, {Lee}, {Lee}, {Li}, {Lin}, {Looney}, {Mori}, {Narayanan}, {Plunkett}, {Phuong}, {(Insa Choi)}, {Santamar{\'\i}a-Miranda}, {Sharma}, {Sheehan}, {Thieme}, {Tomida}, {van't Hoff}, {Williams}, {Yamato}, \& {Yen}}]{Kido_2023}
 {Kido}, M., {Takakuwa}, S., {Saigo}, K., {et~al.} 2023, \apj, 953, 190, \dodoi{10.3847/1538-4357/acdd7a}
 
+\bibitem[{{Kido} {et~al.}(2025){Kido}, {Yen}, {Sai}, {Takakuwa}, {Ohashi}, {Aikawa}, {Aso}, {Flores}, {Han}, {Koch}, {Kwon}, {Lee}, {Li}, {Looney}, {Narang}, {Saigo}, {Sharma}, {Thieme}, {Tomida}, \& {Williams}}]{Kido_2025}
+{Kido}, M., {Yen}, H.-W., {Sai}, J., {et~al.} 2025, \apj, 985, 166, \dodoi{10.3847/1538-4357/adc72a}
+
 \bibitem[{{Larson}(1969)}]{Larson_1969}
 {Larson}, R.~B. 1969, \mnras, 145, 271, \dodoi{10.1093/mnras/145.3.271}
 
@@ -59,6 +74,9 @@
 \bibitem[{{Shu}(1977)}]{Shu_1977}
 {Shu}, F.~H. 1977, \apj, 214, 488, \dodoi{10.1086/155274}
 
+\bibitem[{{Speedie} {et~al.}(2025){Speedie}, {Dong}, {Teague}, {Segura-Cox}, {Pineda}, {Calcino}, {Longarini}, {Hall}, {Tang}, {Hashimoto}, {Paneque-Carre{\~n}o}, {Lodato}, \& {Veronesi}}]{Speedie_2025}
+{Speedie}, J., {Dong}, R., {Teague}, R., {et~al.} 2025, \apjl, 981, L30, \dodoi{10.3847/2041-8213/adb7d5}
+
 \bibitem[{{Stephens} {et~al.}(2019){Stephens}, {Bourke}, {Dunham}, {Myers}, {Pokhrel}, {Tobin}, {Arce}, {Sadavoy}, {Vorobyov}, {Pineda}, {Offner}, {Lee}, {Kristensen}, {J{\o}rgensen}, {Gurwell}, \& {Goodman}}]{Stephens_2019}
 {Stephens}, I.~W., {Bourke}, T.~L., {Dunham}, M.~M., {et~al.} 2019, \apjs, 245, 21, \dodoi{10.3847/1538-4365/ab5181}
 
@@ -76,6 +94,9 @@
 
 \bibitem[{{Yen} {et~al.}(2019){Yen}, {Gu}, {Hirano}, {Koch}, {Lee}, {Liu}, \& {Takakuwa}}]{Yen_2019}
 {Yen}, H.-W., {Gu}, P.-G., {Hirano}, N., {et~al.} 2019, \apj, 880, 69, \dodoi{10.3847/1538-4357/ab29f8}
+
+\bibitem[{{Yen} {et~al.}(2017){Yen}, {Koch}, {Takakuwa}, {Krasnopolsky}, {Ohashi}, \& {Aso}}]{Yen_2017}
+{Yen}, H.-W., {Koch}, P.~M., {Takakuwa}, S., {et~al.} 2017, \apj, 834, 178, \dodoi{10.3847/1538-4357/834/2/178}
 
 \bibitem[{{Zucker} {et~al.}(2018){Zucker}, {Schlafly}, {Speagle}, {Green}, {Portillo}, {Finkbeiner}, \& {Goodman}}]{Zucker_2018}
 {Zucker}, C., {Schlafly}, E.~F., {Speagle}, J.~S., {et~al.} 2018, \apj, 869, 83, \dodoi{10.3847/1538-4357/aae97c}

@@ -1,13 +1,13 @@
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {1.1}{\ignorespaces Summary of the observational datasets used in this work.}}{8}{table.caption.12}%
+\contentsline {table}{\numberline {1.1}{\ignorespaces Summary of the observational datasets used in this work. For each target, the table lists the adopted source coordinates (RA and DEC, J2000), the molecular line used to trace the streamer structures, the synthesized beam size of the corresponding data cube, and the reference to the original observational study. These datasets form the observational basis for extracting the streamer morphology and kinematic information used in the model fitting.}}{8}{table.caption.12}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Overview of point extraction and MCMC configurations adopted for each target.}}{21}{table.caption.17}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Overview of point extraction and MCMC configurations adopted for each target.}}{22}{table.caption.17}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, peak and median values from the MCMC analysis are listed. }}{36}{table.caption.36}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Core properties from best-fit model parameters for all targets. }}{39}{table.caption.37}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Best-fit kinematic model parameters for all targets. Per-emb-2 adopts the MCMC point method peak and median solutions, Per-emb-50 adopts the MCMC global method peak and median solutions, while for HL~Tau and S~CrA, the peak solutions from both point method and global method analyses are listed for comparison. }}{37}{table.caption.36}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Core properties from best-fit model parameters for all targets. Per-emb-2 adopts the MCMC point method peak and median solutions, Per-emb-50 adopts the MCMC global method peak and median solutions, while for HL~Tau and S~CrA, the peak solutions from both point method and global method analyses are listed for comparison. }}{40}{table.caption.37}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Observations}}{49}{table.caption.39}%
+\contentsline {table}{\numberline {A.1}{\ignorespaces Adopted physical and observational properties of the target protostellar systems. The table lists the stellar and disk masses, central (stellar + disk) mass used in the modeling, systemic velocity, disk inclination and position angle reported in the literature, as well as the bolometric temperature ($T_{\rm bol}$) used as an evolutionary indicator. These parameters are taken from previous observational studies and are used either as fixed inputs, reference values for comparison, or auxiliary information in the streamer modeling analysis. The inclination angle with i=0 corresponds to a face-on disk.}}{51}{table.caption.39}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {B.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, the upper row reports the posterior peak values from the MCMC analyses, while the lower row reports the corresponding posterior median values. Grid-search results are shown only in the upper row. }}{76}{table.caption.65}%
+\contentsline {table}{\numberline {B.1}{\ignorespaces Best-fit kinematic model parameters for all targets. For each source, the upper row reports the posterior peak values from the MCMC analyses, while the lower row reports the corresponding posterior median values. Grid-search results are shown only in the upper row. }}{78}{table.caption.65}%

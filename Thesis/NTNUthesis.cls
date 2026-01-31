@@ -76,10 +76,10 @@
     }
     {\EN十六
     National Taiwan Normal University\\
-    Master's Thesis
+    Master's Thesis\\
     }
 
-    \vspace{3.5cm}
+    \vfill
 
     {\CJK十八
     \@titleZH\\
@@ -96,7 +96,7 @@
     {\fontsize{18pt}{27pt}\selectfont
     \@studentEN
     }
-    \vspace{1.5\baselineskip}
+    \vfill
 
     {\CJK十八
     \@advisorZH\\
@@ -104,7 +104,7 @@
     {\fontsize{18pt}{27pt}\selectfont
     \@advisorEN
     }
-    \vspace{1.5\baselineskip}
+    \vfill
 
     {\CJK十八
     中~~華~~民~~國~~\zhdigits{\@yearZH}~~年~~\zhdigits{\@monthZH}~~月
