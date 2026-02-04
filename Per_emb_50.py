@@ -88,12 +88,12 @@ REBUILD_WHICH = ("mcmc_grid", "mcmc_shell")  # 想重畫哪些：可改成只留
 # RUN_GRID = True               # 5D grid search 找初始解
 # RUN_MCMC_GRID = True          # 14 個質心點 fast likelihood
 # RUN_MCMC_SHELL = True         # distance_cube MCMC
-RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
+# RUN_FROM_CACHE_ONLY = False   # True: 僅讀 cache 畫圖，完全不重跑
 
-# RUN_GRID = False               # 5D grid search 找初始解
-# RUN_MCMC_GRID = False          # 14 個質心點 fast likelihood
-# RUN_MCMC_SHELL = False         # distance_cube MCMC
-# RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
+RUN_GRID = False               # 5D grid search 找初始解
+RUN_MCMC_GRID = False          # 14 個質心點 fast likelihood
+RUN_MCMC_SHELL = False         # distance_cube MCMC
+RUN_FROM_CACHE_ONLY = True   # True: 僅讀 cache 畫圖，完全不重跑
 
 # USE_EDT_ERROR_FOR_GRID = False
 # RUN_MCMC_GRID_REFINE = False  # MCMC_grid 多峰局部 refinement
@@ -1163,33 +1163,33 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # cbar.set_label('weight value')
 
     # 質心點（若提供）
-    # if cen_x_pix is not None and cen_z_pix is not None:
-    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-    #     if cen_v_LS_km is not None:
-    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=5.5, vmax=8.0,
-    #             s=20,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.6,
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=36,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
+    if cen_x_pix is not None and cen_z_pix is not None:
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+        if cen_v_LS_km is not None:
+            cen_v = cen_v_LS_km + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra, cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=5.5, vmax=8.0,
+                s=20,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.6,
+                zorder=5,
+                label="Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra, cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=36,
+                marker="o",
+                zorder=5,
+                label="Centroids",
+            )
 
     ax.scatter(0, 0, c="w", s=50, marker="+", zorder=6)
 
@@ -1225,11 +1225,11 @@ def plot_streamer_on_mom0(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    ax.quiver(
-        -0.4, 0.4 * np.tan(np.deg2rad(10)),
-        1.4, -1.4 * np.tan(np.deg2rad(10)),
-        color='grey', scale=12, zorder=10
-    )
+    # ax.quiver(
+    #     -0.4, 0.4 * np.tan(np.deg2rad(10)),
+    #     1.4, -1.4 * np.tan(np.deg2rad(10)),
+    #     color='grey', scale=12, zorder=10
+    # )
     # beam（若有）
     try:
         bmaj = header.get("BMAJ", None)
@@ -1352,33 +1352,33 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     # cbar.set_label('weight value')
     
     # 質心
-    # if cen_x_pix is not None and cen_z_pix is not None:
-    #     cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
-    #     cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
-    #     if cen_v_LS_km is not None:
-    #         cen_v = cen_v_LS_km + Local_Standard_Velocity
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             c=cen_v,
-    #             cmap="coolwarm",
-    #             vmin=vmin, vmax=vmax,
-    #             s=20,
-    #             marker="o",
-    #             edgecolors="black",
-    #             linewidths=0.6,
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
-    #     else:
-    #         ax.scatter(
-    #             cen_ra, cen_dec,
-    #             facecolors="none",
-    #             edgecolors="black",
-    #             s=36,
-    #             marker="o",
-    #             zorder=5,
-    #             label="Centroids",
-    #         )
+    if cen_x_pix is not None and cen_z_pix is not None:
+        cen_ra  = (cen_x_pix - im_center[1]) * dx_arcsec
+        cen_dec = (cen_z_pix - im_center[0]) * dz_arcsec
+        if cen_v_LS_km is not None:
+            cen_v = cen_v_LS_km + Local_Standard_Velocity
+            ax.scatter(
+                cen_ra, cen_dec,
+                c=cen_v,
+                cmap="coolwarm",
+                vmin=vmin, vmax=vmax,
+                s=20,
+                marker="o",
+                edgecolors="black",
+                linewidths=0.6,
+                zorder=5,
+                label="Centroids",
+            )
+        else:
+            ax.scatter(
+                cen_ra, cen_dec,
+                facecolors="none",
+                edgecolors="black",
+                s=36,
+                marker="o",
+                zorder=5,
+                label="Centroids",
+            )
 
     ax.scatter(0, 0, c="b", s=50, marker="+", zorder=6)
 
@@ -1414,11 +1414,11 @@ def plot_streamer_on_mom1(theta_deg, phi_deg, inc_deg, T_Myr, omega,
     )
 
     # --- 加上方向箭頭 (NE arrow) ---
-    ax.quiver(
-        -0.4, 0.4 * np.tan(np.deg2rad(10)),
-        1.4, -1.4 * np.tan(np.deg2rad(10)),
-        color='grey', scale=12, zorder=10
-    )
+    # ax.quiver(
+    #     -0.4, 0.4 * np.tan(np.deg2rad(10)),
+    #     1.4, -1.4 * np.tan(np.deg2rad(10)),
+    #     color='grey', scale=12, zorder=10
+    # )
     # beam（若有）
     try:
         bmaj = header.get("BMAJ", None)

@@ -1,5 +1,5 @@
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {1.1}{\ignorespaces Summary of the observational datasets used in this work. For each target, the table lists the adopted source coordinates (RA and DEC, J2000), the molecular line used to trace the streamer structures, the synthesized beam size of the corresponding data cube, and the reference to the original observational study. These datasets form the observational basis for extracting the streamer morphology and kinematic information used in the model fitting.}}{8}{table.caption.12}%
+\contentsline {table}{\numberline {1.1}{\ignorespaces Summary of the observational datasets used in this work. For each target, the table lists the adopted source coordinates (RA and DEC, J2000), the molecular line used to trace the streamer structures, the synthesized beam size of the corresponding data cube, and the reference to the original observational study.}}{8}{table.caption.12}%
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {2.1}{\ignorespaces Overview of point extraction and MCMC configurations adopted for each target.}}{22}{table.caption.17}%
 \addvspace {10\p@ }

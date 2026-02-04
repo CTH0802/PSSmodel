@@ -2,7 +2,7 @@
 \contentsline {chapter}{Abstract}{II}{section*.4}%
 \contentsline {chapter}{Contents}{III}{chapter*.5}%
 \contentsline {chapter}{List of Figures}{VI}{chapter*.6}%
-\contentsline {chapter}{List of Tables}{XIV}{chapter*.7}%
+\contentsline {chapter}{List of Tables}{XVI}{chapter*.7}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}The formation of cores}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}The streamer in observations}{2}{section.1.2}%
